@@ -1,0 +1,9 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .fakegen-input {
+    @apply fakegen-w-full !fakegen-max-w-full fakegen-appearance-none fakegen-rounded-md fakegen-bg-white fakegen-py-1.5 fakegen-pl-3 fakegen-pr-8 fakegen-text-base fakegen-text-gray-900 fakegen-outline fakegen-outline-1 fakegen--outline-offset-1 fakegen-outline-gray-300 focus:fakegen-outline focus:fakegen-outline-2 focus:fakegen--outline-offset-2 focus:fakegen-outline-primary sm:fakegen-text-sm/6;
+  }
+}

@@ -1,0 +1,22 @@
+{
+    "name": "sapayth/fakegen",
+    "description": "A WordPress plugin to generate fake/dummy content for development/testing.",
+    "type": "wordpress-plugin",
+    "license": "GPL-2.0-or-later",
+    "authors": [
+        {
+            "name": "Sapayth Hossain",
+            "email": "safayet.qubee@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=7.4"
+    },
+    "autoload": {
+        "psr-4": {
+            "Fakegen\\": "includes/"
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+} 

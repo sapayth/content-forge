@@ -1,0 +1,9 @@
+# Node and build output
+node_modules/
+dist/
+build/
+assets/
+
+# Editor and system files
+.DS_Store
+.cursor/ 
