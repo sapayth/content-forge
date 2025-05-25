@@ -7,7 +7,9 @@
     "dev": "webpack --mode development --watch",
     "build": "webpack --mode production",
     "build:css": "webpack --mode production",
-    "build:pages-posts": "webpack --config webpack.config.js --env entry=pages-posts.jsx --env output=assets/js/pagesPosts.js --mode production"
+    "build:pages-posts": "webpack --config webpack.config.js --env entry=pages-posts.jsx --env output=assets/js/pagesPosts.js --mode production",
+    "release": "scripts/package.sh",
+    "zip": "scripts/package.sh"
   },
   "dependencies": {
     "@wordpress/api-fetch": "^7.24.0",
