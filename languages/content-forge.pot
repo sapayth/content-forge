@@ -2,8 +2,8 @@
 # This file is distributed under the GPLv2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: FakeGen 1.0.0\n"
-"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/fakegen\n"
+"Project-Id-Version: Content-Forge 1.0.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/content-forge\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -12,10 +12,10 @@ msgstr ""
 "POT-Creation-Date: 2024-01-01T00:00:00+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.8.1\n"
-"X-Domain: fakegen\n"
+"X-Domain: content-forge\n"
 
 #. Plugin Name of the plugin
-msgid "FakeGen"
+msgid "Content-Forge"
 msgstr ""
 
 #. Description of the plugin

@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: Content Forge
- * Description: Generate fake/dummy posts, pages, users, taxonomies, and comments for development/testing.
+ * Description: Generate fake/dummy posts, pages, users, comments for development/testing.
  * Version: 1.0.0
  * Author: Sapayth Hossain
  * Text Domain: cforge

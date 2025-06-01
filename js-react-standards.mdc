@@ -6,5 +6,5 @@ alwaysApply: false
 ## API Requests
 
 - Use `@wordpress/api-fetch` for all REST API requests in React/JS code.
-- Always configure the nonce and root URL middleware using values provided by the backend (e.g., `window.fakegen.rest_nonce`, `window.fakegen.apiUrl`).
-- Reference: [@wordpress/api-fetch documentation](mdc:fakegen/https:/developer.wordpress.org/block-editor/reference-guides/packages/packages-api-fetch)
+- Always configure the nonce and root URL middleware using values provided by the backend (e.g., `window.cforge.rest_nonce`, `window.cforge.apiUrl`).
+- Reference: [@wordpress/api-fetch documentation](mdc:content-forge/content-forge/content-forge/https:/developer.wordpress.org/block-editor/reference-guides/packages/packages-api-fetch)
