@@ -14,11 +14,6 @@ class Comment extends CForge_REST_Controller
 	 */
 	protected $base = 'comments';
 
-	public function __construct()
-	{
-		add_action('rest_api_init', [$this, 'register_routes']);
-	}
-
 	public function register_routes()
 	{
 		register_rest_route(
@@ -42,11 +37,11 @@ class Comment extends CForge_REST_Controller
 		// Add list endpoint
 		register_rest_route(
 			$this->namespace,
-			'/' . $this->base . '/list',
+			'/' . $this->base,
 			[
 				[
 					'methods' => WP_REST_Server::READABLE,
-					'callback' => [$this, 'handle_list'],
+					'callback' => [$this, 'get_list'],
 					'permission_callback' => [$this, 'permission_check'],
 					'args' => [
 						'page' => ['default' => 1, 'sanitize_callback' => 'absint'],
@@ -107,7 +102,7 @@ class Comment extends CForge_REST_Controller
 
 		$comment_number = isset($params['comment_number']) ? intval($params['comment_number']) : 1;
 		$comment_post_ID = isset($params['comment_post_ID']) ? intval($params['comment_post_ID']) : 0;
-		$comment_status = isset($params['comment_status']) ? sanitize_key($params['comment_status']) : 'approve';
+		$comment_status = isset($params['comment_status']) ? sanitize_key($params['comment_status']) : '0';
 		$allow_replies = isset($params['allow_replies']) ? (bool) $params['allow_replies'] : false;
 		$reply_probability = isset($params['reply_probability']) ? intval($params['reply_probability']) : 30;
 
@@ -117,7 +112,7 @@ class Comment extends CForge_REST_Controller
 		}
 
 		// Validate comment status
-		if (!in_array($comment_status, ['approve', 'hold', 'spam'], true)) {
+		if (!in_array($comment_status, ['0', '1', 'hold', 'spam'], true)) {
 			return new \WP_REST_Response(['message' => __('Invalid comment status.', 'cforge')], 400);
 		}
 
@@ -155,7 +150,7 @@ class Comment extends CForge_REST_Controller
 	/**
 	 * Handle paginated list of comments
 	 */
-	public function handle_list($request)
+	public function get_list($request)
 	{
 		// Validate and sanitize request parameters
 		$pagination_params = $this->validate_list_parameters($request);
@@ -171,12 +166,14 @@ class Comment extends CForge_REST_Controller
 
 		// Get paginated comment IDs
 		$comment_ids = $this->get_tracked_comments_ids($pagination_params);
+
 		if (is_wp_error($comment_ids)) {
 			return $comment_ids;
 		}
 
 		// Format comment data for response
 		$formatted_items = $this->format_comment_items($comment_ids);
+
 		if (is_wp_error($formatted_items)) {
 			return $formatted_items;
 		}
@@ -392,12 +389,16 @@ class Comment extends CForge_REST_Controller
 	{
 		global $wpdb;
 
-		$count = $wpdb->get_var(
-			$wpdb->prepare(
-				"SELECT COUNT(*) FROM {$wpdb->prefix}" . CFORGE_DBNAME . " WHERE data_type = %s",
-				'comment'
-			)
-		);
+		// Get all public post types
+		$post_types = get_post_types(['public' => true]);
+		if (empty($post_types)) {
+			$post_types = ['post', 'page'];
+		}
+		$placeholders = implode(',', array_fill(0, count($post_types), '%s'));
+		$sql = "SELECT COUNT(*) FROM {$wpdb->prefix}" . CFORGE_DBNAME . " WHERE data_type IN ($placeholders)";
+		$params = array_values($post_types);
+		$query = call_user_func_array([$wpdb, 'prepare'], array_merge([$sql], $params));
+		$count = $wpdb->get_var($query);
 
 		if ($wpdb->last_error) {
 			return new \WP_Error('database_error', __('Database error occurred while counting comments.', 'cforge'));
@@ -413,17 +414,12 @@ class Comment extends CForge_REST_Controller
 	{
 		global $wpdb;
 
-		$comment_ids = $wpdb->get_col(
-			$wpdb->prepare(
-				"SELECT object_id FROM {$wpdb->prefix}" . CFORGE_DBNAME . " 
-				 WHERE data_type = %s 
-				 ORDER BY created_at DESC 
-				 LIMIT %d OFFSET %d",
-				'comment',
-				$pagination_params['per_page'],
-				$pagination_params['offset']
-			)
-		);
+		$sql = "SELECT object_id FROM {$wpdb->prefix}" . CFORGE_DBNAME . " WHERE data_type = 'comment' ORDER BY created_at DESC LIMIT %d OFFSET %d";
+
+		$params = array_merge( [$pagination_params['per_page'], $pagination_params['offset']]);
+
+		$query = call_user_func_array([$wpdb, 'prepare'], array_merge([$sql], $params));
+		$comment_ids = $wpdb->get_col($query);
 
 		if ($wpdb->last_error) {
 			return new \WP_Error('database_error', __('Database error occurred while fetching comment IDs.', 'cforge'));
@@ -455,17 +451,17 @@ class Comment extends CForge_REST_Controller
 			$post_edit_link = $post ? get_edit_post_link($post->ID) : '';
 
 			$formatted_items[] = [
-				'id' => (int) $comment->comment_ID,
-				'content' => wp_trim_words($comment->comment_content, 15),
-				'author_name' => $comment->comment_author,
-				'author_email' => $comment->comment_author_email,
-				'post_id' => (int) $comment->comment_post_ID,
-				'post_title' => $post_title,
-				'post_edit_link' => $post_edit_link,
-				'status' => wp_get_comment_status($comment->comment_ID),
-				'date' => $comment->comment_date,
-				'parent' => (int) $comment->comment_parent,
-				'edit_link' => admin_url('comment.php?action=editcomment&c=' . $comment->comment_ID),
+                'id'             => (int) $comment_id,
+                'content'        => wp_trim_words( $comment->comment_content, 15 ),
+                'author_name'    => $comment->comment_author,
+                'author_email'   => $comment->comment_author_email,
+                'post_id'        => (int) $comment->comment_post_ID,
+                'post_title'     => $post_title,
+                'post_edit_link' => $post_edit_link,
+                'status'         => wp_get_comment_status( $comment_id ),
+                'date'           => $comment->comment_date,
+                'parent'         => (int) $comment->comment_parent,
+                'edit_link'      => admin_url( 'comment.php?action=editcomment&c=' . $comment_id ),
 			];
 		}
 

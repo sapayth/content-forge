@@ -53,14 +53,14 @@ class Admin {
 	 * Render the Pages/Posts React app root div.
 	 */
 	public static function render_pages_posts_page() {
-		echo '<div id="cforge-pages-posts-app"></div>';
+		echo '<div id="cforge-pages-posts-app" style="margin-left: -20px"></div>';
 	}
 
 	/**
 	 * Render the Comments React app root div.
 	 */
 	public static function render_comments_page() {
-		echo '<div id="cforge-comments-app"></div>';
+		echo '<div id="cforge-comments-app" style="margin-left: -20px"></div>';
 	}
 
 	/**
@@ -90,7 +90,7 @@ class Admin {
                     'rest_nonce' => wp_create_nonce( 'wp_rest' ),
                 ]
             );
-		} elseif ( 'cforge_page_cforge-comments' === $hook ) {
+		} elseif ( 'content-forge_page_cforge-comments' === $hook ) {
 			wp_enqueue_script(
 				'cforge-comments-app',
 				CFORGE_ASSETS_URL . 'js/comments.js',
@@ -111,6 +111,7 @@ class Admin {
                 [
                     'apiUrl'     => esc_url_raw( rest_url( 'cforge/v1/' ) ),
                     'rest_nonce' => wp_create_nonce( 'wp_rest' ),
+                    'post_types' => get_post_types( [ 'public' => true ], ),
                 ]
             );
 		}

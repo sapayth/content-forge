@@ -14,6 +14,14 @@ import { __ } from '@wordpress/i18n';
 export default function MultiSelect({ options = [], value = [], onChange, label, placeholder }) {
     const selectRef = useRef();
 
+    // Support both array and object for options
+    let normalizedOptions = [];
+    if (Array.isArray(options)) {
+        normalizedOptions = options;
+    } else if (options && typeof options === 'object') {
+        normalizedOptions = Object.entries(options).map(([value, label]) => ({ value, label }));
+    }
+
     const handleChange = (e) => {
         const selected = Array.from(e.target.selectedOptions).map((opt) => opt.value);
         onChange(selected);
@@ -35,10 +43,10 @@ export default function MultiSelect({ options = [], value = [], onChange, label,
                 onChange={handleChange}
                 aria-label={label || placeholder || __('Select options', 'cforge')}
             >
-                {placeholder && options.length === 0 && (
+                {placeholder && normalizedOptions.length === 0 && (
                     <option disabled>{placeholder}</option>
                 )}
-                {options.map((opt) => (
+                {normalizedOptions.map((opt) => (
                     <option key={opt.value} value={opt.value}>
                         {opt.label}
                     </option>

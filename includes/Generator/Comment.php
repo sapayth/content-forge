@@ -1,13 +1,13 @@
 <?php
+
 namespace ContentForge\Generator;
 
 use WP_Error;
 use ContentForge\Activator;
 
 global $wpdb;
-
 if (!defined('ABSPATH')) {
-	exit;
+    exit;
 }
 
 /**
@@ -15,170 +15,166 @@ if (!defined('ABSPATH')) {
  */
 class Comment extends Generator
 {
-	/**
-	 * Generate fake comments for selected post types.
-	 *
-	 * @param int $count
-	 * @param array $args ['post_types' => array, ...]
-	 * @return array Array of generated comment IDs.
-	 */
-	public function generate($count = 1, $args = [])
-	{
-		$ids = [];
-		$post_types = isset($args['post_types']) ? (array) $args['post_types'] : ['post'];
-		$posts = $this->get_random_posts($post_types, $count);
+    /**
+     * Data type for this generator.
+     *
+     * @var string
+     */
+    protected $data_type = 'comment';
 
-		for ($i = 0; $i < $count; $i++) {
-			$post = $posts[array_rand($posts)];
-			$comment_data = [
-				'comment_post_ID' => $post->ID,
-				'comment_author' => $this->randomize_author(),
-				'comment_content' => $this->randomize_content(),
-				'comment_approved' => 1,
-				'user_id' => $this->user_id,
-			];
+    /**
+     * Generate fake comments for selected post types.
+     *
+     * @param int   $count
+     * @param array $args ['post_types' => array, ...]
+     *
+     * @return array Array of generated comment IDs.
+     */
+    public function generate($count = 1, $args = [])
+    {
+        $ids = [];
+        $post_types = isset($args['post_types']) ? (array) $args['post_types'] : ['post'];
+        $comment_status = isset($args['comment_status']) ? $args['comment_status'] : 'approve';
+        $posts = cforge_get_random_post_ids($post_types, $count);
 
-			$comment_id = wp_insert_comment($comment_data);
+        for ($i = 0; $i < $count; $i++) {
+            $post_id = $posts[array_rand($posts)];
 
-			if (!is_wp_error($comment_id) && $comment_id) {
-				$ids[] = $comment_id;
-				$this->track_generated($comment_id, $post->ID);
-			}
-		}
+            // Map UI status to wp_insert_comment 'comment_approved' value
+            if ('hold' === $comment_status) {
+                $comment_status = 0;
+            } elseif ('spam' === $comment_status) {
+                $comment_status = 'spam';
+            }
+            $comment_data = [
+                'comment_post_ID' => $post_id,
+                'comment_author' => $this->randomize_author(),
+                'comment_content' => $this->randomize_content(),
+                'comment_approved' => $comment_status,
+                'user_id' => $this->user_id,
+            ];
+            $comment_id = wp_insert_comment($comment_data);
+            if (!is_wp_error($comment_id) && $comment_id) {
+                $ids[] = $comment_id;
+                $this->track_generated($comment_id);
+            }
+        }
 
-		return $ids;
-	}
+        return $ids;
+    }
 
-	/**
-	 * Get random posts from selected post types.
-	 *
-	 * @param array $post_types
-	 * @param int $count
-	 * @return array
-	 */
-	private function get_random_posts($post_types, $count)
-	{
-		$args = [
-			'post_type' => $post_types,
-			'posts_per_page' => $count * 2, // Get more than needed for randomness
-			'post_status' => 'publish',
-			'fields' => 'all',
-			'orderby' => 'rand',
-		];
-		return get_posts($args);
-	}
+    /**
+     * Generate a random author name.
+     *
+     * @return string
+     */
+    private function randomize_author()
+    {
+        $names = [
+            'Alex',
+            'Jordan',
+            'Taylor',
+            'Morgan',
+            'Casey',
+            'Riley',
+            'Jamie',
+            'Avery',
+            'Parker',
+            'Quinn',
+            'Skyler',
+            'Rowan',
+            'Sawyer',
+            'Dakota',
+            'Reese',
+            'Emerson',
+            'Finley',
+            'Harper',
+            'Kendall',
+            'Logan',
+        ];
 
-	/**
-	 * Generate a random author name.
-	 *
-	 * @return string
-	 */
-	private function randomize_author()
-	{
-		$names = [
-			'Alex',
-			'Jordan',
-			'Taylor',
-			'Morgan',
-			'Casey',
-			'Riley',
-			'Jamie',
-			'Avery',
-			'Parker',
-			'Quinn',
-			'Skyler',
-			'Rowan',
-			'Sawyer',
-			'Dakota',
-			'Reese',
-			'Emerson',
-			'Finley',
-			'Harper',
-			'Kendall',
-			'Logan'
-		];
-		return $names[array_rand($names)];
-	}
+        return $names[array_rand($names)];
+    }
 
-	/**
-	 * Generate random comment content.
-	 *
-	 * @return string
-	 */
-	private function randomize_content()
-	{
-		$sentences = [
-			'This is a fantastic post! Thanks for sharing.',
-			'I found this really helpful and informative.',
-			'Great insights, I learned something new today.',
-			'I appreciate the detailed explanation.',
-			'This topic is very relevant to me right now.',
-			'Well written and easy to understand.',
-			'I have a question about one of the points mentioned.',
-			'Looking forward to more content like this.',
-			'Thank you for putting this together!',
-			'This really clarified things for me.'
-		];
-		return $sentences[array_rand($sentences)] . ' <em>(Generated by Content Forge)</em>';
-	}
+    /**
+     * Generate random comment content.
+     *
+     * @return string
+     */
+    private function randomize_content()
+    {
+        $sentences = [
+            'This is a fantastic post! Thanks for sharing.',
+            'I found this really helpful and informative.',
+            'Great insights, I learned something new today.',
+            'I appreciate the detailed explanation.',
+            'This topic is very relevant to me right now.',
+            'Well written and easy to understand.',
+            'I have a question about one of the points mentioned.',
+            'Looking forward to more content like this.',
+            'Thank you for putting this together!',
+            'This really clarified things for me.',
+        ];
 
-	/**
-	 * Delete generated comments by IDs.
-	 *
-	 * @param array $object_ids
-	 * @return int Number of items deleted.
-	 */
-	public function delete(array $object_ids)
-	{
-		$deleted = 0;
-		foreach ($object_ids as $comment_id) {
-			if (wp_delete_comment($comment_id, true)) {
-				$deleted++;
-				$this->untrack_generated($comment_id);
-			}
-		}
-		return $deleted;
-	}
+        return $sentences[array_rand($sentences)] . ' <em>(Generated by Content Forge)</em>';
+    }
 
-	/**
-	 * Track generated comment in the custom DB table.
-	 *
-	 * @param int $comment_id
-	 * @param int $post_id
-	 */
-	protected function track_generated($comment_id, $post_id)
-	{
-		global $wpdb;
+    /**
+     * Delete generated comments by IDs.
+     *
+     * @param array $object_ids
+     *
+     * @return int Number of items deleted.
+     */
+    public function delete(array $object_ids)
+    {
+        $deleted = 0;
+        foreach ($object_ids as $comment_id) {
+            if (wp_delete_comment($comment_id, true)) {
+                $deleted++;
+                $this->untrack_generated($comment_id);
+            }
+        }
 
-		Activator::create_tracking_table();
+        return $deleted;
+    }
 
-		$wpdb->insert(
-			$wpdb->prefix . 'cforge',
-			[
-				'object_id' => $comment_id,
-				'data_type' => 'comment',
-				'post_id' => $post_id,
-				'created_at' => current_time('mysql'),
-				'created_by' => $this->user_id
-			]
-		);
-	}
+    /**
+     * Track generated comment in the custom DB table.
+     *
+     * @param int $comment_id
+     * @param int $post_id
+     */
+    protected function track_generated($comment_id)
+    {
+        global $wpdb;
+        Activator::create_tracking_table();
 
-	/**
-	 * Remove tracking info for a deleted comment.
-	 *
-	 * @param int $comment_id
-	 */
-	protected function untrack_generated($comment_id)
-	{
-		global $wpdb;
+        $wpdb->insert(
+            $wpdb->prefix . 'cforge',
+            [
+                'object_id'  => $comment_id,
+                'data_type'  => $this->data_type,
+                'created_at' => current_time( 'mysql' ),
+                'created_by' => $this->user_id,
+            ]
+        );
+    }
 
-		$wpdb->delete(
-			$wpdb->prefix . 'cforge',
-			[
-				'object_id' => $comment_id,
-				'data_type' => 'comment',
-			]
-		);
-	}
+    /**
+     * Remove tracking info for a deleted comment.
+     *
+     * @param int $comment_id
+     */
+    protected function untrack_generated($comment_id)
+    {
+        global $wpdb;
+        $wpdb->delete(
+            $wpdb->prefix . 'cforge',
+            [
+                'object_id' => $comment_id,
+                'data_type' => 'comment',
+            ]
+        );
+    }
 }

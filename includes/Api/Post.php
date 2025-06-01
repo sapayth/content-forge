@@ -297,11 +297,6 @@ class Post extends CForge_REST_Controller
             );
         }
 
-        // Debug logging
-        if (defined('WP_DEBUG') && WP_DEBUG) {
-            error_log('CForge handle_list post IDs: ' . print_r($post_ids, true));
-        }
-
         return array_map('absint', $post_ids);
     }
 
@@ -346,11 +341,6 @@ class Post extends CForge_REST_Controller
                 'type' => sanitize_key($post->post_type),
                 'date' => sanitize_text_field(get_date_from_gmt($post->post_date_gmt, 'Y/m/d H:i A')),
             ];
-        }
-
-        // Debug logging
-        if (defined('WP_DEBUG') && WP_DEBUG) {
-            error_log('CForge handle_list formatted items: ' . print_r($formatted_items, true));
         }
 
         return $formatted_items;

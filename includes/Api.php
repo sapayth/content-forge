@@ -13,7 +13,7 @@ class Api {
 	 * Api constructor.
 	 */
 	public function __construct() {
-        $this->container['post'] = new Post();
+        $this->container['post']    = new Post();
         $this->container['comment'] = new Comment();
 
 		add_action( 'rest_api_init', [ $this, 'init_api' ] );
