@@ -1,5 +1,5 @@
 module.exports = {
-    prefix: 'fakegen-',
+    prefix: 'cforge-',
     content: ['./**/*.php', './src/**/*.{js,jsx,ts,tsx}'],
     theme: {
         extend: {
@@ -10,7 +10,4 @@ module.exports = {
         },
     },
     plugins: [],
-    safelist: [
-        'fakegen-input',
-    ],
 };

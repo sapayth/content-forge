@@ -1,7 +1,7 @@
 <?php
-namespace Fakegen;
+namespace ContentForge;
 
-use Fakegen\Traits\ContainerTrait;
+use ContentForge\Traits\ContainerTrait;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -19,66 +19,97 @@ class Admin {
 	 * Register admin menu and enqueue React app.
 	 */
 	public static function register_menu() {
+        $parent_slug = 'cforge';
+        $capability  = 'manage_options';
+
 		add_menu_page(
-			__( 'FakeGen', 'fakegen' ),
-			'FakeGen',
-			'manage_options',
-			'fakegen',
-			[ __CLASS__, 'render_page' ],
+			__( 'Content Forge', 'cforge' ),
+            __( 'Content Forge', 'cforge' ),
+			$capability,
+			$parent_slug,
+			[ __CLASS__, 'render_pages_posts_page' ],
 			'dashicons-images-alt',
 			56
 		);
 		add_submenu_page(
-			'fakegen',
-			__( 'Pages/Posts', 'fakegen' ),
-			__( 'Pages/Posts', 'fakegen' ),
-			'manage_options',
-			'fakegen-pages-posts',
+			$parent_slug,
+			__( 'Pages/Posts', 'cforge' ),
+			__( 'Pages/Posts', 'cforge' ),
+			$capability,
+			$parent_slug,
 			[ __CLASS__, 'render_pages_posts_page' ]
 		);
-	}
-
-	/**
-	 * Render the React app root div.
-	 */
-	public static function render_page() {
-		echo '<div id="fakegen-admin-app"></div>';
+		add_submenu_page(
+			$parent_slug,
+			__( 'Comments', 'cforge' ),
+			__( 'Comments', 'cforge' ),
+			$capability,
+			'cforge-comments',
+			[ __CLASS__, 'render_comments_page' ]
+		);
 	}
 
 	/**
 	 * Render the Pages/Posts React app root div.
 	 */
 	public static function render_pages_posts_page() {
-		echo '<div id="fakegen-pages-posts-app"></div>';
+		echo '<div id="cforge-pages-posts-app"></div>';
+	}
+
+	/**
+	 * Render the Comments React app root div.
+	 */
+	public static function render_comments_page() {
+		echo '<div id="cforge-comments-app"></div>';
 	}
 
 	/**
 	 * Enqueue React app assets on the plugin pages only.
 	 */
 	public static function enqueue_assets( $hook ) {
-		if ( $hook === 'toplevel_page_fakegen' ) {
-
-		}
-		if ( $hook === 'fakegen_page_fakegen-pages-posts' ) {
+		if ( 'toplevel_page_cforge' === $hook ) {
 			wp_enqueue_script(
-				'fakegen-admin-app',
-				FAKEGEN_ASSETS_URL . 'js/pagesposts.js',
+				'cforge-admin-app',
+				CFORGE_ASSETS_URL . 'js/pagesPosts.js',
 				[ 'wp-element', 'wp-i18n', 'wp-components', 'wp-api-fetch' ],
-				FAKEGEN_VERSION,
+				CFORGE_VERSION,
 				true
 			);
 			wp_enqueue_style(
-				'fakegen-admin-style',
-				FAKEGEN_ASSETS_URL . 'css/pagesposts.css',
+				'cforge-admin-style',
+				CFORGE_ASSETS_URL . 'css/pagesPosts.css',
 				[],
-				FAKEGEN_VERSION
+				CFORGE_VERSION
 			);
 
             wp_localize_script(
-                'fakegen-admin-app',
-                'fakegen',
+                'cforge-admin-app',
+                'cforge',
                 [
-                    'apiUrl'     => esc_url_raw( rest_url( 'fakegen/v1/' ) ),
+                    'apiUrl'     => esc_url_raw( rest_url( 'cforge/v1/' ) ),
+                    'rest_nonce' => wp_create_nonce( 'wp_rest' ),
+                ]
+            );
+		} elseif ( 'cforge_page_cforge-comments' === $hook ) {
+			wp_enqueue_script(
+				'cforge-comments-app',
+				CFORGE_ASSETS_URL . 'js/comments.js',
+				[ 'wp-element', 'wp-i18n', 'wp-components', 'wp-api-fetch' ],
+				CFORGE_VERSION,
+				true
+			);
+			wp_enqueue_style(
+				'cforge-comments-style',
+				CFORGE_ASSETS_URL . 'css/comments.css',
+				[],
+				CFORGE_VERSION
+			);
+
+            wp_localize_script(
+                'cforge-comments-app',
+                'cforge',
+                [
+                    'apiUrl'     => esc_url_raw( rest_url( 'cforge/v1/' ) ),
                     'rest_nonce' => wp_create_nonce( 'wp_rest' ),
                 ]
             );

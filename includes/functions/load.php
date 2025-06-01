@@ -8,7 +8,7 @@
  *
  * @since 1.0.0
  */
-function fakegen_load_plugin() {
-    $main = new FakeGen\Loader();
+function cforge_load_plugin() {
+    $main = new ContentForge\Loader();
     $main->init();
 }

@@ -1,5 +1,5 @@
 <?php
-namespace Fakegen;
+namespace ContentForge;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -18,7 +18,7 @@ class Activator {
 	 */
 	public static function create_tracking_table() {
 		global $wpdb;
-		$table_name = $wpdb->prefix . FAKEGEN_DBNAME;
+		$table_name = $wpdb->prefix . CFORGE_DBNAME;
 		$charset_collate = $wpdb->get_charset_collate();
 
 		// Table schema: id, object_id, data_type, created_at, created_by, meta (JSON, nullable)

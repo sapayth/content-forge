@@ -1,19 +1,20 @@
 <?php
-namespace Fakegen\Generator;
+namespace ContentForge\Generator;
 
 use WP_Error;
-use Fakegen\Activator;
+use ContentForge\Activator;
 
 global $wpdb;
 
-if ( ! defined( 'ABSPATH' ) ) {
+if (!defined('ABSPATH')) {
 	exit;
 }
 
 /**
  * Generator for fake posts.
  */
-class Post extends Generator {
+class Post extends Generator
+{
 	/**
 	 * Generate fake posts.
 	 *
@@ -21,26 +22,27 @@ class Post extends Generator {
 	 * @param array $args
 	 * @return array Array of generated post IDs.
 	 */
-	public function generate( $count = 1, $args = [] ) {
+	public function generate($count = 1, $args = [])
+	{
 		$ids = [];
-		for ( $i = 0; $i < $count; $i++ ) {
+		for ($i = 0; $i < $count; $i++) {
 			$post_data = [
-				'post_title'   => $this->randomize_title(),
+				'post_title' => $this->randomize_title(),
 				'post_content' => $this->randomize_content(),
-				'post_status'  => 'publish',
-				'post_type'    => 'post',
-				'post_author'  => $this->user_id,
+				'post_status' => 'publish',
+				'post_type' => 'post',
+				'post_author' => $this->user_id,
 			];
 
-			if ( ! empty( $args ) ) {
-				$post_data = array_merge( $post_data, $args );
+			if (!empty($args)) {
+				$post_data = array_merge($post_data, $args);
 			}
 
-			$post_id = wp_insert_post( $post_data );
+			$post_id = wp_insert_post($post_data);
 
-			if ( ! is_wp_error( $post_id ) && $post_id ) {
+			if (!is_wp_error($post_id) && $post_id) {
 				$ids[] = $post_id;
-				$this->track_generated( $post_id );
+				$this->track_generated($post_id);
 			}
 		}
 
@@ -52,49 +54,256 @@ class Post extends Generator {
 	 *
 	 * @return string Generated title
 	 */
-	private function randomize_title() {
+	private function randomize_title()
+	{
 		$adjectives = [
-			'Amazing', 'Incredible', 'Essential', 'Ultimate', 'Hidden', 'Simple', 'Creative', 'Powerful', 
-			'Effective', 'Practical', 'Revolutionary', 'Innovative', 'Comprehensive', 'Advanced', 'Expert',
-			'Professional', 'Modern', 'Complete', 'Perfect', 'Outstanding', 'Exceptional', 'Remarkable',
-			'Brilliant', 'Stunning', 'Fantastic', 'Extraordinary', 'Magnificent', 'Impressive', 'Unique',
-			'Exclusive', 'Premium', 'Superior', 'Excellent', 'Proven', 'Reliable', 'Trusted', 'Authentic',
-			'Genuine', 'Original', 'Fresh', 'New', 'Latest', 'Cutting-edge', 'State-of-the-art', 'Top-notch'
+			'Amazing',
+			'Incredible',
+			'Essential',
+			'Ultimate',
+			'Hidden',
+			'Simple',
+			'Creative',
+			'Powerful',
+			'Effective',
+			'Practical',
+			'Revolutionary',
+			'Innovative',
+			'Comprehensive',
+			'Advanced',
+			'Expert',
+			'Professional',
+			'Modern',
+			'Complete',
+			'Perfect',
+			'Outstanding',
+			'Exceptional',
+			'Remarkable',
+			'Brilliant',
+			'Stunning',
+			'Fantastic',
+			'Extraordinary',
+			'Magnificent',
+			'Impressive',
+			'Unique',
+			'Exclusive',
+			'Premium',
+			'Superior',
+			'Excellent',
+			'Proven',
+			'Reliable',
+			'Trusted',
+			'Authentic',
+			'Genuine',
+			'Original',
+			'Fresh',
+			'New',
+			'Latest',
+			'Cutting-edge',
+			'State-of-the-art',
+			'Top-notch'
 		];
 
 		$nouns = [
-			'Guide', 'Tips', 'Secrets', 'Ideas', 'Tricks', 'Strategies', 'Ways', 'Steps', 'Lessons', 'Facts',
-			'Methods', 'Techniques', 'Approaches', 'Solutions', 'Insights', 'Principles', 'Concepts', 'Tools',
-			'Resources', 'Hacks', 'Shortcuts', 'Formulas', 'Blueprints', 'Templates', 'Frameworks', 'Systems',
-			'Processes', 'Procedures', 'Practices', 'Tactics', 'Plans', 'Schemes', 'Patterns', 'Models',
-			'Examples', 'Cases', 'Studies', 'Reviews', 'Analysis', 'Research', 'Findings', 'Discoveries',
-			'Revelations', 'Breakthroughs', 'Innovations', 'Trends', 'Updates', 'News', 'Reports', 'Stories'
+			'Guide',
+			'Tips',
+			'Secrets',
+			'Ideas',
+			'Tricks',
+			'Strategies',
+			'Ways',
+			'Steps',
+			'Lessons',
+			'Facts',
+			'Methods',
+			'Techniques',
+			'Approaches',
+			'Solutions',
+			'Insights',
+			'Principles',
+			'Concepts',
+			'Tools',
+			'Resources',
+			'Hacks',
+			'Shortcuts',
+			'Formulas',
+			'Blueprints',
+			'Templates',
+			'Frameworks',
+			'Systems',
+			'Processes',
+			'Procedures',
+			'Practices',
+			'Tactics',
+			'Plans',
+			'Schemes',
+			'Patterns',
+			'Models',
+			'Examples',
+			'Cases',
+			'Studies',
+			'Reviews',
+			'Analysis',
+			'Research',
+			'Findings',
+			'Discoveries',
+			'Revelations',
+			'Breakthroughs',
+			'Innovations',
+			'Trends',
+			'Updates',
+			'News',
+			'Reports',
+			'Stories'
 		];
 
 		$verbs = [
-			'Boost', 'Improve', 'Master', 'Learn', 'Discover', 'Understand', 'Create', 'Build', 'Explore', 'Optimize',
-			'Enhance', 'Develop', 'Achieve', 'Unlock', 'Transform', 'Revolutionize', 'Maximize', 'Accelerate',
-			'Streamline', 'Simplify', 'Automate', 'Integrate', 'Implement', 'Execute', 'Deliver', 'Generate',
-			'Produce', 'Design', 'Craft', 'Engineer', 'Construct', 'Establish', 'Launch', 'Scale', 'Grow',
-			'Expand', 'Increase', 'Multiply', 'Amplify', 'Strengthen', 'Fortify', 'Secure', 'Protect', 'Maintain',
-			'Sustain', 'Preserve', 'Restore', 'Repair', 'Fix', 'Solve', 'Resolve', 'Overcome', 'Conquer'
+			'Boost',
+			'Improve',
+			'Master',
+			'Learn',
+			'Discover',
+			'Understand',
+			'Create',
+			'Build',
+			'Explore',
+			'Optimize',
+			'Enhance',
+			'Develop',
+			'Achieve',
+			'Unlock',
+			'Transform',
+			'Revolutionize',
+			'Maximize',
+			'Accelerate',
+			'Streamline',
+			'Simplify',
+			'Automate',
+			'Integrate',
+			'Implement',
+			'Execute',
+			'Deliver',
+			'Generate',
+			'Produce',
+			'Design',
+			'Craft',
+			'Engineer',
+			'Construct',
+			'Establish',
+			'Launch',
+			'Scale',
+			'Grow',
+			'Expand',
+			'Increase',
+			'Multiply',
+			'Amplify',
+			'Strengthen',
+			'Fortify',
+			'Secure',
+			'Protect',
+			'Maintain',
+			'Sustain',
+			'Preserve',
+			'Restore',
+			'Repair',
+			'Fix',
+			'Solve',
+			'Resolve',
+			'Overcome',
+			'Conquer'
 		];
 
 		$topics = [
-			'Productivity', 'Marketing', 'Writing', 'Design', 'Success', 'Technology', 'Health', 'Finance', 'Coding', 'Growth',
-			'Business', 'Leadership', 'Management', 'Innovation', 'Creativity', 'Communication', 'Networking', 'Sales',
-			'Customer Service', 'Branding', 'Strategy', 'Planning', 'Organization', 'Efficiency', 'Performance',
-			'Quality', 'Excellence', 'Improvement', 'Development', 'Training', 'Education', 'Learning', 'Skills',
-			'Knowledge', 'Expertise', 'Experience', 'Wisdom', 'Intelligence', 'Analytics', 'Data', 'Research',
-			'Science', 'Engineering', 'Architecture', 'Construction', 'Manufacturing', 'Operations', 'Logistics',
-			'Supply Chain', 'E-commerce', 'Digital Marketing', 'Social Media', 'Content Creation', 'SEO', 'Web Development'
+			'Productivity',
+			'Marketing',
+			'Writing',
+			'Design',
+			'Success',
+			'Technology',
+			'Health',
+			'Finance',
+			'Coding',
+			'Growth',
+			'Business',
+			'Leadership',
+			'Management',
+			'Innovation',
+			'Creativity',
+			'Communication',
+			'Networking',
+			'Sales',
+			'Customer Service',
+			'Branding',
+			'Strategy',
+			'Planning',
+			'Organization',
+			'Efficiency',
+			'Performance',
+			'Quality',
+			'Excellence',
+			'Improvement',
+			'Development',
+			'Training',
+			'Education',
+			'Learning',
+			'Skills',
+			'Knowledge',
+			'Expertise',
+			'Experience',
+			'Wisdom',
+			'Intelligence',
+			'Analytics',
+			'Data',
+			'Research',
+			'Science',
+			'Engineering',
+			'Architecture',
+			'Construction',
+			'Manufacturing',
+			'Operations',
+			'Logistics',
+			'Supply Chain',
+			'E-commerce',
+			'Digital Marketing',
+			'Social Media',
+			'Content Creation',
+			'SEO',
+			'Web Development'
 		];
 
 		$industries = [
-			'Healthcare', 'Education', 'Real Estate', 'Automotive', 'Fashion', 'Food', 'Travel', 'Entertainment',
-			'Sports', 'Gaming', 'Music', 'Art', 'Photography', 'Film', 'Publishing', 'Media', 'Journalism',
-			'Consulting', 'Legal', 'Accounting', 'Insurance', 'Banking', 'Investment', 'Retail', 'Hospitality',
-			'Construction', 'Agriculture', 'Energy', 'Environment', 'Sustainability', 'Non-profit', 'Government'
+			'Healthcare',
+			'Education',
+			'Real Estate',
+			'Automotive',
+			'Fashion',
+			'Food',
+			'Travel',
+			'Entertainment',
+			'Sports',
+			'Gaming',
+			'Music',
+			'Art',
+			'Photography',
+			'Film',
+			'Publishing',
+			'Media',
+			'Journalism',
+			'Consulting',
+			'Legal',
+			'Accounting',
+			'Insurance',
+			'Banking',
+			'Investment',
+			'Retail',
+			'Hospitality',
+			'Construction',
+			'Agriculture',
+			'Energy',
+			'Environment',
+			'Sustainability',
+			'Non-profit',
+			'Government'
 		];
 
 		$structures = [
@@ -105,7 +314,7 @@ class Post extends Generator {
 			['x', 'adjective', 'nouns', 'to', 'verb'], // 10 Simple Tricks to Master
 			['why', 'topic', 'needs', 'adjective', 'nouns'], // Why Marketing Needs Creative Ideas
 			['noun', 'that', 'verb', 'topic'], // Tips That Boost Productivity
-			
+
 			// Advanced structures
 			['the', 'adjective', 'noun', 'to', 'verb', 'topic'], // The Complete Guide to Master Marketing
 			['verb', 'adjective', 'topic', 'with', 'these', 'nouns'], // Master Digital Marketing with These Strategies
@@ -120,36 +329,36 @@ class Post extends Generator {
 		];
 
 		// Randomly pick a structure
-		$template = $structures[ array_rand( $structures ) ];
+		$template = $structures[array_rand($structures)];
 
 		// Replace keywords with random words
-		$title = array_map( function( $word ) use ( $adjectives, $nouns, $verbs, $topics, $industries ) {
-			switch ( $word ) {
+		$title = array_map(function ($word) use ($adjectives, $nouns, $verbs, $topics, $industries) {
+			switch ($word) {
 				case 'adjective':
-					return $adjectives[ array_rand( $adjectives ) ];
+					return $adjectives[array_rand($adjectives)];
 				case 'noun':
-					return $nouns[ array_rand( $nouns ) ];
+					return $nouns[array_rand($nouns)];
 				case 'nouns':
-					return $nouns[ array_rand( $nouns ) ];
+					return $nouns[array_rand($nouns)];
 				case 'verb':
-					return $verbs[ array_rand( $verbs ) ];
+					return $verbs[array_rand($verbs)];
 				case 'topic':
-					return $topics[ array_rand( $topics ) ];
+					return $topics[array_rand($topics)];
 				case 'industry':
-					return $industries[ array_rand( $industries ) ];
+					return $industries[array_rand($industries)];
 				case 'x':
-					return rand( 3, 15 ); // Number
+					return rand(3, 15); // Number
 				case 'ways':
-					return rand( 2, 4 ) === 2 ? 'Ways' : 'Methods';
+					return rand(2, 4) === 2 ? 'Ways' : 'Methods';
 				case 'professional':
-					return rand( 2, 4 ) === 2 ? 'Professional' : 'Expert';
+					return rand(2, 4) === 2 ? 'Professional' : 'Expert';
 				default:
 					return $word;
 			}
-		}, $template );
+		}, $template);
 
 		// Capitalize the first letter of the sentence and join
-		$title_str = ucfirst( implode( ' ', $title ) );
+		$title_str = ucfirst(implode(' ', $title));
 
 		return $title_str;
 	}
@@ -159,7 +368,8 @@ class Post extends Generator {
 	 *
 	 * @return string Generated content
 	 */
-	private function randomize_content() {
+	private function randomize_content()
+	{
 		$sentences = [
 			'In today\'s fast-paced digital world, businesses need to stay ahead of the competition by implementing innovative strategies.',
 			'The key to success lies in understanding your target audience and delivering value that exceeds their expectations.',
@@ -203,27 +413,27 @@ class Post extends Generator {
 			'Risk assessment and mitigation strategies protect businesses from potential threats.'
 		];
 
-		$paragraphs = rand( 2, 5 );
+		$paragraphs = rand(2, 5);
 		$content = '';
 
-		for ( $i = 0; $i < $paragraphs; $i++ ) {
-			$sentences_per_paragraph = rand( 3, 6 );
+		for ($i = 0; $i < $paragraphs; $i++) {
+			$sentences_per_paragraph = rand(3, 6);
 			$paragraph = '<p>';
-			
-			for ( $j = 0; $j < $sentences_per_paragraph; $j++ ) {
-				$paragraph .= $sentences[ array_rand( $sentences ) ] . ' ';
+
+			for ($j = 0; $j < $sentences_per_paragraph; $j++) {
+				$paragraph .= $sentences[array_rand($sentences)] . ' ';
 			}
-			
-			$paragraph = trim( $paragraph ) . '</p>';
+
+			$paragraph = trim($paragraph) . '</p>';
 			$content .= $paragraph;
-			
-			if ( $i < $paragraphs - 1 ) {
+
+			if ($i < $paragraphs - 1) {
 				$content .= "\n\n";
 			}
 		}
 
-		// Append the Fakegen attribution
-		$content .= "\n\n<p><em>This is a fake post generated by Fakegen.</em></p>";
+		// Append the Content Forge attribution
+		$content .= "\n\n<p><em>This is a fake post generated by Content Forge.</em></p>";
 
 		return $content;
 	}
@@ -234,12 +444,13 @@ class Post extends Generator {
 	 * @param array $object_ids
 	 * @return int Number of items deleted.
 	 */
-	public function delete( array $object_ids ) {
+	public function delete(array $object_ids)
+	{
 		$deleted = 0;
-		foreach ( $object_ids as $post_id ) {
-			if ( wp_delete_post( $post_id, true ) ) {
+		foreach ($object_ids as $post_id) {
+			if (wp_delete_post($post_id, true)) {
 				$deleted++;
-				$this->untrack_generated( $post_id );
+				$this->untrack_generated($post_id);
 			}
 		}
 		return $deleted;
@@ -250,18 +461,23 @@ class Post extends Generator {
 	 *
 	 * @param int $post_id
 	 */
-	protected function track_generated( $post_id ) {
+	protected function track_generated($post_id)
+	{
 		global $wpdb;
 
 		// Ensure the tracking table exists
 		Activator::create_tracking_table();
 
+		// Get the actual post type to track correctly
+		$post = get_post($post_id);
+		$data_type = $post ? $post->post_type : 'post';
+
 		$wpdb->insert(
-			$wpdb->prefix . FAKEGEN_DBNAME,
+			$wpdb->prefix . CFORGE_DBNAME,
 			[
-				'object_id'  => $post_id,
-				'data_type'  => 'post',
-				'created_at' => current_time( 'mysql' ),
+				'object_id' => $post_id,
+				'data_type' => $data_type,
+				'created_at' => current_time('mysql'),
 				'created_by' => $this->user_id
 			]
 		);
@@ -272,14 +488,14 @@ class Post extends Generator {
 	 *
 	 * @param int $post_id
 	 */
-	protected function untrack_generated( $post_id ) {
+	protected function untrack_generated($post_id)
+	{
 		global $wpdb;
 
 		$wpdb->delete(
-			$wpdb->prefix . FAKEGEN_DBNAME,
+			$wpdb->prefix . CFORGE_DBNAME,
 			[
 				'object_id' => $post_id,
-				'data_type' => 'post',
 			]
 		);
 	}

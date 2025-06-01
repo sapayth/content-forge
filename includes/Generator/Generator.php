@@ -1,12 +1,12 @@
 <?php
-namespace Fakegen\Generator;
+namespace ContentForge\Generator;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
 /**
- * Abstract base class for all Fakegen content generators.
+ * Abstract base class for all Content Forge content generators.
  */
 abstract class Generator {
 	/**

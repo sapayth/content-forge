@@ -1,17 +1,7 @@
 {
-	"folders": [
-		{
-			"path": "."
-		},
-		{
-			"path": "../bulk-page-maker-light"
-		},
-		{
-			"path": "../fakerpress"
-		},
-		{
-			"path": "../wp-dummy-content-generator"
-		}
-	],
-	"settings": {}
+    "folders": [
+        {
+            "path": "."
+        }
+    ]
 }

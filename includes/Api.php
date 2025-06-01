@@ -1,9 +1,10 @@
 <?php
 
-namespace Fakegen;
+namespace ContentForge;
 
-use Fakegen\Api\Post;
-use Fakegen\Traits\ContainerTrait;
+use ContentForge\Api\Post;
+use ContentForge\Api\Comment;
+use ContentForge\Traits\ContainerTrait;
 
 class Api {
 	use ContainerTrait;
@@ -13,6 +14,7 @@ class Api {
 	 */
 	public function __construct() {
         $this->container['post'] = new Post();
+        $this->container['comment'] = new Comment();
 
 		add_action( 'rest_api_init', [ $this, 'init_api' ] );
 	}

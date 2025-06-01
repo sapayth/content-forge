@@ -1,6 +1,6 @@
 <?php
 
-namespace Fakegen\Traits;
+namespace ContentForge\Traits;
 
 trait ContainerTrait {
 

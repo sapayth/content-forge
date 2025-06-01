@@ -6,5 +6,5 @@ $vendorDir = dirname(__DIR__);
 $baseDir = dirname($vendorDir);
 
 return array(
-    'Fakegen\\' => array($baseDir . '/includes'),
+    'ContentForge\\' => array($baseDir . '/includes'),
 );

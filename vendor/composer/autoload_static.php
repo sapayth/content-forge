@@ -7,14 +7,14 @@ namespace Composer\Autoload;
 class ComposerStaticInitbf03f7898ba1d1d082cbb8803c61a7b6
 {
     public static $prefixLengthsPsr4 = array (
-        'F' => 
+        'C' => 
         array (
-            'Fakegen\\' => 8,
+            'ContentForge\\' => 13,
         ),
     );
 
     public static $prefixDirsPsr4 = array (
-        'Fakegen\\' => 
+        'ContentForge\\' => 
         array (
             0 => __DIR__ . '/../..' . '/includes',
         ),
@@ -22,15 +22,17 @@ class ComposerStaticInitbf03f7898ba1d1d082cbb8803c61a7b6
 
     public static $classMap = array (
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
-        'Fakegen\\Activator' => __DIR__ . '/../..' . '/includes/Activator.php',
-        'Fakegen\\Admin' => __DIR__ . '/../..' . '/includes/Admin.php',
-        'Fakegen\\Api' => __DIR__ . '/../..' . '/includes/Api.php',
-        'Fakegen\\Api\\Fakegen_REST_Controller' => __DIR__ . '/../..' . '/includes/Api/Fakegen_REST_Controller.php',
-        'Fakegen\\Api\\Post' => __DIR__ . '/../..' . '/includes/Api/Post.php',
-        'Fakegen\\Generator\\Generator' => __DIR__ . '/../..' . '/includes/Generator/Generator.php',
-        'Fakegen\\Generator\\Post' => __DIR__ . '/../..' . '/includes/Generator/Post.php',
-        'Fakegen\\Loader' => __DIR__ . '/../..' . '/includes/Loader.php',
-        'Fakegen\\Traits\\ContainerTrait' => __DIR__ . '/../..' . '/includes/Traits/ContainerTrait.php',
+        'ContentForge\\Activator' => __DIR__ . '/../..' . '/includes/Activator.php',
+        'ContentForge\\Admin' => __DIR__ . '/../..' . '/includes/Admin.php',
+        'ContentForge\\Api' => __DIR__ . '/../..' . '/includes/Api.php',
+        'ContentForge\\Api\\CForge_REST_Controller' => __DIR__ . '/../..' . '/includes/Api/CForge_REST_Controller.php',
+        'ContentForge\\Api\\Comment' => __DIR__ . '/../..' . '/includes/Api/Comment.php',
+        'ContentForge\\Api\\Post' => __DIR__ . '/../..' . '/includes/Api/Post.php',
+        'ContentForge\\Generator\\Comment' => __DIR__ . '/../..' . '/includes/Generator/Comment.php',
+        'ContentForge\\Generator\\Generator' => __DIR__ . '/../..' . '/includes/Generator/Generator.php',
+        'ContentForge\\Generator\\Post' => __DIR__ . '/../..' . '/includes/Generator/Post.php',
+        'ContentForge\\Loader' => __DIR__ . '/../..' . '/includes/Loader.php',
+        'ContentForge\\Traits\\ContainerTrait' => __DIR__ . '/../..' . '/includes/Traits/ContainerTrait.php',
     );
 
     public static function getInitializer(ClassLoader $loader)

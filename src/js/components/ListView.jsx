@@ -1,14 +1,15 @@
-import {useEffect, useState} from '@wordpress/element';
+import { useEffect, useState } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
-import {__} from '@wordpress/i18n';
+import { __ } from '@wordpress/i18n';
 
-export default function ListView({ onAddNew }) {
+export default function ListView({ endpoint, columns, renderRow, actions, onAddNew }) {
     const [items, setItems] = useState([]);
     const [total, setTotal] = useState(0);
     const [page, setPage] = useState(1);
     const [perPage] = useState(15);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [deleting, setDeleting] = useState(null);
     const totalPages = Math.ceil(total / perPage);
 
     useEffect(() => {
@@ -17,15 +18,15 @@ export default function ListView({ onAddNew }) {
         setError(null);
 
         // Configure apiFetch middleware for nonce and root URL
-        if (window.fakegen?.rest_nonce) {
-            apiFetch.use(apiFetch.createNonceMiddleware(window.fakegen.rest_nonce));
+        if (window.cforge?.rest_nonce) {
+            apiFetch.use(apiFetch.createNonceMiddleware(window.cforge.rest_nonce));
         }
-        if (window.fakegen?.apiUrl) {
-            apiFetch.use(apiFetch.createRootURLMiddleware(window.fakegen.apiUrl));
+        if (window.cforge?.apiUrl) {
+            apiFetch.use(apiFetch.createRootURLMiddleware(window.cforge.apiUrl));
         }
 
         apiFetch({
-            path: `posts/list?page=${page}&per_page=${perPage}`,
+            path: `${endpoint}/list?page=${page}&per_page=${perPage}`,
             method: 'GET',
         })
             .then((res) => {
@@ -36,76 +37,150 @@ export default function ListView({ onAddNew }) {
             })
             .catch((err) => {
                 if (!isMounted) return;
-                setError(err.message || __('Failed to load data', 'fakegen'));
+                setError(err.message || __('Failed to load data', 'cforge'));
                 setLoading(false);
             });
         return () => {
             isMounted = false;
         };
-    }, [page, perPage]);
+    }, [page, perPage, endpoint]);
+
+    const refreshList = () => {
+        setLoading(true);
+        setError(null);
+
+        apiFetch({
+            path: `${endpoint}/list?page=${page}&per_page=${perPage}`,
+            method: 'GET',
+        })
+            .then((res) => {
+                setItems(res.items || []);
+                setTotal(res.total || 0);
+                setLoading(false);
+            })
+            .catch((err) => {
+                setError(err.message || __('Failed to load data', 'cforge'));
+                setLoading(false);
+            });
+    };
+
+    const handleDeleteAll = async () => {
+        if (!confirm(__('Are you sure you want to delete all generated items?', 'cforge'))) {
+            return;
+        }
+
+        setDeleting('all');
+        try {
+            await apiFetch({
+                path: `${endpoint}/bulk`,
+                method: 'DELETE',
+            });
+            setItems([]);
+            setTotal(0);
+            setDeleting(null);
+        } catch (err) {
+            setError(err.message || __('Failed to delete items', 'cforge'));
+            setDeleting(null);
+        }
+    };
+
+    const handleIndividualDelete = async (itemId) => {
+        if (!confirm(__('Are you sure you want to delete this item?', 'cforge'))) {
+            return;
+        }
+
+        setDeleting(itemId);
+        try {
+            await apiFetch({
+                path: `${endpoint}/${itemId}`,
+                method: 'DELETE',
+            });
+            refreshList();
+            setDeleting(null);
+        } catch (err) {
+            setError(err.message || __('Failed to delete item', 'cforge'));
+            setDeleting(null);
+        }
+    };
 
     return (
         <>
-            <div className="fakegen-flex fakegen-justify-between fakegen-items-center fakegen-mb-6">
-                <h1 className="fakegen-text-2xl fakegen-font-bold">{__('Pages/Posts', 'fakegen')}</h1>
-                <button
-                    className="fakegen-bg-primary fakegen-text-white fakegen-px-4 fakegen-py-2 fakegen-rounded fakegen-font-semibold hover:fakegen-bg-primaryHover"
-                    onClick={onAddNew}
-                >
-                    {__('Add New', 'fakegen')}
-                </button>
-            </div>
-            <div className="fakegen-bg-gray-50 fakegen-rounded fakegen-p-6 fakegen-shadow fakegen-overflow-x-auto">
+            {items.length === 0 && (
+                <div className="cforge-flex cforge-justify-end cforge-mb-8">
+                    <button className="cforge-btn cforge-btn-primary cforge-mr-4" onClick={onAddNew}>{__('Add New', 'cforge')}</button>
+                </div>
+            )}
+            <div className="cforge-bg-gray-50 cforge-rounded cforge-p-6 cforge-shadow cforge-overflow-x-auto">
+                {items.length > 0 && (
+                    <div className="cforge-flex cforge-justify-end cforge-mb-4">
+                        <button className="cforge-btn cforge-btn-primary cforge-mr-4" onClick={onAddNew}>{__('Add New', 'cforge')}</button>
+                        <button
+                            onClick={handleDeleteAll}
+                            disabled={deleting === 'all'}
+                            className="cforge-btn cforge-btn-danger"
+                        >
+                            {deleting === 'all' ? __('Deleting...', 'cforge') : __('Delete All', 'cforge')}
+                        </button>
+                    </div>
+                )}
+
                 {loading ? (
-                    <p className="fakegen-text-center fakegen-text-gray-500">{__('Loading...', 'fakegen')}</p>
+                    <p className="cforge-text-center cforge-text-gray-500">{__('Loading...', 'cforge')}</p>
                 ) : error ? (
-                    <p className="fakegen-text-center fakegen-text-red-500">{error}</p>
+                    <p className="cforge-text-center cforge-text-red-500">{error}</p>
                 ) : items.length === 0 ? (
-                    <p className="fakegen-text-center fakegen-text-gray-500">{__('No items found. Click "Add New" to generate pages or posts.', 'fakegen')}</p>
+                    <p className="cforge-text-center cforge-text-gray-500">{__('No items found. Click "Add New" to generate content.', 'cforge')}</p>
                 ) : (
-                    <table className="fakegen-min-w-full fakegen-table-auto fakegen-bg-white">
+                    <table className="cforge-min-w-full cforge-table-auto cforge-bg-white">
                         <thead>
-                        <tr>
-                            <th className="fakegen-px-4 fakegen-py-2 fakegen-text-left fakegen-font-semibold">{__('Title', 'fakegen')}</th>
-                            <th className="fakegen-px-4 fakegen-py-2 fakegen-text-left fakegen-font-semibold">{__('Author', 'fakegen')}</th>
-                            <th className="fakegen-px-4 fakegen-py-2 fakegen-text-left fakegen-font-semibold">{__('Type', 'fakegen')}</th>
-                            <th className="fakegen-px-4 fakegen-py-2 fakegen-text-left fakegen-font-semibold">{__('Date', 'fakegen')}</th>
-                        </tr>
+                            <tr>
+                                {columns.map((column) => (
+                                    <th key={column.key} className="cforge-px-4 cforge-py-2 cforge-text-left cforge-font-semibold">
+                                        {column.label}
+                                    </th>
+                                ))}
+                                {actions && (
+                                    <th className="cforge-px-4 cforge-py-2 cforge-text-left cforge-font-semibold">
+                                        {__('Actions', 'cforge')}
+                                    </th>
+                                )}
+                            </tr>
                         </thead>
                         <tbody>
-                        {items.map((item) => (
-                            <tr key={item.ID} className="fakegen-border-t fakegen-border-gray-200">
-                                <td className="fakegen-px-4 fakegen-py-2 fakegen-text-blue-700 fakegen-font-medium fakegen-cursor-pointer fakegen-underline">
-                                    {item.title}
-                                </td>
-                                <td className="fakegen-px-4 fakegen-py-2">{item.author}</td>
-                                <td className="fakegen-px-4 fakegen-py-2">{item.type}</td>
-                                <td className="fakegen-px-4 fakegen-py-2">{item.date}</td>
-                            </tr>
-                        ))}
+                            {items.map((item) => (
+                                <tr key={item.ID || item.id} className="cforge-border-t cforge-border-gray-200">
+                                    {renderRow(item)}
+                                    {actions && (
+                                        <td className="cforge-px-4 cforge-py-2">
+                                            {actions(item, handleIndividualDelete, deleting)}
+                                        </td>
+                                    )}
+                                </tr>
+                            ))}
                         </tbody>
                     </table>
                 )}
+
                 {totalPages > 1 && (
-                    <div className="fakegen-flex fakegen-justify-end fakegen-items-center fakegen-gap-2 fakegen-mt-4">
+                    <div className="cforge-flex cforge-justify-end cforge-items-center cforge-gap-2 cforge-mt-4">
                         <button
-                            className="fakegen-px-2 fakegen-py-1 fakegen-rounded fakegen-bg-gray-200"
+                            className="cforge-px-2 cforge-py-1 cforge-rounded cforge-bg-gray-200"
                             onClick={() => setPage(1)}
                             disabled={page === 1}
                         >&laquo;</button>
                         <button
-                            className="fakegen-px-2 fakegen-py-1 fakegen-rounded fakegen-bg-gray-200"
+                            className="cforge-px-2 cforge-py-1 cforge-rounded cforge-bg-gray-200"
                             onClick={() => setPage(page - 1)}
                             disabled={page === 1}
                         >&lsaquo;</button>
-                        <span className="fakegen-px-2">{page} {__('of', 'fakegen')} {totalPages}</span>
+                        <span className="cforge-px-2">{page} {__('of', 'cforge')} {totalPages}</span>
                         <button
-                            className="fakegen-px-2 fakegen-py-1 fakegen-rounded fakegen-bg-gray-200"
+                            className="cforge-px-2 cforge-py-1 cforge-rounded cforge-bg-gray-200"
                             onClick={() => setPage(page + 1)}
                             disabled={page === totalPages}
                         >&rsaquo;</button>
                         <button
-                            className="fakegen-px-2 fakegen-py-1 fakegen-rounded fakegen-bg-gray-200"
+                            className="cforge-px-2 cforge-py-1 cforge-rounded cforge-bg-gray-200"
                             onClick={() => setPage(totalPages)}
                             disabled={page === totalPages}
                         >&raquo;</button>

@@ -1,5 +1,5 @@
 {
-    "name": "sapayth/fakegen",
+    "name": "sapayth/content-forge",
     "description": "A WordPress plugin to generate fake/dummy content for development/testing.",
     "type": "wordpress-plugin",
     "license": "GPL-2.0-or-later",
@@ -14,7 +14,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Fakegen\\": "includes/"
+            "ContentForge\\": "includes/"
         }
     },
     "minimum-stability": "stable",

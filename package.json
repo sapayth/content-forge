@@ -1,7 +1,7 @@
 {
-  "name": "fakegen",
+  "name": "content-forge",
   "version": "1.0.0",
-  "description": "Fakegen React admin app for WordPress plugin.",
+  "description": "Content Forge React admin app for WordPress plugin.",
   "main": "src/pages-posts-app.jsx",
   "scripts": {
     "dev": "webpack --mode development --watch",

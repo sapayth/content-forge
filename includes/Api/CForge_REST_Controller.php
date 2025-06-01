@@ -1,8 +1,8 @@
 <?php
 
-namespace Fakegen\Api;
+namespace ContentForge\Api;
 
-class Fakegen_REST_Controller extends \WP_REST_Controller {
+class CForge_REST_Controller extends \WP_REST_Controller {
     /**
      * The namespace of this controller's route.
      *
@@ -10,7 +10,7 @@ class Fakegen_REST_Controller extends \WP_REST_Controller {
      *
      * @var string
      */
-    protected $namespace = 'fakegen/v1';
+    protected $namespace = 'cforge/v1';
 
     /**
      * Check permission for settings
@@ -22,7 +22,7 @@ class Fakegen_REST_Controller extends \WP_REST_Controller {
      * @return bool
      */
     public function permission_check() {
-        return current_user_can( apply_filters( 'fakegen_rest_permission_check', 'edit_posts' ) );
+        return current_user_can( apply_filters( 'cforge_rest_permission_check', 'edit_posts' ) );
     }
 
     // Add any shared helpers here in the future.
