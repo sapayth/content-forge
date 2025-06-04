@@ -2,12 +2,12 @@
 
 set -e
 
-PLUGIN_SLUG="fakegen"
+PLUGIN_SLUG="content-forge"
 RELEASE_DIR="release"
 DIST_DIR="dist"
 ZIP_FILE="$DIST_DIR/$PLUGIN_SLUG.zip"
 
-echo "Starting FakeGen release build process..."
+echo "Starting Content Forge release build process..."
 
 # 1. Run build process
 echo "Building assets..."
@@ -29,7 +29,11 @@ cp composer.json "$RELEASE_DIR/"
 # Plugin directories
 cp -R includes "$RELEASE_DIR/"
 cp -R assets "$RELEASE_DIR/"
-cp -R languages "$RELEASE_DIR/"
+cp -R src "$RELEASE_DIR/"
+
+if [ -d "languages" ]; then
+    cp -R languages "$RELEASE_DIR/"
+fi
 
 # Vendor dependencies (if they exist)
 if [ -d "vendor" ]; then
@@ -55,7 +59,10 @@ echo "- readme.txt (WordPress.org readme)"
 echo "- composer.json (dependency management)"
 echo "- includes/ (PHP classes)"
 echo "- assets/ (built CSS/JS files)"
-echo "- languages/ (translation files)"
+echo "- src/ (source JS/CSS files)"
+if [ -d "languages" ]; then
+    echo "- languages/ (translation files)"
+fi
 if [ -d "vendor" ]; then
     echo "- vendor/ (composer dependencies)"
 fi

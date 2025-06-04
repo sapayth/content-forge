@@ -9,24 +9,25 @@ export default function Header({ title, onAddNew }) {
             setPluginVersion(window.cforgeData.pluginVersion);
         }
     }, []);
-  return (
-    <div className="cforge-flex cforge-items-center cforge-justify-between cforge-mb-6">
-        <div className="cforge-flex cforge-items-center">
-            <span className="cforge-text-xl cforge-font-bold cforge-mr-2">
-                {title ? `${__('Content Forge', 'cforge')} - ${title}` : __('Content Forge', 'cforge')}
-            </span>
-            <span className="cforge-bg-green-100 cforge-text-green-700 cforge-text-xs cforge-font-semibold cforge-px-2 cforge-py-1 cforge-rounded-full">
-                v{pluginVersion}
-            </span>
+    return (
+        <div className="cforge-flex cforge-items-center cforge-justify-between cforge-mb-6">
+            <div className="cforge-flex cforge-items-center">
+                <span className="cforge-text-xl cforge-font-bold cforge-mr-2">
+                    {title ? `${__('Content Forge', 'cforge')} - ${title}` : __('Content Forge', 'cforge')}
+                </span>
+                <span className="cforge-bg-green-100 cforge-text-green-700 cforge-text-xs cforge-font-semibold cforge-px-2 cforge-py-1 cforge-rounded-full">
+                    v{pluginVersion}
+                </span>
+                <span className="cforge-text-gray-500 cforge-text-sm">{__('Bulk Content Generator for WordPress', 'content-forge')}</span>
+            </div>
+            {onAddNew && (
+                <button
+                    onClick={onAddNew}
+                    className="cforge-btn cforge-btn-primary"
+                >
+                    {__('Add New', 'cforge')}
+                </button>
+            )}
         </div>
-        {onAddNew && (
-            <button
-                onClick={onAddNew}
-                className="cforge-btn cforge-btn-primary"
-            >
-                {__('Add New', 'cforge')}
-            </button>
-        )}
-    </div>
-  );
+    );
 }

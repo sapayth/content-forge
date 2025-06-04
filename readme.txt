@@ -2,7 +2,7 @@
 Contributors: sapayth
 Tags: fake data, dummy content, testing, development, generator
 Requires at least: 5.6
-Tested up to: 6.4
+Tested up to: 6.8
 Requires PHP: 7.4
 Stable tag: 1.0.0
 License: GPLv2 or later
@@ -110,4 +110,4 @@ For developers looking to extend Content Forge:
 
 == Support ==
 
-For support, feature requests, or bug reports, please visit the plugin's support forum or contact the developer. 
+For support, feature requests, or bug reports, please visit the plugin's support forum or contact the developer.

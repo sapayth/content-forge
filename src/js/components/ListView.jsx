@@ -37,7 +37,7 @@ export default function ListView({ endpoint, columns, renderRow, actions, onAddN
             })
             .catch((err) => {
                 if (!isMounted) return;
-                setError(err.message || __('Failed to load data', 'cforge'));
+                setError(err.message || __('Failed to load data', 'content-forge'));
                 setLoading(false);
             });
         return () => {
@@ -59,13 +59,13 @@ export default function ListView({ endpoint, columns, renderRow, actions, onAddN
                 setLoading(false);
             })
             .catch((err) => {
-                setError(err.message || __('Failed to load data', 'cforge'));
+                setError(err.message || __('Failed to load data', 'content-forge'));
                 setLoading(false);
             });
     };
 
     const handleDeleteAll = async () => {
-        if (!confirm(__('Are you sure you want to delete all generated items?', 'cforge'))) {
+        if (!confirm(__('Are you sure you want to delete all generated items?', 'content-forge'))) {
             return;
         }
 
@@ -79,13 +79,13 @@ export default function ListView({ endpoint, columns, renderRow, actions, onAddN
             setTotal(0);
             setDeleting(null);
         } catch (err) {
-            setError(err.message || __('Failed to delete items', 'cforge'));
+            setError(err.message || __('Failed to delete items', 'content-forge'));
             setDeleting(null);
         }
     };
 
     const handleIndividualDelete = async (itemId) => {
-        if (!confirm(__('Are you sure you want to delete this item?', 'cforge'))) {
+        if (!confirm(__('Are you sure you want to delete this item?', 'content-forge'))) {
             return;
         }
 
@@ -98,7 +98,7 @@ export default function ListView({ endpoint, columns, renderRow, actions, onAddN
             refreshList();
             setDeleting(null);
         } catch (err) {
-            setError(err.message || __('Failed to delete item', 'cforge'));
+            setError(err.message || __('Failed to delete item', 'content-forge'));
             setDeleting(null);
         }
     };
@@ -107,29 +107,29 @@ export default function ListView({ endpoint, columns, renderRow, actions, onAddN
         <>
             {items.length === 0 && (
                 <div className="cforge-flex cforge-justify-end cforge-mb-8">
-                    <button className="cforge-btn cforge-btn-primary cforge-mr-4" onClick={onAddNew}>{__('Add New', 'cforge')}</button>
+                    <button className="cforge-btn cforge-btn-primary cforge-mr-4" onClick={onAddNew}>{__('Add New', 'content-forge')}</button>
                 </div>
             )}
             <div className="cforge-bg-gray-50 cforge-rounded cforge-p-6 cforge-shadow cforge-overflow-x-auto">
                 {items.length > 0 && (
                     <div className="cforge-flex cforge-justify-end cforge-mb-4">
-                        <button className="cforge-btn cforge-btn-primary cforge-mr-4" onClick={onAddNew}>{__('Add New', 'cforge')}</button>
+                        <button className="cforge-btn cforge-btn-primary cforge-mr-4" onClick={onAddNew}>{__('Add New', 'content-forge')}</button>
                         <button
                             onClick={handleDeleteAll}
                             disabled={deleting === 'all'}
                             className="cforge-btn cforge-btn-danger"
                         >
-                            {deleting === 'all' ? __('Deleting...', 'cforge') : __('Delete All', 'cforge')}
+                            {deleting === 'all' ? __('Deleting...', 'content-forge') : __('Delete All', 'content-forge')}
                         </button>
                     </div>
                 )}
 
                 {loading ? (
-                    <p className="cforge-text-center cforge-text-gray-500">{__('Loading...', 'cforge')}</p>
+                    <span className="cforge-text-center cforge-text-gray-500">{__('Loading...', 'content-forge')}</span>
                 ) : error ? (
-                    <p className="cforge-text-center cforge-text-red-500">{error}</p>
+                    <span className="cforge-text-center cforge-text-red-500">{error}</span>
                 ) : items.length === 0 ? (
-                    <p className="cforge-text-center cforge-text-gray-500">{__('No items found. Click "Add New" to generate content.', 'cforge')}</p>
+                    <span className="cforge-text-center cforge-text-gray-500">{__('No items found.', 'content-forge')}</span>
                 ) : (
                     <table className="cforge-min-w-full cforge-table-auto cforge-bg-white">
                         <thead>
@@ -141,7 +141,7 @@ export default function ListView({ endpoint, columns, renderRow, actions, onAddN
                                 ))}
                                 {actions && (
                                     <th className="cforge-px-4 cforge-py-2 cforge-text-left cforge-font-semibold">
-                                        {__('Actions', 'cforge')}
+                                        {__('Actions', 'content-forge')}
                                     </th>
                                 )}
                             </tr>
@@ -173,7 +173,7 @@ export default function ListView({ endpoint, columns, renderRow, actions, onAddN
                             onClick={() => setPage(page - 1)}
                             disabled={page === 1}
                         >&lsaquo;</button>
-                        <span className="cforge-px-2">{page} {__('of', 'cforge')} {totalPages}</span>
+                        <span className="cforge-px-2">{page} {__('of', 'content-forge')} {totalPages}</span>
                         <button
                             className="cforge-px-2 cforge-py-1 cforge-rounded cforge-bg-gray-200"
                             onClick={() => setPage(page + 1)}

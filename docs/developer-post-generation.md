@@ -1,4 +1,86 @@
-# Content Forge: Developer Documentation – Post Generation & Deletion
+# Content Forge Developer Guide
+
+## Plugin Architecture Overview
+
+Content Forge is designed for extensibility and maintainability, using clear patterns for generating, tracking, and managing fake content in WordPress. The plugin is organized into logical modules for each content type (posts, comments, users, etc.), with a shared architecture for generators, REST API controllers, and React-based admin interfaces.
+
+### Key Architectural Patterns
+
+- **Generators**: Each content type (Post, Comment, User, etc.) has a generator class in `includes/Generator/`, extending a common abstract `Generator` base. Generators handle random data creation, use WordPress APIs for insertion, and track generated items in a custom DB table (`wp_cforge`).
+- **REST API Controllers**: Each content type has a REST controller in `includes/Api/`, extending a base controller. These expose endpoints for bulk creation, listing, and deletion, and are registered in the main plugin file.
+- **React Admin Apps**: Each feature has a React app in `src/js/`, rendered in a dedicated admin page. Data is passed from PHP to JS using `wp_localize_script`.
+- **Tracking**: All generated content is tracked in a custom DB table for easy listing and deletion.
+- **Extensibility**: Hooks and filters are provided throughout the generation process for customization.
+- **Internationalization**: All strings are translatable in both PHP and JS.
+
+---
+
+## How Generators Work
+
+- All generators extend `ContentForge\Generator\Generator`.
+- Implement `generate($count, $args)` and `delete($object_ids)` methods.
+- Use WordPress APIs (`wp_insert_post`, `wp_insert_comment`, `wp_insert_user`, etc.) for content creation.
+- Track generated items in the `wp_cforge` table for later management.
+- Example: See `includes/Generator/Post.php`, `includes/Generator/Comment.php`, `includes/Generator/User.php`.
+
+---
+
+## REST API Controllers
+
+- Each controller (e.g., `Api/Post.php`, `Api/Comment.php`, `Api/User.php`) registers endpoints for bulk create, list, and delete.
+- Controllers extend a base REST controller and are registered in `content-forge.php`.
+- Endpoints are consumed by the React admin apps.
+
+---
+
+## React Admin Apps
+
+- Each feature has a React app (e.g., `src/js/pages-posts.jsx`, `src/js/comments.jsx`, `src/js/users.jsx`).
+- Apps are rendered in dedicated admin pages, registered in `includes/Admin.php`.
+- Data (e.g., roles, post types) is passed from PHP using `wp_localize_script`.
+- Apps provide UI for listing, creating, and deleting generated content.
+
+---
+
+## Tracking Generated Content
+
+- All generated content is tracked in the `wp_cforge` table with fields: `object_id`, `data_type`, `created_at`, `created_by`.
+- This enables listing and bulk deletion of only plugin-generated content.
+
+---
+
+## Extending Content Forge
+
+- Add new generators by extending the base `Generator` class.
+- Add new REST controllers for new content types.
+- Register new admin pages and React apps as needed.
+- Use provided hooks/filters to customize data generation or actions before/after creation.
+
+---
+
+## Hooks & Filters
+
+- `cforge_generate_user_data`, `cforge_before_generate_user`, `cforge_after_generate_user` (see User generator)
+- Similar hooks exist for posts and comments.
+- Use these to customize or extend generation logic.
+
+---
+
+## Internationalization
+
+- All PHP strings use `__()`, `_e()`, etc. with the `cforge` text domain.
+- All JS strings use `@wordpress/i18n` and the same text domain.
+
+---
+
+## See Also
+
+- [Feature-specific developer docs](#) (to be created for each content type)
+- [User guides](user-guide-post-generation.md)
+
+---
+
+# Post Generation Developer Details
 
 ## Overview
 This document provides a technical overview of how Content Forge handles fake post creation, deletion, and tracking. It is intended for developers who wish to understand, maintain, or extend the post generation functionality.

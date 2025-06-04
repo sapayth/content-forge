@@ -28,9 +28,11 @@ class ComposerStaticInitbf03f7898ba1d1d082cbb8803c61a7b6
         'ContentForge\\Api\\CForge_REST_Controller' => __DIR__ . '/../..' . '/includes/Api/CForge_REST_Controller.php',
         'ContentForge\\Api\\Comment' => __DIR__ . '/../..' . '/includes/Api/Comment.php',
         'ContentForge\\Api\\Post' => __DIR__ . '/../..' . '/includes/Api/Post.php',
+        'ContentForge\\Api\\User' => __DIR__ . '/../..' . '/includes/Api/User.php',
         'ContentForge\\Generator\\Comment' => __DIR__ . '/../..' . '/includes/Generator/Comment.php',
         'ContentForge\\Generator\\Generator' => __DIR__ . '/../..' . '/includes/Generator/Generator.php',
         'ContentForge\\Generator\\Post' => __DIR__ . '/../..' . '/includes/Generator/Post.php',
+        'ContentForge\\Generator\\User' => __DIR__ . '/../..' . '/includes/Generator/User.php',
         'ContentForge\\Loader' => __DIR__ . '/../..' . '/includes/Loader.php',
         'ContentForge\\Traits\\ContainerTrait' => __DIR__ . '/../..' . '/includes/Traits/ContainerTrait.php',
     );

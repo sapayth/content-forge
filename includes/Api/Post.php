@@ -88,13 +88,13 @@ class Post extends CForge_REST_Controller
         $created = [];
 
         if (!in_array($post_type, ['post', 'page'], true)) {
-            return new \WP_REST_Response(['message' => __('Invalid post type.', 'cforge')], 400);
+            return new \WP_REST_Response(['message' => __('Invalid post type.', 'content-forge')], 400);
         }
         if (!in_array($post_status, ['publish', 'pending', 'draft', 'private'], true)) {
-            return new \WP_REST_Response(['message' => __('Invalid post status.', 'cforge')], 400);
+            return new \WP_REST_Response(['message' => __('Invalid post status.', 'content-forge')], 400);
         }
         if (!in_array($comment_status, ['closed', 'open'], true)) {
-            return new \WP_REST_Response(['message' => __('Invalid comment status.', 'cforge')], 400);
+            return new \WP_REST_Response(['message' => __('Invalid comment status.', 'content-forge')], 400);
         }
 
         $generator = new GeneratorPost(get_current_user_id());
@@ -119,7 +119,7 @@ class Post extends CForge_REST_Controller
                 ];
                 $ids = $generator->generate(1, $args);
                 if (empty($ids)) {
-                    return new \WP_REST_Response(['message' => __('Failed to generate post.', 'cforge')], 500);
+                    return new \WP_REST_Response(['message' => __('Failed to generate post.', 'content-forge')], 500);
                 }
                 $created[] = $ids[0];
             }
@@ -127,7 +127,7 @@ class Post extends CForge_REST_Controller
             // Auto mode: expects post_number (int)
             $post_number = isset($params['post_number']) ? intval($params['post_number']) : 1;
             if ($post_number < 1) {
-                return new \WP_REST_Response(['message' => __('Number of posts/pages must be at least 1.', 'cforge')], 400);
+                return new \WP_REST_Response(['message' => __('Number of posts/pages must be at least 1.', 'content-forge')], 400);
             }
             $args = [
                 'post_type' => $post_type,
@@ -137,7 +137,7 @@ class Post extends CForge_REST_Controller
             ];
             $ids = $generator->generate($post_number, $args);
             if (empty($ids)) {
-                return new \WP_REST_Response(['message' => __('Failed to generate posts/pages.', 'cforge')], 500);
+                return new \WP_REST_Response(['message' => __('Failed to generate posts/pages.', 'content-forge')], 500);
             }
             $created = array_merge($created, $ids);
         }
@@ -249,7 +249,7 @@ class Post extends CForge_REST_Controller
         if ($wpdb->last_error) {
             return new \WP_Error(
                 'cforge_db_error',
-                __('Database error occurred while counting posts.', 'cforge'),
+                __('Database error occurred while counting posts.', 'content-forge'),
                 ['status' => 500]
             );
         }
@@ -292,7 +292,7 @@ class Post extends CForge_REST_Controller
         if ($wpdb->last_error) {
             return new \WP_Error(
                 'cforge_db_error',
-                __('Database error occurred while retrieving post IDs.', 'cforge'),
+                __('Database error occurred while retrieving post IDs.', 'content-forge'),
                 ['status' => 500]
             );
         }
@@ -361,7 +361,7 @@ class Post extends CForge_REST_Controller
         if (!is_array($items)) {
             return new \WP_Error(
                 'cforge_invalid_items',
-                __('Invalid items array.', 'cforge'),
+                __('Invalid items array.', 'content-forge'),
                 ['status' => 500]
             );
         }
@@ -369,7 +369,7 @@ class Post extends CForge_REST_Controller
         if (!is_numeric($total_count) || $total_count < 0) {
             return new \WP_Error(
                 'cforge_invalid_total',
-                __('Invalid total count.', 'cforge'),
+                __('Invalid total count.', 'content-forge'),
                 ['status' => 500]
             );
         }
@@ -406,7 +406,7 @@ class Post extends CForge_REST_Controller
             return new \WP_REST_Response(
                 [
                     'deleted' => 0,
-                    'message' => __('No posts found to delete.', 'cforge'),
+                    'message' => __('No posts found to delete.', 'content-forge'),
                 ],
                 200
             );
@@ -421,7 +421,7 @@ class Post extends CForge_REST_Controller
                 'deleted' => $deleted_count,
                 'message' => sprintf(
                     /* translators: %d: Number of deleted posts */
-                    __('Successfully deleted %d posts/pages.', 'cforge'),
+                    __('Successfully deleted %d posts/pages.', 'content-forge'),
                     $deleted_count
                 ),
             ],
@@ -457,7 +457,7 @@ class Post extends CForge_REST_Controller
         if ($wpdb->last_error) {
             return new \WP_Error(
                 'cforge_db_error',
-                __('Database error occurred while retrieving posts for deletion.', 'cforge'),
+                __('Database error occurred while retrieving posts for deletion.', 'content-forge'),
                 ['status' => 500]
             );
         }
@@ -483,7 +483,7 @@ class Post extends CForge_REST_Controller
         if (!$post_id) {
             return new \WP_Error(
                 'cforge_invalid_id',
-                __('Invalid post ID provided.', 'cforge'),
+                __('Invalid post ID provided.', 'content-forge'),
                 ['status' => 400]
             );
         }
@@ -492,7 +492,7 @@ class Post extends CForge_REST_Controller
         if (!$this->is_post_tracked($post_id)) {
             return new \WP_Error(
                 'cforge_not_tracked',
-                __('Post not found or not generated by Content Forge.', 'cforge'),
+                __('Post not found or not generated by Content Forge.', 'content-forge'),
                 ['status' => 404]
             );
         }
@@ -504,7 +504,7 @@ class Post extends CForge_REST_Controller
         if ($deleted_count === 0) {
             return new \WP_Error(
                 'cforge_delete_failed',
-                __('Failed to delete the post.', 'cforge'),
+                __('Failed to delete the post.', 'content-forge'),
                 ['status' => 500]
             );
         }
@@ -512,7 +512,7 @@ class Post extends CForge_REST_Controller
         return new \WP_REST_Response(
             [
                 'deleted' => $deleted_count,
-                'message' => __('Post deleted successfully.', 'cforge'),
+                'message' => __('Post deleted successfully.', 'content-forge'),
             ],
             200
         );

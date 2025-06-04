@@ -465,22 +465,32 @@ class Post extends Generator
 	{
 		global $wpdb;
 
-		// Ensure the tracking table exists
+		// We use direct DB access here because we are tracking generated posts in a custom table,
+		// and there is no WordPress API for this use case. All data is sanitized and prepared.
 		Activator::create_tracking_table();
 
-		// Get the actual post type to track correctly
 		$post = get_post($post_id);
 		$data_type = $post ? $post->post_type : 'post';
+		$table = $wpdb->prefix . CFORGE_DBNAME;
+		$object_id = intval($post_id);
+		$data_type = sanitize_key($data_type);
+		$created_at = current_time('mysql');
+		$created_by = intval($this->user_id);
 
-		$wpdb->insert(
-			$wpdb->prefix . CFORGE_DBNAME,
-			[
-				'object_id' => $post_id,
-				'data_type' => $data_type,
-				'created_at' => current_time('mysql'),
-				'created_by' => $this->user_id
-			]
+		$result = $wpdb->query(
+			$wpdb->prepare(
+				"INSERT INTO $table (object_id, data_type, created_at, created_by) VALUES (%d, %s, %s, %d)",
+				$object_id,
+				$data_type,
+				$created_at,
+				$created_by
+			)
 		);
+
+		if ($result === false) {
+			// Optionally log or handle the error
+			error_log('Failed to insert generated post tracking record for post_id: ' . $object_id);
+		}
 	}
 
 	/**

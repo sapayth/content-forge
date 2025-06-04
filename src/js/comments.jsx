@@ -39,7 +39,7 @@ function ListViewComments({ endpoint, onAddNew }) {
       })
       .catch((err) => {
         if (!isMounted) return;
-        setError(err.message || __('Failed to load data', 'cforge'));
+        setError(err.message || __('Failed to load data', 'content-forge'));
         setLoading(false);
       });
     return () => {
@@ -60,13 +60,13 @@ function ListViewComments({ endpoint, onAddNew }) {
         setLoading(false);
       })
       .catch((err) => {
-        setError(err.message || __('Failed to load data', 'cforge'));
+        setError(err.message || __('Failed to load data', 'content-forge'));
         setLoading(false);
       });
   };
 
   const handleDeleteAll = async () => {
-    if (!confirm(__('Are you sure you want to delete all generated comments?', 'cforge'))) {
+    if (!confirm(__('Are you sure you want to delete all generated comments?', 'content-forge'))) {
       return;
     }
     setDeleting('all');
@@ -79,13 +79,13 @@ function ListViewComments({ endpoint, onAddNew }) {
       setTotal(0);
       setDeleting(null);
     } catch (err) {
-      setError(err.message || __('Failed to delete comments', 'cforge'));
+      setError(err.message || __('Failed to delete comments', 'content-forge'));
       setDeleting(null);
     }
   };
 
   const handleIndividualDelete = async (itemId) => {
-    if (!confirm(__('Are you sure you want to delete this comment?', 'cforge'))) {
+    if (!confirm(__('Are you sure you want to delete this comment?', 'content-forge'))) {
       return;
     }
     setDeleting(itemId);
@@ -97,7 +97,7 @@ function ListViewComments({ endpoint, onAddNew }) {
       refreshList();
       setDeleting(null);
     } catch (err) {
-      setError(err.message || __('Failed to delete comment', 'cforge'));
+      setError(err.message || __('Failed to delete comment', 'content-forge'));
       setDeleting(null);
     }
   };
@@ -106,38 +106,38 @@ function ListViewComments({ endpoint, onAddNew }) {
     <>
       {items.length === 0 && (
         <div className="cforge-flex cforge-justify-end cforge-mb-8">
-          <button className="cforge-btn cforge-btn-primary cforge-mr-4" onClick={onAddNew}>{__('Add New', 'cforge')}</button>
+          <button className="cforge-btn cforge-btn-primary cforge-mr-4" onClick={onAddNew}>{__('Add New', 'content-forge')}</button>
         </div>
       )}
       <div className="cforge-bg-gray-50 cforge-rounded cforge-p-6 cforge-shadow cforge-overflow-x-auto">
         {items.length > 0 && (
           <div className="cforge-flex cforge-justify-end cforge-mb-4">
-            <button className="cforge-btn cforge-btn-primary cforge-mr-4" onClick={onAddNew}>{__('Add New', 'cforge')}</button>
+            <button className="cforge-btn cforge-btn-primary cforge-mr-4" onClick={onAddNew}>{__('Add New', 'content-forge')}</button>
             <button
               onClick={handleDeleteAll}
               disabled={deleting === 'all'}
               className="cforge-btn cforge-btn-danger"
             >
-              {deleting === 'all' ? __('Deleting...', 'cforge') : __('Delete All', 'cforge')}
+              {deleting === 'all' ? __('Deleting...', 'content-forge') : __('Delete All', 'content-forge')}
             </button>
           </div>
         )}
         {loading ? (
-          <p className="cforge-text-center cforge-text-gray-500">{__('Loading...', 'cforge')}</p>
+          <p className="cforge-text-center cforge-text-gray-500">{__('Loading...', 'content-forge')}</p>
         ) : error ? (
           <p className="cforge-text-center cforge-text-red-500">{error}</p>
         ) : items.length === 0 ? (
-          <p className="cforge-text-center cforge-text-gray-500">{__('No comments found. Click "Add New" to generate comments.', 'cforge')}</p>
+          <p className="cforge-text-center cforge-text-gray-500">{__('No comments found. Click "Add New" to generate comments.', 'content-forge')}</p>
         ) : (
           <table className="cforge-min-w-full cforge-table-auto cforge-bg-white">
             <thead>
               <tr>
-                <th className="cforge-px-4 cforge-py-2 cforge-text-left cforge-font-semibold">{__('Content', 'cforge')}</th>
-                <th className="cforge-px-4 cforge-py-2 cforge-text-left cforge-font-semibold">{__('Author', 'cforge')}</th>
-                <th className="cforge-px-4 cforge-py-2 cforge-text-left cforge-font-semibold">{__('In response to', 'cforge')}</th>
-                <th className="cforge-px-4 cforge-py-2 cforge-text-left cforge-font-semibold">{__('Status', 'cforge')}</th>
-                <th className="cforge-px-4 cforge-py-2 cforge-text-left cforge-font-semibold">{__('Date', 'cforge')}</th>
-                <th className="cforge-px-4 cforge-py-2 cforge-text-left cforge-font-semibold">{__('Actions', 'cforge')}</th>
+                <th className="cforge-px-4 cforge-py-2 cforge-text-left cforge-font-semibold">{__('Content', 'content-forge')}</th>
+                <th className="cforge-px-4 cforge-py-2 cforge-text-left cforge-font-semibold">{__('Author', 'content-forge')}</th>
+                <th className="cforge-px-4 cforge-py-2 cforge-text-left cforge-font-semibold">{__('In response to', 'content-forge')}</th>
+                <th className="cforge-px-4 cforge-py-2 cforge-text-left cforge-font-semibold">{__('Status', 'content-forge')}</th>
+                <th className="cforge-px-4 cforge-py-2 cforge-text-left cforge-font-semibold">{__('Date', 'content-forge')}</th>
+                <th className="cforge-px-4 cforge-py-2 cforge-text-left cforge-font-semibold">{__('Actions', 'content-forge')}</th>
               </tr>
             </thead>
             <tbody>
@@ -184,10 +184,10 @@ function ListViewComments({ endpoint, onAddNew }) {
                       onClick={() => handleIndividualDelete(item.id)}
                       disabled={deleting === item.id}
                       className="cforge-text-red-600 hover:cforge-text-red-800 cforge-p-1 cforge-rounded hover:cforge-bg-red-50"
-                      title={__('Delete', 'cforge')}
+                      title={__('Delete', 'content-forge')}
                     >
                       {deleting === item.id ? (
-                        <span className="cforge-text-xs">{__('...', 'cforge')}</span>
+                        <span className="cforge-text-xs">{__('...', 'content-forge')}</span>
                       ) : (
                         <svg className="cforge-w-4 cforge-h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -212,7 +212,7 @@ function ListViewComments({ endpoint, onAddNew }) {
               onClick={() => setPage(page - 1)}
               disabled={page === 1}
             >&lsaquo;</button>
-            <span className="cforge-px-2">{page} {__('of', 'cforge')} {totalPages}</span>
+            <span className="cforge-px-2">{page} {__('of', 'content-forge')} {totalPages}</span>
             <button
               className="cforge-px-2 cforge-py-1 cforge-rounded cforge-bg-gray-200"
               onClick={() => setPage(page + 1)}
@@ -230,12 +230,12 @@ function ListViewComments({ endpoint, onAddNew }) {
   );
 }
 
-const allowedCommentStatuses = ['1', 'hold', 'spam'];
+const allowedCommentStatuses = ['0', '1', 'hold', 'spam'];
 
 function AddNewView({ onCancel, onSuccess }) {
   const [comment, setComment] = useState({
     comment_number: 1,
-    post_types: [ 'post' ],
+    post_types: ['post'],
     comment_status: '0',
   });
   const [errors, setErrors] = useState({});
@@ -246,15 +246,16 @@ function AddNewView({ onCancel, onSuccess }) {
 
   const validate = () => {
     const newErrors = {};
+
     if (!allowedCommentStatuses.includes(comment['comment_status'])) {
-      newErrors['comment_status'] = __('Invalid comment status selected', 'cforge');
+      newErrors['comment_status'] = __('Invalid comment status selected', 'content-forge');
     }
     const num = Number(comment['comment_number']);
     if (!num || num < 1) {
-      newErrors['comment_number'] = __('Number of comments must be at least 1', 'cforge');
+      newErrors['comment_number'] = __('Number of comments must be at least 1', 'content-forge');
     }
     if (!comment['post_types'] || comment['post_types'].length === 0) {
-      newErrors['post_types'] = __('Please select at least one post type', 'cforge');
+      newErrors['post_types'] = __('Please select at least one post type', 'content-forge');
     }
     return newErrors;
   };
@@ -281,7 +282,7 @@ function AddNewView({ onCancel, onSuccess }) {
       });
       setSubmitting(false);
       setNotice({
-        message: __('Comments generated successfully!', 'cforge'),
+        message: __('Comments generated successfully!', 'content-forge'),
         status: 'success',
       });
       setTimeout(() => {
@@ -291,7 +292,7 @@ function AddNewView({ onCancel, onSuccess }) {
     } catch (error) {
       setSubmitting(false);
       setNotice({
-        message: error?.message || __('An error occurred. Please try again.', 'cforge'),
+        message: error?.message || __('An error occurred. Please try again.', 'content-forge'),
         status: 'error',
       });
     }
@@ -309,7 +310,7 @@ function AddNewView({ onCancel, onSuccess }) {
           <div className="cforge-mt-8">
             <div className="cforge-mb-4">
               <label className="cforge-block cforge-mb-1 cforge-font-medium">
-                {__('Number of Comments', 'cforge')}
+                {__('Number of Comments', 'content-forge')}
               </label>
               <input
                 type="number"
@@ -327,8 +328,8 @@ function AddNewView({ onCancel, onSuccess }) {
                 options={postTypes}
                 value={comment['post_types']}
                 onChange={selected => setComment({ ...comment, post_types: selected })}
-                label={__('Target Post Types', 'cforge')}
-                placeholder={__('Select post types...', 'cforge')}
+                label={__('Target Post Types', 'content-forge')}
+                placeholder={__('Select post types...', 'content-forge')}
               />
               {errors['post_types'] && (
                 <p className="cforge-text-red-500 cforge-text-sm">{errors['post_types']}</p>
@@ -336,16 +337,16 @@ function AddNewView({ onCancel, onSuccess }) {
             </div>
             <div className="cforge-mb-4">
               <label className="cforge-block cforge-mb-1 cforge-font-medium">
-                {__('Comment Status', 'cforge')}
+                {__('Comment Status', 'content-forge')}
               </label>
               <select
                 className={`cforge-input ${errorClass('comment_status')}`}
                 value={comment['comment_status']}
                 onChange={e => setComment({ ...comment, comment_status: e.target.value })}
               >
-                <option value="1">{__('Approved', 'cforge')}</option>
-                <option value="0">{__('Pending', 'cforge')}</option>
-                <option value="spam">{__('Spam', 'cforge')}</option>
+                <option value="1">{__('Approved', 'content-forge')}</option>
+                <option value="0">{__('Pending', 'content-forge')}</option>
+                <option value="spam">{__('Spam', 'content-forge')}</option>
               </select>
               {errors['comment_status'] && (
                 <p className="cforge-text-red-500 cforge-text-sm">{errors['comment_status']}</p>
@@ -359,14 +360,14 @@ function AddNewView({ onCancel, onSuccess }) {
               onClick={onCancel}
               disabled={submitting}
             >
-              {__('Cancel', 'cforge')}
+              {__('Cancel', 'content-forge')}
             </button>
             <button
               type="submit"
               className="cforge-bg-primary cforge-text-white cforge-px-4 cforge-py-2 cforge-rounded cforge-font-semibold hover:cforge-bg-primaryHover"
               disabled={submitting}
             >
-              {submitting ? __('Generating...', 'cforge') : __('Generate Comments', 'cforge')}
+              {submitting ? __('Generating...', 'content-forge') : __('Generate Comments', 'content-forge')}
             </button>
           </div>
         </form>
@@ -381,9 +382,9 @@ function CommentsApp() {
   const handleCancel = () => setView('list');
   const handleSuccess = () => setView('list');
   return (
-      <div className="cforge-bg-white cforge-p-8 cforge-min-h-screen">
+    <div className="cforge-bg-white cforge-p-8 cforge-min-h-screen">
       <Header
-        title={__('Comments', 'cforge')}
+        title={__('Comments', 'content-forge')}
       />
       {view === 'list' && (
         <ListViewComments

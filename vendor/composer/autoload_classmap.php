@@ -13,9 +13,11 @@ return array(
     'ContentForge\\Api\\CForge_REST_Controller' => $baseDir . '/includes/Api/CForge_REST_Controller.php',
     'ContentForge\\Api\\Comment' => $baseDir . '/includes/Api/Comment.php',
     'ContentForge\\Api\\Post' => $baseDir . '/includes/Api/Post.php',
+    'ContentForge\\Api\\User' => $baseDir . '/includes/Api/User.php',
     'ContentForge\\Generator\\Comment' => $baseDir . '/includes/Generator/Comment.php',
     'ContentForge\\Generator\\Generator' => $baseDir . '/includes/Generator/Generator.php',
     'ContentForge\\Generator\\Post' => $baseDir . '/includes/Generator/Post.php',
+    'ContentForge\\Generator\\User' => $baseDir . '/includes/Generator/User.php',
     'ContentForge\\Loader' => $baseDir . '/includes/Loader.php',
     'ContentForge\\Traits\\ContainerTrait' => $baseDir . '/includes/Traits/ContainerTrait.php',
 );

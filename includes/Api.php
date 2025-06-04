@@ -4,6 +4,7 @@ namespace ContentForge;
 
 use ContentForge\Api\Post;
 use ContentForge\Api\Comment;
+use ContentForge\Api\User;
 use ContentForge\Traits\ContainerTrait;
 
 class Api {
@@ -15,6 +16,7 @@ class Api {
 	public function __construct() {
         $this->container['post']    = new Post();
         $this->container['comment'] = new Comment();
+        $this->container['user']    = new User();
 
 		add_action( 'rest_api_init', [ $this, 'init_api' ] );
 	}

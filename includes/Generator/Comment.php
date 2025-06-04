@@ -148,17 +148,30 @@ class Comment extends Generator
     protected function track_generated($comment_id)
     {
         global $wpdb;
+        // We use direct DB access here because we are tracking generated comments in a custom table,
+        // and there is no WordPress API for this use case. All data is sanitized and prepared.
         Activator::create_tracking_table();
 
-        $wpdb->insert(
-            $wpdb->prefix . 'cforge',
-            [
-                'object_id'  => $comment_id,
-                'data_type'  => $this->data_type,
-                'created_at' => current_time( 'mysql' ),
-                'created_by' => $this->user_id,
-            ]
+        $table = $wpdb->prefix . 'cforge';
+        $object_id = intval($comment_id);
+        $data_type = sanitize_key($this->data_type);
+        $created_at = current_time('mysql');
+        $created_by = intval($this->user_id);
+
+        $result = $wpdb->query(
+            $wpdb->prepare(
+                "INSERT INTO $table (object_id, data_type, created_at, created_by) VALUES (%d, %s, %s, %d)",
+                $object_id,
+                $data_type,
+                $created_at,
+                $created_by
+            )
         );
+
+        if ($result === false) {
+            // Optionally log or handle the error
+            error_log('Failed to insert generated comment tracking record for comment_id: ' . $object_id);
+        }
     }
 
     /**
@@ -169,12 +182,15 @@ class Comment extends Generator
     protected function untrack_generated($comment_id)
     {
         global $wpdb;
-        $wpdb->delete(
-            $wpdb->prefix . 'cforge',
-            [
-                'object_id' => $comment_id,
-                'data_type' => 'comment',
-            ]
+        $table = $wpdb->prefix . 'cforge';
+        $object_id = intval($comment_id);
+        $data_type = 'comment';
+        $wpdb->query(
+            $wpdb->prepare(
+                "DELETE FROM $table WHERE object_id = %d AND data_type = %s",
+                $object_id,
+                $data_type
+            )
         );
     }
 }

@@ -24,6 +24,4 @@ class CForge_REST_Controller extends \WP_REST_Controller {
     public function permission_check() {
         return current_user_can( apply_filters( 'cforge_rest_permission_check', 'edit_posts' ) );
     }
-
-    // Add any shared helpers here in the future.
-} 
+}
