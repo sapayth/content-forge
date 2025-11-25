@@ -8,3 +8,7 @@ release/
 # Editor and system files
 .DS_Store
 .cursor/
+
+# Composer
+vendor/
+composer.lock
