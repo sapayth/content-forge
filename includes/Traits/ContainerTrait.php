@@ -1,4 +1,10 @@
 <?php
+/**
+ * Container trait for Content Forge plugin.
+ *
+ * @package ContentForge
+ * @since   1.0.0
+ */
 
 namespace ContentForge\Traits;
 
@@ -14,7 +20,7 @@ trait ContainerTrait {
     /**
      * Get dynamic property from container.
      *
-     * @param string $name
+     * @param string $name The property name to retrieve.
      *
      * @return mixed
      */
@@ -29,8 +35,8 @@ trait ContainerTrait {
     /**
      * Set dynamic property to container.
      *
-     * @param string $name
-     * @param mixed  $value
+     * @param string $name  The property name to set.
+     * @param mixed  $value The property value to set.
      *
      * @return void
      */

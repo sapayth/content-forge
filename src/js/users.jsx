@@ -107,7 +107,7 @@ function ListViewUsers({ endpoint, onAddNew }) {
                     <button className="cforge-btn cforge-btn-primary cforge-mr-4" onClick={onAddNew}>{__('Add New', 'content-forge')}</button>
                 </div>
             )}
-            <div className="cforge-bg-gray-50 cforge-rounded cforge-p-6 cforge-shadow cforge-overflow-x-auto">
+            <div className="cforge-bg-tertiary cforge-rounded cforge-p-6 cforge-shadow cforge-overflow-x-auto">
                 {items.length > 0 && (
                     <div className="cforge-flex cforge-justify-end cforge-mb-4">
                         <button className="cforge-btn cforge-btn-primary cforge-mr-4" onClick={onAddNew}>{__('Add New', 'content-forge')}</button>
@@ -121,7 +121,7 @@ function ListViewUsers({ endpoint, onAddNew }) {
                     </div>
                 )}
                 {loading ? (
-                    <p className="cforge-text-center cforge-text-gray-500">{__('Loading...', 'content-forge')}</p>
+                    <p className="cforge-text-center cforge-text-text-secondary">{__('Loading...', 'content-forge')}</p>
                 ) : error ? (
                     <p className="cforge-text-center cforge-text-red-500">{error}</p>
                 ) : items.length === 0 ? (

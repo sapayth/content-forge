@@ -1,4 +1,10 @@
 <?php
+/**
+ * REST API base controller for Content Forge plugin.
+ *
+ * @package ContentForge
+ * @since   1.0.0
+ */
 
 namespace ContentForge\Api;
 
@@ -17,11 +23,11 @@ class CForge_REST_Controller extends \WP_REST_Controller {
      *
      * @since 1.0.0
      *
-     * @param \WP_REST_Request $request
+     * @param \WP_REST_Request $request The REST API request object.
      *
      * @return bool
      */
-    public function permission_check() {
+    public function permission_check( $request ) {
         return current_user_can( apply_filters( 'cforge_rest_permission_check', 'edit_posts' ) );
     }
 }

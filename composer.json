@@ -5,18 +5,31 @@
     "license": "GPL-2.0-or-later",
     "authors": [
         {
-            "name": "Sapayth Hossain",
+            "name": "Sapayth H.",
             "email": "safayet.qubee@gmail.com"
         }
     ],
     "require": {
         "php": ">=7.4"
     },
+    "require-dev": {
+        "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
+        "wp-coding-standards/wpcs": "^3.0",
+        "phpcompatibility/phpcompatibility-wp": "^2.1",
+        "squizlabs/php_codesniffer": "^3.7"
+    },
     "autoload": {
         "psr-4": {
             "ContentForge\\": "includes/"
         }
     },
-    "minimum-stability": "stable",
-    "prefer-stable": true
-} 
+    "config": {
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        }
+    },
+    "scripts": {
+        "phpcs": "phpcs --standard=phpcs.xml.dist --runtime-set ignore_warnings_on_exit 1",
+        "phpcbf": "phpcbf --standard=phpcs.xml.dist"
+    }
+}

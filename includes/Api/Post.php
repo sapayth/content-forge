@@ -1,12 +1,18 @@
 <?php
+/**
+ * Post REST API controller for Content Forge plugin.
+ *
+ * @since   1.0.0
+ * @package ContentForge
+ */
 
 namespace ContentForge\Api;
 
 use WP_REST_Server;
 use ContentForge\Generator\Post as GeneratorPost;
 
-class Post extends CForge_REST_Controller
-{
+class Post extends CForge_REST_Controller {
+
     /**
      * Route base
      *
@@ -14,27 +20,35 @@ class Post extends CForge_REST_Controller
      */
     protected $base = 'posts';
 
-    public function __construct()
-    {
-        add_action('rest_api_init', [$this, 'register_routes']);
+    /**
+     * Constructor for Post REST API controller.
+     *
+     * @since 1.0.0
+     */
+    public function __construct() {
+        add_action( 'rest_api_init', [ $this, 'register_routes' ] );
     }
 
-    public function register_routes()
-    {
+    /**
+     * Register REST API routes for post operations.
+     *
+     * @since 1.0.0
+     */
+    public function register_routes() {
         register_rest_route(
             $this->namespace,
             '/' . $this->base . '/bulk',
             [
                 [
-                    'methods' => WP_REST_Server::CREATABLE,
-                    'callback' => [$this, 'handle_bulk_create'],
-                    'permission_callback' => [$this, 'permission_check'],
-                    'args' => $this->get_endpoint_args_for_item_schema(WP_REST_Server::CREATABLE),
+                    'methods'             => WP_REST_Server::CREATABLE,
+                    'callback'            => [ $this, 'handle_bulk_create' ],
+                    'permission_callback' => [ $this, 'permission_check' ],
+                    'args'                => $this->get_endpoint_args_for_item_schema( WP_REST_Server::CREATABLE ),
                 ],
                 [
-                    'methods' => WP_REST_Server::DELETABLE,
-                    'callback' => [$this, 'handle_bulk_delete'],
-                    'permission_callback' => [$this, 'permission_check'],
+                    'methods'             => WP_REST_Server::DELETABLE,
+                    'callback'            => [ $this, 'handle_bulk_delete' ],
+                    'permission_callback' => [ $this, 'permission_check' ],
                 ],
             ]
         );
@@ -44,29 +58,34 @@ class Post extends CForge_REST_Controller
             '/' . $this->base . '/list',
             [
                 [
-                    'methods' => WP_REST_Server::READABLE,
-                    'callback' => [$this, 'handle_list'],
-                    'permission_callback' => [$this, 'permission_check'],
-                    'args' => [
-                        'page' => ['default' => 1, 'sanitize_callback' => 'absint'],
-                        'per_page' => ['default' => 15, 'sanitize_callback' => 'absint'],
+                    'methods'             => WP_REST_Server::READABLE,
+                    'callback'            => [ $this, 'handle_list' ],
+                    'permission_callback' => [ $this, 'permission_check' ],
+                    'args'                => [
+                        'page'     => [
+                            'default'           => 1,
+                            'sanitize_callback' => 'absint',
+                        ],
+                        'per_page' => [
+                            'default'           => 15,
+                            'sanitize_callback' => 'absint',
+                        ],
                     ],
                 ],
             ]
         );
-
         // Add individual delete endpoint
         register_rest_route(
             $this->namespace,
             '/' . $this->base . '/(?P<id>[\d]+)',
             [
                 [
-                    'methods' => WP_REST_Server::DELETABLE,
-                    'callback' => [$this, 'handle_individual_delete'],
-                    'permission_callback' => [$this, 'permission_check'],
-                    'args' => [
+                    'methods'             => WP_REST_Server::DELETABLE,
+                    'callback'            => [ $this, 'handle_individual_delete' ],
+                    'permission_callback' => [ $this, 'permission_check' ],
+                    'args'                => [
                         'id' => [
-                            'required' => true,
+                            'required'          => true,
                             'sanitize_callback' => 'absint',
                         ],
                     ],
@@ -77,72 +96,75 @@ class Post extends CForge_REST_Controller
 
     /**
      * Handle bulk post/page creation
+     *
+     * @param \WP_REST_Request $request The REST API request object.
      */
-    public function handle_bulk_create($request)
-    {
-        $params = $request->get_json_params();
-        $post_type = isset($params['post_type']) ? sanitize_key($params['post_type']) : 'post';
-        $post_status = isset($params['post_status']) ? sanitize_key($params['post_status']) : 'publish';
-        $comment_status = isset($params['comment_status']) ? sanitize_key($params['comment_status']) : 'closed';
-        $post_parent = isset($params['post_parent']) ? intval($params['post_parent']) : 0;
-        $created = [];
-
-        if (!in_array($post_type, ['post', 'page'], true)) {
-            return new \WP_REST_Response(['message' => __('Invalid post type.', 'content-forge')], 400);
+    public function handle_bulk_create( $request ) {
+        $params         = $request->get_json_params();
+        $post_type      = isset( $params['post_type'] ) ? sanitize_key( $params['post_type'] ) : 'post';
+        $post_status    = isset( $params['post_status'] ) ? sanitize_key( $params['post_status'] ) : 'publish';
+        $comment_status = isset( $params['comment_status'] ) ? sanitize_key( $params['comment_status'] ) : 'closed';
+        $post_parent    = isset( $params['post_parent'] ) ? intval( $params['post_parent'] ) : 0;
+        $created        = [];
+        if ( ! in_array( $post_type, [ 'post', 'page' ], true ) ) {
+            return new \WP_REST_Response( [ 'message' => __( 'Invalid post type.', 'content-forge' ) ], 400 );
         }
-        if (!in_array($post_status, ['publish', 'pending', 'draft', 'private'], true)) {
-            return new \WP_REST_Response(['message' => __('Invalid post status.', 'content-forge')], 400);
+        if ( ! in_array( $post_status, [ 'publish', 'pending', 'draft', 'private' ], true ) ) {
+            return new \WP_REST_Response( [ 'message' => __( 'Invalid post status.', 'content-forge' ) ], 400 );
         }
-        if (!in_array($comment_status, ['closed', 'open'], true)) {
-            return new \WP_REST_Response(['message' => __('Invalid comment status.', 'content-forge')], 400);
+        if ( ! in_array( $comment_status, [ 'closed', 'open' ], true ) ) {
+            return new \WP_REST_Response( [ 'message' => __( 'Invalid comment status.', 'content-forge' ) ], 400 );
         }
-
-        $generator = new GeneratorPost(get_current_user_id());
-
+        $generator = new GeneratorPost( get_current_user_id() );
         // Manual mode: expects post_titles (array) and post_contents (array)
-        if (isset($params['post_titles']) && is_array($params['post_titles'])) {
-            $titles = array_map('sanitize_text_field', $params['post_titles']);
-            $contents = isset($params['post_contents']) && is_array($params['post_contents']) ? array_map(
+        if ( isset( $params['post_titles'] ) && is_array( $params['post_titles'] ) ) {
+            $titles   = array_map( 'sanitize_text_field', $params['post_titles'] );
+            $contents = isset( $params['post_contents'] ) && is_array( $params['post_contents'] ) ? array_map(
                 'wp_kses_post',
                 $params['post_contents']
             ) : [];
-
-            foreach ($titles as $i => $title) {
-                $content = isset($contents[$i]) ? $contents[$i] : '';
-                $args = [
-                    'post_type' => $post_type,
-                    'post_status' => $post_status,
+            foreach ( $titles as $i => $title ) {
+                $content = isset( $contents[ $i ] ) ? $contents[ $i ] : '';
+                $args    = [
+                    'post_type'      => $post_type,
+                    'post_status'    => $post_status,
                     'comment_status' => $comment_status,
-                    'post_parent' => $post_parent,
-                    'post_title' => $title,
-                    'post_content' => $content,
+                    'post_parent'    => $post_parent,
+                    'post_title'     => $title,
+                    'post_content'   => $content,
                 ];
-                $ids = $generator->generate(1, $args);
-                if (empty($ids)) {
-                    return new \WP_REST_Response(['message' => __('Failed to generate post.', 'content-forge')], 500);
+                $ids     = $generator->generate( 1, $args );
+                if ( empty( $ids ) ) {
+                    return new \WP_REST_Response(
+                        [ 'message' => __( 'Failed to generate post.', 'content-forge' ) ], 500
+                    );
                 }
                 $created[] = $ids[0];
             }
         } else {
             // Auto mode: expects post_number (int)
-            $post_number = isset($params['post_number']) ? intval($params['post_number']) : 1;
-            if ($post_number < 1) {
-                return new \WP_REST_Response(['message' => __('Number of posts/pages must be at least 1.', 'content-forge')], 400);
+            $post_number = isset( $params['post_number'] ) ? intval( $params['post_number'] ) : 1;
+            if ( $post_number < 1 ) {
+                return new \WP_REST_Response(
+                    [ 'message' => __( 'Number of posts/pages must be at least 1.', 'content-forge' ) ], 400
+                );
             }
             $args = [
-                'post_type' => $post_type,
-                'post_status' => $post_status,
+                'post_type'      => $post_type,
+                'post_status'    => $post_status,
                 'comment_status' => $comment_status,
-                'post_parent' => $post_parent,
+                'post_parent'    => $post_parent,
             ];
-            $ids = $generator->generate($post_number, $args);
-            if (empty($ids)) {
-                return new \WP_REST_Response(['message' => __('Failed to generate posts/pages.', 'content-forge')], 500);
+            $ids  = $generator->generate( $post_number, $args );
+            if ( empty( $ids ) ) {
+                return new \WP_REST_Response(
+                    [ 'message' => __( 'Failed to generate posts/pages.', 'content-forge' ) ], 500
+                );
             }
-            $created = array_merge($created, $ids);
+            $created = array_merge( $created, $ids );
         }
 
-        return new \WP_REST_Response(['created' => $created], 200);
+        return new \WP_REST_Response( [ 'created' => $created ], 200 );
     }
 
     /**
@@ -154,37 +176,33 @@ class Post extends CForge_REST_Controller
      * @since 1.0.0
      *
      * @param \WP_REST_Request $request The REST API request object.
+     *
      * @return \WP_REST_Response|\WP_Error Response object on success, WP_Error on failure.
      */
-    public function handle_list($request)
-    {
+    public function handle_list( $request ) {
         // Validate and sanitize request parameters
-        $pagination_params = $this->validate_list_parameters($request);
-        if (is_wp_error($pagination_params)) {
+        $pagination_params = $this->validate_list_parameters( $request );
+        if ( is_wp_error( $pagination_params ) ) {
             return $pagination_params;
         }
-
         // Get total count of tracked posts/pages
         $total_count = $this->get_tracked_posts_count();
-
-        if (is_wp_error($total_count)) {
+        if ( is_wp_error( $total_count ) ) {
             return $total_count;
         }
-
         // Get paginated post IDs
-        $post_ids = $this->get_tracked_posts_ids($pagination_params);
-        if (is_wp_error($post_ids)) {
+        $post_ids = $this->get_tracked_posts_ids( $pagination_params );
+        if ( is_wp_error( $post_ids ) ) {
             return $post_ids;
         }
-
         // Format post data for response
-        $formatted_items = $this->format_post_items($post_ids);
-        if (is_wp_error($formatted_items)) {
+        $formatted_items = $this->format_post_items( $post_ids );
+        if ( is_wp_error( $formatted_items ) ) {
             return $formatted_items;
         }
 
         // Prepare and return response
-        return $this->prepare_list_response($total_count, $formatted_items);
+        return $this->prepare_list_response( $total_count, $formatted_items );
     }
 
     /**
@@ -193,31 +211,28 @@ class Post extends CForge_REST_Controller
      * @since 1.0.0
      *
      * @param \WP_REST_Request $request The REST API request object.
+     *
      * @return array|\WP_Error Array of validated parameters on success, WP_Error on failure.
      */
-    private function validate_list_parameters($request)
-    {
-        $page = absint($request->get_param('page'));
-        $per_page = absint($request->get_param('per_page'));
-
+    private function validate_list_parameters( $request ) {
+        $page     = absint( $request->get_param( 'page' ) );
+        $per_page = absint( $request->get_param( 'per_page' ) );
         // Validate page number
-        if ($page < 1) {
+        if ( $page < 1 ) {
             $page = 1;
         }
-
         // Validate per_page with reasonable limits
-        if ($per_page < 1) {
+        if ( $per_page < 1 ) {
             $per_page = 15; // Default value
-        } elseif ($per_page > 50) {
+        } elseif ( $per_page > 50 ) {
             $per_page = 50; // Maximum allowed
         }
-
-        $offset = ($page - 1) * $per_page;
+        $offset = ( $page - 1 ) * $per_page;
 
         return [
-            'page' => $page,
+            'page'     => $page,
             'per_page' => $per_page,
-            'offset' => $offset,
+            'offset'   => $offset,
         ];
     }
 
@@ -228,33 +243,27 @@ class Post extends CForge_REST_Controller
      *
      * @return int|\WP_Error Total count on success, WP_Error on failure.
      */
-    private function get_tracked_posts_count()
-    {
+    private function get_tracked_posts_count() {
         global $wpdb;
-
         $table_name = $wpdb->prefix . CFORGE_DBNAME;
-        $data_types = ['post', 'page'];
-
+        $data_types = [ 'post', 'page' ];
         // Build placeholders for IN clause
-        $placeholders = implode(',', array_fill(0, count($data_types), '%s'));
-
-        // Prepare query with explicit parameter array
-        $query = $wpdb->prepare(
-            "SELECT COUNT(*) FROM {$table_name} WHERE data_type IN ({$placeholders})",
-            $data_types
+        $placeholders = implode( ',', array_fill( 0, count( $data_types ), '%s' ) );
+        $total = $wpdb->get_var(
+            $wpdb->prepare(
+                "SELECT COUNT(*) FROM {$table_name} WHERE data_type IN ({$placeholders})",
+                $data_types
+            )
         );
-
-        $total = $wpdb->get_var($query);
-
-        if ($wpdb->last_error) {
+        if ( $wpdb->last_error ) {
             return new \WP_Error(
                 'cforge_db_error',
-                __('Database error occurred while counting posts.', 'content-forge'),
-                ['status' => 500]
+                __( 'Database error occurred while counting posts.', 'content-forge' ),
+                [ 'status' => 500 ]
             );
         }
 
-        return absint($total);
+        return absint( $total );
     }
 
     /**
@@ -263,41 +272,35 @@ class Post extends CForge_REST_Controller
      * @since 1.0.0
      *
      * @param array $pagination_params Pagination parameters (page, per_page, offset).
+     *
      * @return array|\WP_Error Array of post IDs on success, WP_Error on failure.
      */
-    private function get_tracked_posts_ids($pagination_params)
-    {
+    private function get_tracked_posts_ids( $pagination_params ) {
         global $wpdb;
-
         $table_name = $wpdb->prefix . CFORGE_DBNAME;
-        $data_types = ['post', 'page'];
-
+        $data_types = [ 'post', 'page' ];
         // Build placeholders for IN clause
-        $placeholders = implode(',', array_fill(0, count($data_types), '%s'));
-
+        $placeholders = implode( ',', array_fill( 0, count( $data_types ), '%s' ) );
         // Prepare query parameters array
         $query_params = array_merge(
             $data_types,
-            [$pagination_params['per_page'], $pagination_params['offset']]
+            [ $pagination_params['per_page'], $pagination_params['offset'] ]
         );
-
-        // Prepare query with explicit parameter array
-        $query = $wpdb->prepare(
-            "SELECT object_id FROM {$table_name} WHERE data_type IN ({$placeholders}) ORDER BY id DESC LIMIT %d OFFSET %d",
-            $query_params
+        $post_ids = $wpdb->get_col(
+            $wpdb->prepare(
+                "SELECT object_id FROM {$table_name} WHERE data_type IN ({$placeholders}) ORDER BY id DESC LIMIT %d OFFSET %d",
+                $query_params
+            )
         );
-
-        $post_ids = $wpdb->get_col($query);
-
-        if ($wpdb->last_error) {
+        if ( $wpdb->last_error ) {
             return new \WP_Error(
                 'cforge_db_error',
-                __('Database error occurred while retrieving post IDs.', 'content-forge'),
-                ['status' => 500]
+                __( 'Database error occurred while retrieving post IDs.', 'content-forge' ),
+                [ 'status' => 500 ]
             );
         }
 
-        return array_map('absint', $post_ids);
+        return array_map( 'absint', $post_ids );
     }
 
     /**
@@ -306,40 +309,37 @@ class Post extends CForge_REST_Controller
      * @since 1.0.0
      *
      * @param array $post_ids Array of post IDs to format.
+     *
      * @return array|\WP_Error Array of formatted post items on success, WP_Error on failure.
      */
-    private function format_post_items($post_ids)
-    {
-        if (empty($post_ids)) {
+    private function format_post_items( $post_ids ) {
+        if ( empty( $post_ids ) ) {
             return [];
         }
-
         // Fetch post objects maintaining order
-        $posts = get_posts([
-            'post__in' => $post_ids,
-            'orderby' => 'post__in',
-            'numberposts' => count($post_ids),
-            'post_status' => ['publish', 'pending', 'draft', 'private'],
-            'post_type' => ['post', 'page'],
-        ]);
-
-        if (empty($posts)) {
+        $posts = get_posts(
+            [
+                'post__in'    => $post_ids,
+                'orderby'     => 'post__in',
+                'numberposts' => count( $post_ids ),
+                'post_status' => [ 'publish', 'pending', 'draft', 'private' ],
+                'post_type'   => [ 'post', 'page' ],
+            ]
+        );
+        if ( empty( $posts ) ) {
             return [];
         }
-
         $formatted_items = [];
-
-        foreach ($posts as $post) {
-            if (!is_object($post) || !isset($post->ID)) {
+        foreach ( $posts as $post ) {
+            if ( ! is_object( $post ) || ! isset( $post->ID ) ) {
                 continue;
             }
-
             $formatted_items[] = [
-                'ID' => absint($post->ID),
-                'title' => sanitize_text_field(get_the_title($post)),
-                'author' => sanitize_text_field(get_the_author_meta('user_nicename', $post->post_author)),
-                'type' => sanitize_key($post->post_type),
-                'date' => sanitize_text_field(get_date_from_gmt($post->post_date_gmt, 'Y/m/d H:i A')),
+                'ID'     => absint( $post->ID ),
+                'title'  => sanitize_text_field( get_the_title( $post ) ),
+                'author' => sanitize_text_field( get_the_author_meta( 'user_nicename', $post->post_author ) ),
+                'type'   => sanitize_key( $post->post_type ),
+                'date'   => sanitize_text_field( get_date_from_gmt( $post->post_date_gmt, 'Y/m/d H:i A' ) ),
             ];
         }
 
@@ -353,30 +353,29 @@ class Post extends CForge_REST_Controller
      *
      * @param int   $total_count Total number of tracked posts.
      * @param array $items       Array of formatted post items.
+     *
      * @return \WP_REST_Response|\WP_Error Response object on success, WP_Error on failure.
      */
-    private function prepare_list_response($total_count, $items)
-    {
+    private function prepare_list_response( $total_count, $items ) {
         // Validate response data
-        if (!is_array($items)) {
+        if ( ! is_array( $items ) ) {
             return new \WP_Error(
                 'cforge_invalid_items',
-                __('Invalid items array.', 'content-forge'),
-                ['status' => 500]
+                __( 'Invalid items array.', 'content-forge' ),
+                [ 'status' => 500 ]
             );
         }
-
-        if (!is_numeric($total_count) || $total_count < 0) {
+        if ( ! is_numeric( $total_count ) || $total_count < 0 ) {
             return new \WP_Error(
                 'cforge_invalid_total',
-                __('Invalid total count.', 'content-forge'),
-                ['status' => 500]
+                __( 'Invalid total count.', 'content-forge' ),
+                [ 'status' => 500 ]
             );
         }
 
         return new \WP_REST_Response(
             [
-                'total' => absint($total_count),
+                'total' => absint( $total_count ),
                 'items' => $items,
             ],
             200
@@ -392,36 +391,34 @@ class Post extends CForge_REST_Controller
      * @since 1.0.0
      *
      * @param \WP_REST_Request $request The REST API request object.
+     *
      * @return \WP_REST_Response|\WP_Error Response object on success, WP_Error on failure.
      */
-    public function handle_bulk_delete($request)
-    {
+    public function handle_bulk_delete( $request ) {
         // Get all tracked post IDs
         $post_ids = $this->get_all_tracked_posts_ids();
-        if (is_wp_error($post_ids)) {
+        if ( is_wp_error( $post_ids ) ) {
             return $post_ids;
         }
-
-        if (empty($post_ids)) {
+        if ( empty( $post_ids ) ) {
             return new \WP_REST_Response(
                 [
                     'deleted' => 0,
-                    'message' => __('No posts found to delete.', 'content-forge'),
+                    'message' => __( 'No posts found to delete.', 'content-forge' ),
                 ],
                 200
             );
         }
-
         // Use the generator to delete posts
-        $generator = new GeneratorPost(get_current_user_id());
-        $deleted_count = $generator->delete($post_ids);
+        $generator     = new GeneratorPost( get_current_user_id() );
+        $deleted_count = $generator->delete( $post_ids );
 
         return new \WP_REST_Response(
             [
                 'deleted' => $deleted_count,
                 'message' => sprintf(
-                    /* translators: %d: Number of deleted posts */
-                    __('Successfully deleted %d posts/pages.', 'content-forge'),
+                /* translators: %d: Number of deleted posts */
+                    __( 'Successfully deleted %d posts/pages.', 'content-forge' ),
                     $deleted_count
                 ),
             ],
@@ -436,33 +433,27 @@ class Post extends CForge_REST_Controller
      *
      * @return array|\WP_Error Array of post IDs on success, WP_Error on failure.
      */
-    private function get_all_tracked_posts_ids()
-    {
+    private function get_all_tracked_posts_ids() {
         global $wpdb;
-
         $table_name = $wpdb->prefix . CFORGE_DBNAME;
-        $data_types = ['post', 'page'];
-
+        $data_types = [ 'post', 'page' ];
+        
         // Build placeholders for IN clause
-        $placeholders = implode(',', array_fill(0, count($data_types), '%s'));
-
-        // Prepare query
-        $query = $wpdb->prepare(
-            "SELECT object_id FROM {$table_name} WHERE data_type IN ({$placeholders}) ORDER BY id DESC",
-            $data_types
+        $placeholders = implode( ',', array_fill( 0, count( $data_types ), '%s' ) );
+    
+        $post_ids = $wpdb->get_col(
+            $wpdb->prepare( "SELECT object_id FROM {$table_name} WHERE data_type IN ({$placeholders}) ORDER BY id DESC", $data_types )
         );
-
-        $post_ids = $wpdb->get_col($query);
-
-        if ($wpdb->last_error) {
+        
+        if ( $wpdb->last_error ) {
             return new \WP_Error(
                 'cforge_db_error',
-                __('Database error occurred while retrieving posts for deletion.', 'content-forge'),
-                ['status' => 500]
+                __( 'Database error occurred while retrieving posts for deletion.', 'content-forge' ),
+                [ 'status' => 500 ]
             );
         }
 
-        return array_map('absint', $post_ids);
+        return array_map( 'absint', $post_ids );
     }
 
     /**
@@ -474,45 +465,41 @@ class Post extends CForge_REST_Controller
      * @since 1.0.0
      *
      * @param \WP_REST_Request $request The REST API request object.
+     *
      * @return \WP_REST_Response|\WP_Error Response object on success, WP_Error on failure.
      */
-    public function handle_individual_delete($request)
-    {
-        $post_id = absint($request->get_param('id'));
-
-        if (!$post_id) {
+    public function handle_individual_delete( $request ) {
+        $post_id = absint( $request->get_param( 'id' ) );
+        if ( ! $post_id ) {
             return new \WP_Error(
                 'cforge_invalid_id',
-                __('Invalid post ID provided.', 'content-forge'),
-                ['status' => 400]
+                __( 'Invalid post ID provided.', 'content-forge' ),
+                [ 'status' => 400 ]
             );
         }
-
         // Check if the post is tracked by Content Forge
-        if (!$this->is_post_tracked($post_id)) {
+        if ( ! $this->is_post_tracked( $post_id ) ) {
             return new \WP_Error(
                 'cforge_not_tracked',
-                __('Post not found or not generated by Content Forge.', 'content-forge'),
-                ['status' => 404]
+                __( 'Post not found or not generated by Content Forge.', 'content-forge' ),
+                [ 'status' => 404 ]
             );
         }
-
         // Use the generator to delete the post
-        $generator = new GeneratorPost(get_current_user_id());
-        $deleted_count = $generator->delete([$post_id]);
-
-        if ($deleted_count === 0) {
+        $generator     = new GeneratorPost( get_current_user_id() );
+        $deleted_count = $generator->delete( [ $post_id ] );
+        if ( 0 === $deleted_count ) {
             return new \WP_Error(
                 'cforge_delete_failed',
-                __('Failed to delete the post.', 'content-forge'),
-                ['status' => 500]
+                __( 'Failed to delete the post.', 'content-forge' ),
+                [ 'status' => 500 ]
             );
         }
 
         return new \WP_REST_Response(
             [
                 'deleted' => $deleted_count,
-                'message' => __('Post deleted successfully.', 'content-forge'),
+                'message' => __( 'Post deleted successfully.', 'content-forge' ),
             ],
             200
         );
@@ -524,26 +511,19 @@ class Post extends CForge_REST_Controller
      * @since 1.0.0
      *
      * @param int $post_id The post ID to check.
+     *
      * @return bool True if the post is tracked, false otherwise.
      */
-    private function is_post_tracked($post_id)
-    {
+    private function is_post_tracked( $post_id ) {
         global $wpdb;
-
         $table_name = $wpdb->prefix . CFORGE_DBNAME;
-        $data_types = ['post', 'page'];
-
+        $data_types = [ 'post', 'page' ];
         // Build placeholders for IN clause
-        $placeholders = implode(',', array_fill(0, count($data_types), '%s'));
-
+        $placeholders = implode( ',', array_fill( 0, count( $data_types ), '%s' ) );
         // Prepare query parameters
-        $query_params = array_merge([$post_id], $data_types);
-
+        $query_params = array_merge( [ $post_id ], $data_types );
         $count = $wpdb->get_var(
-            $wpdb->prepare(
-                "SELECT COUNT(*) FROM {$table_name} WHERE object_id = %d AND data_type IN ({$placeholders})",
-                $query_params
-            )
+            $wpdb->prepare( "SELECT COUNT(*) FROM {$table_name} WHERE object_id = %d AND data_type IN ({$placeholders})", $query_params )
         );
 
         return $count > 0;

@@ -1,0 +1,76 @@
+<?xml version="1.0"?>
+<ruleset name="Content Forge Coding Standards">
+    <description>WordPress Coding Standards for Content Forge Plugin</description>
+
+    <!-- What to scan -->
+    <file>.</file>
+    <exclude-pattern>/vendor/*</exclude-pattern>
+    <exclude-pattern>/node_modules/*</exclude-pattern>
+    <exclude-pattern>/build/*</exclude-pattern>
+    <exclude-pattern>/dist/*</exclude-pattern>
+    <exclude-pattern>*.asset.php</exclude-pattern>
+
+    <!-- How to scan -->
+    <arg name="extensions" value="php"/>
+    <arg name="colors"/>
+    <arg value="sp"/>
+
+    <!-- Rules: WordPress Coding Standards -->
+    <rule ref="WordPress">
+        <!-- Exclude rules that don't apply to our plugin -->
+        <exclude name="WordPress.Files.FileName.NotHyphenatedLowercase"/>
+        <exclude name="WordPress.Files.FileName.InvalidClassFileName"/>
+
+        <!-- Allow short array syntax -->
+        <exclude name="Universal.Arrays.DisallowShortArraySyntax.Found"/>
+
+        <!-- Allow modern PHP features -->
+        <exclude name="Generic.WhiteSpace.DisallowSpaceIndent"/>
+        <exclude name="Generic.Functions.OpeningFunctionBraceKernighanRitchie"/>
+    </rule>
+
+    <!-- PHP Compatibility -->
+    <config name="testVersion" value="7.4-"/>
+    <rule ref="PHPCompatibilityWP">
+        <include-pattern>*.php</include-pattern>
+    </rule>
+
+    <!-- Custom Rules -->
+    <rule ref="WordPress.WP.I18n">
+        <!-- Allow text domain to be passed as a variable -->
+        <exclude name="WordPress.WP.I18n.MissingArgDomain"/>
+
+        <!-- Text Domain Rules -->
+        <rule ref="WordPress.WP.I18n">
+            <!-- Require text domain in all translation functions -->
+            <include name="WordPress.WP.I18n.MissingTextDomain"/>
+            <include name="WordPress.WP.I18n.NonSingularStringLiteralDomain"/>
+            <include name="WordPress.WP.I18n.TextDomainMismatch"/>
+
+            <!-- Enforce consistent text domain -->
+            <properties>
+                <property name="text_domain" value="content-forge"/>
+            </properties>
+        </rule>
+    </rule>
+
+    <!-- Documentation Standards -->
+    <rule ref="WordPress-Docs">
+        <!-- Allow short descriptions to be on the same line -->
+        <exclude name="Squiz.Commenting.FunctionComment.SpacingAfterParamType"/>
+        <!-- Allow inline comments to end without punctuation -->
+        <exclude name="Squiz.Commenting.InlineComment.InvalidEndChar"/>
+        <!-- Allow without doc comment for class -->
+        <exclude name="Squiz.Commenting.ClassComment.Missing"/>
+        <!-- Allow DB queries with meta key -->
+        <exclude name="WordPress.DB.SlowDBQuery.slow_db_query_meta_key"/>
+        <!-- Allow Parameter comment end without a full stop -->
+        <exclude name="Squiz.Commenting.FunctionComment.ParamCommentFullStop"/>
+    </rule>
+
+    <!-- Extra Rules -->
+    <rule ref="WordPress-Extra">
+        <!-- Allow modern PHP features -->
+        <exclude name="Generic.Files.LineLength.TooLong"/>
+    </rule>
+</ruleset>

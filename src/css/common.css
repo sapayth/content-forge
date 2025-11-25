@@ -6,19 +6,19 @@
   .cforge-input {
     @apply cforge-w-full !cforge-max-w-full cforge-appearance-none cforge-rounded-md cforge-bg-white cforge-py-1.5 cforge-pl-3 cforge-pr-8 cforge-text-base cforge-text-gray-900 cforge-outline cforge-outline-1 cforge--outline-offset-1 cforge-outline-gray-300 focus:cforge-outline focus:cforge-outline-2 focus:cforge--outline-offset-2 focus:cforge-outline-primary sm:cforge-text-sm/6;
   }
-  
+
   .cforge-btn {
     @apply cforge-px-4 cforge-py-2 cforge-rounded cforge-font-semibold cforge-transition-colors cforge-cursor-pointer;
   }
-  
+
   .cforge-btn-primary {
-    @apply cforge-bg-blue-600 cforge-text-white hover:cforge-bg-blue-700 focus:cforge-outline-none focus:cforge-ring-2 focus:cforge-ring-blue-500 focus:cforge-ring-offset-2;
+    @apply cforge-bg-primary cforge-text-white hover:cforge-bg-primaryHover focus:cforge-outline-none focus:cforge-ring-2 focus:cforge-ring-primary focus:cforge-ring-offset-2;
   }
-  
+
   .cforge-btn-secondary {
     @apply cforge-bg-gray-200 cforge-text-gray-700 hover:cforge-bg-gray-300 focus:cforge-outline-none focus:cforge-ring-2 focus:cforge-ring-gray-500 cforge-ring-offset-2;
   }
-  
+
   .cforge-btn-danger {
     @apply cforge-bg-red-600 cforge-text-white hover:cforge-bg-red-700 focus:cforge-outline-none focus:cforge-ring-2 focus:cforge-ring-red-500 focus:cforge-ring-offset-2;
   }

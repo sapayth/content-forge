@@ -1,4 +1,10 @@
 <?php
+/**
+ * API controller class for Content Forge plugin.
+ *
+ * @package ContentForge
+ * @since   1.0.0
+ */
 
 namespace ContentForge;
 

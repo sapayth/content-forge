@@ -8,7 +8,6 @@ module.exports = (env = {}) => {
   const entry = {
     pagesPosts: './src/js/pages-posts.jsx',
     users: './src/js/users.jsx',
-    taxonomies: './src/js/taxonomies.jsx',
     comments: './src/js/comments.jsx',
   }
 
@@ -55,4 +54,4 @@ module.exports = (env = {}) => {
       }),
     ],
   };
-}; 
+};

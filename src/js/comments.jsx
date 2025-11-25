@@ -109,7 +109,7 @@ function ListViewComments({ endpoint, onAddNew }) {
           <button className="cforge-btn cforge-btn-primary cforge-mr-4" onClick={onAddNew}>{__('Add New', 'content-forge')}</button>
         </div>
       )}
-      <div className="cforge-bg-gray-50 cforge-rounded cforge-p-6 cforge-shadow cforge-overflow-x-auto">
+      <div className="cforge-bg-tertiary cforge-rounded cforge-p-6 cforge-shadow cforge-overflow-x-auto">
         {items.length > 0 && (
           <div className="cforge-flex cforge-justify-end cforge-mb-4">
             <button className="cforge-btn cforge-btn-primary cforge-mr-4" onClick={onAddNew}>{__('Add New', 'content-forge')}</button>
@@ -123,11 +123,11 @@ function ListViewComments({ endpoint, onAddNew }) {
           </div>
         )}
         {loading ? (
-          <p className="cforge-text-center cforge-text-gray-500">{__('Loading...', 'content-forge')}</p>
+          <p className="cforge-text-center cforge-text-text-secondary">{__('Loading...', 'content-forge')}</p>
         ) : error ? (
-          <p className="cforge-text-center cforge-text-red-500">{error}</p>
+          <p className="cforge-text-center cforge-text-error">{error}</p>
         ) : items.length === 0 ? (
-          <p className="cforge-text-center cforge-text-gray-500">{__('No comments found. Click "Add New" to generate comments.', 'content-forge')}</p>
+          <p className="cforge-text-center cforge-text-text-secondary">{__('No comments found. Click "Add New" to generate comments.', 'content-forge')}</p>
         ) : (
           <table className="cforge-min-w-full cforge-table-auto cforge-bg-white">
             <thead>
@@ -151,14 +151,14 @@ function ListViewComments({ endpoint, onAddNew }) {
                   <td className="cforge-px-4 cforge-py-2">
                     <div>
                       <div className="cforge-font-medium">{item.author_name}</div>
-                      <div className="cforge-text-sm cforge-text-gray-500">{item.author_email}</div>
+                      <div className="cforge-text-sm cforge-text-text-secondary">{item.author_email}</div>
                     </div>
                   </td>
                   <td className="cforge-px-4 cforge-py-2">
                     {item.post_edit_link ? (
                       <a
                         href={item.post_edit_link}
-                        className="cforge-text-blue-600 hover:cforge-underline"
+                        className="cforge-text-primary hover:cforge-underline"
                         target="_blank"
                         rel="noopener noreferrer"
                       >
@@ -169,21 +169,21 @@ function ListViewComments({ endpoint, onAddNew }) {
                     )}
                   </td>
                   <td className="cforge-px-4 cforge-py-2">
-                    <span className={`cforge-px-2 cforge-py-1 cforge-rounded cforge-text-xs ${item.status === 'approved' ? 'cforge-bg-green-100 cforge-text-green-800' :
-                      item.status === 'unapproved' ? 'cforge-bg-yellow-100 cforge-text-yellow-800' :
-                        'cforge-bg-red-100 cforge-text-red-800'
+                    <span className={`cforge-px-2 cforge-py-1 cforge-rounded cforge-text-xs ${item.status === 'approved' ? 'cforge-bg-success cforge-text-white' :
+                      item.status === 'unapproved' ? 'cforge-bg-warning cforge-text-white' :
+                        'cforge-bg-error cforge-text-white'
                       }`}>
                       {item.status}
                     </span>
                   </td>
-                  <td className="cforge-px-4 cforge-py-2 cforge-text-sm cforge-text-gray-500">
+                  <td className="cforge-px-4 cforge-py-2 cforge-text-sm cforge-text-text-secondary">
                     {new Date(item.date).toLocaleDateString()}
                   </td>
                   <td className="cforge-px-4 cforge-py-2">
                     <button
                       onClick={() => handleIndividualDelete(item.id)}
                       disabled={deleting === item.id}
-                      className="cforge-text-red-600 hover:cforge-text-red-800 cforge-p-1 cforge-rounded hover:cforge-bg-red-50"
+                      className="cforge-text-error hover:cforge-text-error cforge-p-1 cforge-rounded hover:cforge-bg-tertiary"
                       title={__('Delete', 'content-forge')}
                     >
                       {deleting === item.id ? (
@@ -303,7 +303,7 @@ function AddNewView({ onCancel, onSuccess }) {
   return (
     <div className="cforge-w-full cforge-bg-white cforge-rounded cforge-p-6 cforge-relative">
       {notice && (
-        <div className={`cforge-mb-4 cforge-p-3 cforge-rounded cforge-text-white ${notice.status === 'success' ? 'cforge-bg-green-500' : 'cforge-bg-red-500'}`}>{notice.message}</div>
+        <div className={`cforge-mb-4 cforge-p-3 cforge-rounded cforge-text-white ${notice.status === 'success' ? 'cforge-bg-success' : 'cforge-bg-error'}`}>{notice.message}</div>
       )}
       <div className="cforge-flex cforge-gap-4">
         <form className="cforge-w-2/3" onSubmit={handleSubmit}>
@@ -320,7 +320,7 @@ function AddNewView({ onCancel, onSuccess }) {
                 onChange={e => setComment({ ...comment, comment_number: e.target.value })}
               />
               {errors['comment_number'] && (
-                <p className="cforge-text-red-500 cforge-text-sm">{errors['comment_number']}</p>
+                <p className="cforge-text-error cforge-text-sm">{errors['comment_number']}</p>
               )}
             </div>
             <div className="cforge-mb-4">
@@ -332,7 +332,7 @@ function AddNewView({ onCancel, onSuccess }) {
                 placeholder={__('Select post types...', 'content-forge')}
               />
               {errors['post_types'] && (
-                <p className="cforge-text-red-500 cforge-text-sm">{errors['post_types']}</p>
+                <p className="cforge-text-error cforge-text-sm">{errors['post_types']}</p>
               )}
             </div>
             <div className="cforge-mb-4">
@@ -349,14 +349,14 @@ function AddNewView({ onCancel, onSuccess }) {
                 <option value="spam">{__('Spam', 'content-forge')}</option>
               </select>
               {errors['comment_status'] && (
-                <p className="cforge-text-red-500 cforge-text-sm">{errors['comment_status']}</p>
+                <p className="cforge-text-error cforge-text-sm">{errors['comment_status']}</p>
               )}
             </div>
           </div>
           <div className="cforge-flex cforge-justify-end cforge-mt-6 cforge-gap-2">
             <button
               type="button"
-              className="cforge-bg-gray-200 cforge-text-gray-700 cforge-px-4 cforge-py-2 cforge-rounded cforge-font-semibold hover:cforge-bg-gray-300"
+              className="cforge-bg-tertiary cforge-text-text-primary cforge-px-4 cforge-py-2 cforge-rounded cforge-font-semibold hover:cforge-bg-border"
               onClick={onCancel}
               disabled={submitting}
             >

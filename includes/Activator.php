@@ -1,4 +1,11 @@
 <?php
+/**
+ * Activator class for Content Forge plugin.
+ *
+ * @package ContentForge
+ * @since   1.0.0
+ */
+
 namespace ContentForge;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -18,7 +25,7 @@ class Activator {
 	 */
 	public static function create_tracking_table() {
 		global $wpdb;
-		$table_name = $wpdb->prefix . CFORGE_DBNAME;
+		$table_name      = $wpdb->prefix . CFORGE_DBNAME;
 		$charset_collate = $wpdb->get_charset_collate();
 
 		// Table schema: id, object_id, data_type, created_at, created_by, meta (JSON, nullable)

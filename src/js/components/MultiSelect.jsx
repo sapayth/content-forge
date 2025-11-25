@@ -41,7 +41,7 @@ export default function MultiSelect({ options = [], value = [], onChange, label,
                 className="cforge-w-full cforge-p-2 cforge-border cforge-border-gray-300 cforge-rounded"
                 value={value}
                 onChange={handleChange}
-                aria-label={label || placeholder || __('Select options', 'cforge')}
+                aria-label={label || placeholder || __('Select options', 'content-forge')}
             >
                 {placeholder && normalizedOptions.length === 0 && (
                     <option disabled>{placeholder}</option>
@@ -54,4 +54,4 @@ export default function MultiSelect({ options = [], value = [], onChange, label,
             </select>
         </div>
     );
-} 
+}

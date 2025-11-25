@@ -1,29 +1,29 @@
 <?php
+/**
+ * Loader class for Content Forge plugin.
+ *
+ * @package ContentForge
+ * @since   1.0.0
+ */
+
 namespace ContentForge;
 
 use ContentForge\Traits\ContainerTrait;
 
-if (!defined('ABSPATH')) {
+if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class Loader
-{
+class Loader {
+
 	use ContainerTrait;
 
 	/**
 	 * Registered generator instances.
+     *
 	 * @var array
 	 */
 	protected $generators = [];
-
-	/**
-	 * Load plugin textdomain for translations.
-	 */
-	protected function load_textdomain()
-	{
-		load_plugin_textdomain('content-forge', false, dirname(CFORGE_BASENAME) . '/languages');
-	}
 
 	/**
 	 * Load all generator classes.
@@ -31,24 +31,25 @@ class Loader
 	protected function load_generators()
 	{
 		$generator_dir = CFORGE_INCLUDES_PATH . 'Generator/';
-		if (is_dir($generator_dir)) {
-			foreach (glob($generator_dir . '*.php') as $file) {
+		if ( is_dir( $generator_dir ) ) {
+			foreach ( glob( $generator_dir . '*.php' ) as $file ) {
 				require_once $file;
 			}
 		}
 	}
 
 	/**
+	 * Load components for Content Forge plugin.
+	 *
 	 * @return void
 	 */
 	public function load()
 	{
-		$this->load_textdomain();
 		$this->load_generators();
 
 		$this->container['api'] = new Api();
 
-		if (is_admin()) {
+		if ( is_admin() ) {
 			$this->container['admin'] = new Admin();
 		}
 	}
