@@ -1,10 +1,29 @@
 # Node and build output
+
 node_modules/
+
 dist/
+
 build/
+
 assets/
+
 release/
 
+
+
 # Editor and system files
+
 .DS_Store
+
 .cursor/
+
+
+
+# Composer
+
+vendor/
+
+composer.lock
+
+config.bat

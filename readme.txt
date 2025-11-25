@@ -100,8 +100,6 @@ Initial release of Content Forge. Start generating realistic dummy content for y
 
 == Developer Notes ==
 
-Content Forge uses the Faker PHP library to generate realistic fake data. The plugin follows WordPress coding standards and best practices.
-
 For developers looking to extend Content Forge:
 * All classes use PSR-4 autoloading
 * Hooks and filters are available for customization
