@@ -17,10 +17,12 @@
 // Exit if accessed directly.
 use ContentForge\Loader;
 
-if (!defined('ABSPATH')) {
+if ( !defined( 'ABSPATH' ) )
+{
     exit;
 }
-if (file_exists(__DIR__ . '/vendor/autoload.php')) {
+if ( file_exists( __DIR__ . '/vendor/autoload.php' ) )
+{
     require_once __DIR__ . '/vendor/autoload.php';
 }
 
@@ -35,9 +37,9 @@ final class ContentForge
     private function __construct()
     {
         $this->define_constants();
-        register_activation_hook(__FILE__, ['ContentForge\\Activator', 'activate']);
+        register_activation_hook( __FILE__, [ 'ContentForge\\Activator', 'activate' ] );
         $loader = new Loader();
-        add_action('init', [$loader, 'load']);
+        add_action( 'init', [ $loader, 'load' ] );
         // load the general functions
         require_once CFORGE_INCLUDES_PATH . 'functions/general.php';
     }
@@ -47,14 +49,20 @@ final class ContentForge
      */
     public function define_constants()
     {
-        $this->define('CFORGE_VERSION', self::VERSION);
-        $this->define('CFORGE_PATH', plugin_dir_path(__FILE__));
-        $this->define('CFORGE_URL', plugin_dir_url(__FILE__));
-        $this->define('CFORGE_BASENAME', plugin_basename(__FILE__));
-        $this->define('CFORGE_ASSETS_URL', CFORGE_URL . 'assets/');
-        $this->define('CFORGE_INCLUDES_PATH', CFORGE_PATH . 'includes/');
-        $this->define('CFORGE_TEXT_DOMAIN', 'content-forge');
-        $this->define('CFORGE_DBNAME', 'cforge');
+        // Plugin Information
+        $this->define( 'CFORGE_VERSION', self::VERSION );
+        $this->define( 'CFORGE_DBNAME', 'cforge' );
+
+        // Plugin Paths
+        $this->define( 'CFORGE_PATH', plugin_dir_path( __FILE__ ) );
+        $this->define( 'CFORGE_INCLUDES_PATH', CFORGE_PATH . 'includes/' );
+
+        // Plugin URLs
+        $this->define( 'CFORGE_URL', plugin_dir_url( __FILE__ ) );
+        $this->define( 'CFORGE_ASSETS_URL', CFORGE_URL . 'assets/' );
+
+        // Plugin Basename
+        $this->define( 'CFORGE_BASENAME', plugin_basename( __FILE__ ) );
     }
 
     /**
@@ -63,10 +71,11 @@ final class ContentForge
      * @param string $constant_name Constant name.
      * @param mixed  $value         Constant value.
      */
-    private function define($constant_name, $value)
+    private function define( $constant_name, $value )
     {
-        if (!defined($constant_name)) {
-            define($constant_name, $value);
+        if ( !defined( $constant_name ) )
+        {
+            define( $constant_name, $value );
         }
     }
 
@@ -78,7 +87,8 @@ final class ContentForge
     public static function init()
     {
         static $instance = false;
-        if (!$instance) {
+        if ( !$instance )
+        {
             $instance = new self();
         }
 
