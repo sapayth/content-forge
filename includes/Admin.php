@@ -103,7 +103,7 @@ class Admin
 	 */
 	public static function enqueue_assets( $hook )
 	{
-		$page_configs = $this->get_page_configurations();
+		$page_configs = self::get_page_configurations();
 
 		if ( isset( $page_configs[ $hook ] ) )
 		{
@@ -116,7 +116,7 @@ class Admin
 	 *
 	 * @return array Page configurations with script/style handles and files.
 	 */
-	private function get_page_configurations()
+	private static function get_page_configurations()
 	{
 		return [
 			'toplevel_page_cforge'               => [
