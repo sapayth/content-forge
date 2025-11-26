@@ -12,14 +12,16 @@ use WP_Error;
 use ContentForge\Activator;
 
 global $wpdb;
-if ( ! defined( 'ABSPATH' ) ) {
+if ( !defined( 'ABSPATH' ) )
+{
     exit;
 }
 
 /**
  * Generator for fake comments.
  */
-class Comment extends Generator {
+class Comment extends Generator
+{
 
     /**
      * Data type for this generator.
@@ -39,17 +41,20 @@ class Comment extends Generator {
     public function generate( $count = 1, $args = [] )
     {
         $ids            = [];
-        $post_types     = isset( $args['post_types'] ) ? (array) $args['post_types'] : [ 'post' ];
-        $comment_status = isset( $args['comment_status'] ) ? $args['comment_status'] : 'approve';
+        $post_types     = isset( $args[ 'post_types' ] ) ? (array) $args[ 'post_types' ] : [ 'post' ];
+        $comment_status = isset( $args[ 'comment_status' ] ) ? $args[ 'comment_status' ] : 'approve';
         $posts          = cforge_get_random_post_ids( $post_types, $count );
 
-        for ( $i = 0; $i < $count; $i++ ) {
+        for ( $i = 0; $i < $count; $i++ )
+        {
             $post_id = $posts[ array_rand( $posts ) ];
 
             // Map UI status to wp_insert_comment 'comment_approved' value
-            if ( 'hold' === $comment_status ) {
+            if ( 'hold' === $comment_status )
+            {
                 $comment_status = 0;
-            } elseif ( 'spam' === $comment_status ) {
+            } elseif ( 'spam' === $comment_status )
+            {
                 $comment_status = 'spam';
             }
             $comment_data = [
@@ -60,9 +65,10 @@ class Comment extends Generator {
                 'user_id'          => $this->user_id,
             ];
             $comment_id   = wp_insert_comment( $comment_data );
-            if ( ! is_wp_error( $comment_id ) && $comment_id ) {
+            if ( !is_wp_error( $comment_id ) && $comment_id )
+            {
                 $ids[] = $comment_id;
-                $this->track_generated( $comment_id );
+                $this->track_generated( $comment_id, 'comment' );
             }
         }
 
@@ -135,68 +141,15 @@ class Comment extends Generator {
     public function delete( array $object_ids )
     {
         $deleted = 0;
-        foreach ( $object_ids as $comment_id ) {
-            if ( wp_delete_comment( $comment_id, true ) ) {
+        foreach ( $object_ids as $comment_id )
+        {
+            if ( wp_delete_comment( $comment_id, true ) )
+            {
                 ++$deleted;
-                $this->untrack_generated( $comment_id );
+                $this->untrack_generated( $comment_id, 'comment' );
             }
         }
 
         return $deleted;
-    }
-
-    /**
-     * Track generated comment in the custom DB table.
-     *
-     * @param int $comment_id The comment ID to track.
-     */
-    protected function track_generated( $comment_id )
-    {
-        global $wpdb;
-        // We use direct DB access here because we are tracking generated comments in a custom table,
-        // and there is no WordPress API for this use case. All data is sanitized and prepared.
-        Activator::create_tracking_table();
-
-        $table      = $wpdb->prefix . 'cforge';
-        $object_id  = intval( $comment_id );
-        $data_type  = sanitize_key( $this->data_type );
-        $created_at = current_time( 'mysql' );
-        $created_by = intval( $this->user_id );
-
-        $result = $wpdb->query(
-            $wpdb->prepare(
-                "INSERT INTO {$wpdb->prefix}cforge (object_id, data_type, created_at, created_by) VALUES (%d, %s, %s, %d)",
-                $object_id,
-                $data_type,
-                $created_at,
-                $created_by
-            )
-        );
-
-        if ( false === $result ) {
-            // Optionally log or handle the error - removing error_log for production
-            // error_log( 'Failed to insert generated comment tracking record for comment_id: ' . $object_id );
-            // For now, we silently handle the error
-        }
-    }
-
-    /**
-     * Remove tracking info for a deleted comment.
-     *
-     * @param int $comment_id The comment ID to untrack.
-     */
-    protected function untrack_generated( $comment_id )
-    {
-        global $wpdb;
-        $table     = $wpdb->prefix . 'cforge';
-        $object_id = intval( $comment_id );
-        $data_type = 'comment';
-        $wpdb->query(
-            $wpdb->prepare(
-                "DELETE FROM {$wpdb->prefix}cforge WHERE object_id = %d AND data_type = %s",
-                $object_id,
-                $data_type
-            )
-        );
     }
 }

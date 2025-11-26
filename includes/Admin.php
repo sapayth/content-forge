@@ -10,11 +10,13 @@ namespace ContentForge;
 
 use ContentForge\Traits\ContainerTrait;
 
-if ( ! defined( 'ABSPATH' ) ) {
+if ( !defined( 'ABSPATH' ) )
+{
 	exit;
 }
 
-class Admin {
+class Admin
+{
 
 	use ContainerTrait;
 
@@ -68,6 +70,14 @@ class Admin {
 			'cforge-users',
 			[ __CLASS__, 'render_users_page' ]
 		);
+		add_submenu_page(
+			$parent_slug,
+			__( 'Taxonomies', 'content-forge' ),
+			__( 'Taxonomies', 'content-forge' ),
+			$capability,
+			'cforge-taxonomies',
+			[ __CLASS__, 'render_taxonomies_page' ]
+		);
 	}
 
 	/**
@@ -95,13 +105,22 @@ class Admin {
 	}
 
 	/**
+	 * Render the Taxonomies React app root div.
+	 */
+	public static function render_taxonomies_page()
+	{
+		echo '<div id="cforge-taxonomies-app" style="margin-left: -20px"></div>';
+	}
+
+	/**
 	 * Enqueue React app assets on the plugin pages only.
 	 *
 	 * @param string $hook The current admin page hook.
 	 */
 	public static function enqueue_assets( $hook )
 	{
-		if ( 'toplevel_page_cforge' === $hook ) {
+		if ( 'toplevel_page_cforge' === $hook )
+		{
 			wp_enqueue_script(
 				'cforge-admin-app',
 				CFORGE_ASSETS_URL . 'js/pagesPosts.js',
@@ -124,7 +143,8 @@ class Admin {
 					'rest_nonce' => wp_create_nonce( 'wp_rest' ),
 				]
 			);
-		} elseif ( 'content-forge_page_cforge-comments' === $hook ) {
+		} elseif ( 'content-forge_page_cforge-comments' === $hook )
+		{
 			wp_enqueue_script(
 				'cforge-comments-app',
 				CFORGE_ASSETS_URL . 'js/comments.js',
@@ -148,7 +168,8 @@ class Admin {
 					'post_types' => get_post_types( [ 'public' => true ], ),
 				]
 			);
-		} elseif ( 'content-forge_page_cforge-users' === $hook ) {
+		} elseif ( 'content-forge_page_cforge-users' === $hook )
+		{
 			wp_enqueue_script(
 				'cforge-users-app',
 				CFORGE_ASSETS_URL . 'js/users.js',
@@ -170,6 +191,39 @@ class Admin {
 					'apiUrl'     => esc_url_raw( rest_url( 'cforge/v1/' ) ),
 					'rest_nonce' => wp_create_nonce( 'wp_rest' ),
 					'roles'      => wp_roles()->get_names(),
+				]
+			);
+		} elseif ( 'content-forge_page_cforge-taxonomies' === $hook )
+		{
+			wp_enqueue_script(
+				'cforge-taxonomies-app',
+				CFORGE_ASSETS_URL . 'js/taxonomy.js',
+				[ 'wp-element', 'wp-i18n', 'wp-components', 'wp-api-fetch' ],
+				CFORGE_VERSION,
+				true
+			);
+			wp_enqueue_style(
+				'cforge-taxonomies-style',
+				CFORGE_ASSETS_URL . 'css/taxonomy.css',
+				[],
+				CFORGE_VERSION
+			);
+
+			wp_localize_script(
+				'cforge-taxonomies-app',
+				'cforge',
+				[
+					'apiUrl'     => esc_url_raw( rest_url( 'cforge/v1/' ) ),
+					'rest_nonce' => wp_create_nonce( 'wp_rest' ),
+					'taxonomies' => array_filter(
+						get_taxonomies( [ 'public' => true ], 'objects' ),
+						function ( $taxonomy )
+						{
+							// Exclude internal WordPress taxonomies that shouldn't have custom terms
+							$excluded = [ 'post_format', 'nav_menu', 'link_category', 'wp_theme', 'wp_template_part_area' ];
+							return !in_array( $taxonomy->name, $excluded, true );
+						}
+					),
 				]
 			);
 		}
