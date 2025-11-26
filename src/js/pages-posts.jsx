@@ -344,6 +344,150 @@ function AddNewView({ onCancel, onSuccess }) {
 
 function PagesPostsApp() {
   const [view, setView] = useState('list');
+  const [items, setItems] = useState([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [perPage] = useState(15);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [deleting, setDeleting] = useState(null);
+  const [notice, setNotice] = useState(null);
+  const totalPages = Math.ceil(total / perPage);
+
+  useEffect(() => {
+    if (view !== 'list') return;
+
+    let isMounted = true;
+    setLoading(true);
+    setError(null);
+
+    // Configure apiFetch middleware for nonce and root URL
+    if (window.cforge?.rest_nonce) {
+      apiFetch.use(apiFetch.createNonceMiddleware(window.cforge.rest_nonce));
+    }
+    if (window.cforge?.apiUrl) {
+      apiFetch.use(apiFetch.createRootURLMiddleware(window.cforge.apiUrl));
+    }
+
+    apiFetch({
+      path: `posts/list?page=${page}&per_page=${perPage}`,
+      method: 'GET',
+    })
+      .then((res) => {
+        if (!isMounted) return;
+        setItems(res.items || []);
+        setTotal(res.total || 0);
+        setLoading(false);
+      })
+      .catch((err) => {
+        if (!isMounted) return;
+        setError(err.message || __('Failed to load data', 'content-forge'));
+        setLoading(false);
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, [page, perPage, view]);
+
+  const handlePageChange = (newPage) => {
+    setPage(newPage);
+  };
+
+  const refreshList = (targetPage = null) => {
+    const pageToLoad = targetPage !== null ? targetPage : page;
+    setLoading(true);
+    setError(null);
+
+    apiFetch({
+      path: `posts/list?page=${pageToLoad}&per_page=${perPage}`,
+      method: 'GET',
+    })
+      .then((res) => {
+        setItems(res.items || []);
+        setTotal(res.total || 0);
+        if (targetPage !== null) {
+          setPage(pageToLoad);
+        }
+        setLoading(false);
+      })
+      .catch((err) => {
+        setError(err.message || __('Failed to load data', 'content-forge'));
+        setLoading(false);
+      });
+  };
+
+  const handleDelete = async (itemId) => {
+    if (!confirm(__('Are you sure you want to delete this item?', 'content-forge'))) {
+      return;
+    }
+
+    setDeleting(itemId);
+    setNotice(null);
+    try {
+      await apiFetch({
+        path: `posts/${itemId}`,
+        method: 'DELETE',
+      });
+      setNotice({
+        message: __('Item deleted successfully!', 'content-forge'),
+        status: 'success',
+      });
+      // Refresh the list - if current page becomes empty, go to page 1
+      const currentPageItemCount = items.length;
+      if (currentPageItemCount === 1 && page > 1) {
+        // If this was the last item on the page, go to previous page
+        refreshList(page - 1);
+      } else {
+        // Otherwise refresh current page
+        refreshList();
+      }
+      setDeleting(null);
+      setTimeout(() => setNotice(null), 3000);
+    } catch (err) {
+      setNotice({
+        message: err.message || __('Failed to delete item', 'content-forge'),
+        status: 'error',
+      });
+      setDeleting(null);
+      setTimeout(() => setNotice(null), 5000);
+    }
+  };
+
+  const handleDeleteAll = async () => {
+    if (!confirm(__('Are you sure you want to delete all generated items?', 'content-forge'))) {
+      return;
+    }
+
+    setDeleting('all');
+    setNotice(null);
+    try {
+      await apiFetch({
+        path: 'posts/bulk',
+        method: 'DELETE',
+      });
+      setNotice({
+        message: __('All items deleted successfully!', 'content-forge'),
+        status: 'success',
+      });
+      setItems([]);
+      setTotal(0);
+      setDeleting(null);
+      setTimeout(() => setNotice(null), 3000);
+    } catch (err) {
+      setNotice({
+        message: err.message || __('Failed to delete items', 'content-forge'),
+        status: 'error',
+      });
+      setDeleting(null);
+      setTimeout(() => setNotice(null), 5000);
+    }
+  };
+
+  const handleSuccess = () => {
+    setView('list');
+    setPage(1); // Reset to first page after adding new item
+  };
+
   return (
     <div className="cforge-bg-white cforge-p-8 cforge-min-h-screen">
       <Header
@@ -351,8 +495,18 @@ function PagesPostsApp() {
       />
 
       {view === 'list' ? (
-        <ListView
-          endpoint="posts"
+        <>
+          {notice && (
+            <div className={`cforge-mb-4 cforge-p-3 cforge-rounded cforge-text-white ${notice.status === 'success' ? 'cforge-bg-green-500' : 'cforge-bg-red-500'}`}>
+              {notice.message}
+            </div>
+          )}
+          <ListView
+          items={items}
+          loading={loading}
+          error={error}
+          page={page}
+          totalPages={totalPages}
           columns={[
             { key: 'title', label: __('Title', 'content-forge') },
             { key: 'author', label: __('Author', 'content-forge') },
@@ -362,7 +516,7 @@ function PagesPostsApp() {
           renderRow={(item) => (
             <>
               <td
-                className="cforge-px-4 cforge-py-2 cforge-text-blue-700 cforge-font-medium cforge-cursor-pointer cforge-underline"
+                className="cforge-whitespace-nowrap cforge-py-4 cforge-pl-4 cforge-pr-3 cforge-text-sm cforge-font-medium cforge-text-gray-900 sm:cforge-pl-6 cforge-cursor-pointer cforge-underline cforge-text-blue-700 hover:cforge-text-blue-900"
                 onClick={() => {
                   const editUrl = `${window.location.origin}/wp-admin/post.php?post=${item.ID}&action=edit`;
                   window.open(editUrl, '_blank');
@@ -371,19 +525,19 @@ function PagesPostsApp() {
               >
                 {item.title}
               </td>
-              <td className="cforge-px-4 cforge-py-2">{item.author}</td>
-              <td className="cforge-px-4 cforge-py-2">{item.type}</td>
-              <td className="cforge-px-4 cforge-py-2">{item.date}</td>
+              <td className="cforge-whitespace-nowrap cforge-px-3 cforge-py-4 cforge-text-sm cforge-text-gray-500">{item.author}</td>
+              <td className="cforge-whitespace-nowrap cforge-px-3 cforge-py-4 cforge-text-sm cforge-text-gray-500">{item.type}</td>
+              <td className="cforge-whitespace-nowrap cforge-px-3 cforge-py-4 cforge-text-sm cforge-text-gray-500">{item.date}</td>
             </>
           )}
-          actions={(item, handleDelete, deleting) => (
+          actions={(item, onDelete, deleting, itemId) => (
             <button
-              onClick={() => handleDelete(item.ID)}
-              disabled={deleting === item.ID}
+              onClick={() => onDelete(itemId)}
+              disabled={deleting === itemId}
               className="cforge-text-red-600 hover:cforge-text-red-800 cforge-p-1 cforge-rounded hover:cforge-bg-red-50"
               title={__('Delete', 'content-forge')}
             >
-              {deleting === item.ID ? (
+              {deleting === itemId ? (
                 <span className="cforge-text-xs">{__('...', 'content-forge')}</span>
               ) : (
                 <svg className="cforge-w-4 cforge-h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -393,9 +547,16 @@ function PagesPostsApp() {
             </button>
           )}
           onAddNew={() => setView('add')}
-        />
+          onPageChange={handlePageChange}
+          onDelete={handleDelete}
+          onDeleteAll={handleDeleteAll}
+          deleting={deleting}
+            title={__('Pages/Posts', 'content-forge')}
+            description={__('A list of all the generated pages and posts including their title, author, type and date.', 'content-forge')}
+          />
+        </>
       ) : (
-        <AddNewView onCancel={() => setView('list')} onSuccess={() => setView('list')} />
+        <AddNewView onCancel={() => setView('list')} onSuccess={handleSuccess} />
       )}
     </div>
   );
