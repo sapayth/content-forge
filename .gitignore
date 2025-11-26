@@ -5,10 +5,56 @@ build/
 assets/
 release/
 
-# Editor and system files
-.DS_Store
-.cursor/
-
 # Composer
 vendor/
 composer.lock
+
+# Testing
+/tests/wordpress/
+/coverage/
+/.wp-env/
+phpunit.xml
+.phpunit.result.cache
+
+# WordPress Environment
+.wp-env.json
+.wp-env/
+
+# Editor and IDE files
+.cursor/
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+*.sublime-project
+*.sublime-workspace
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Environment and configuration
+.env
+.env.local
+.env.*.local
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+*.cache
+.cache/
+
+# Package manager lock files (optional - uncomment if you want to ignore)
+# package-lock.json
+# yarn.lock

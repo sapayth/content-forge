@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<phpunit
+	bootstrap="tests/bootstrap.php"
+	backupGlobals="false"
+	colors="true"
+	convertErrorsToExceptions="true"
+	convertNoticesToExceptions="true"
+	convertWarningsToExceptions="true"
+	beStrictAboutTestsThatDoNotTestAnything="true"
+>
+	<testsuites>
+		<testsuite name="Content Forge Test Suite">
+			<directory suffix=".php">./tests/</directory>
+			<exclude>./tests/bootstrap.php</exclude>
+			<exclude>./tests/test-base.php</exclude>
+		</testsuite>
+		<testsuite name="Generator Tests">
+			<file>./tests/test-post-generator.php</file>
+			<file>./tests/test-user-generator.php</file>
+			<file>./tests/test-comment-generator.php</file>
+		</testsuite>
+		<testsuite name="API Tests">
+			<file>./tests/test-post-api.php</file>
+			<file>./tests/test-user-api.php</file>
+			<file>./tests/test-comment-api.php</file>
+		</testsuite>
+		<testsuite name="Tracking Tests">
+			<file>./tests/test-tracking.php</file>
+		</testsuite>
+	</testsuites>
+	<coverage>
+		<include>
+			<directory suffix=".php">./includes</directory>
+		</include>
+		<exclude>
+			<directory>./vendor</directory>
+			<directory>./node_modules</directory>
+		</exclude>
+		<report>
+			<html outputDirectory="coverage"/>
+			<text outputFile="php://stdout" showUncoveredFiles="true"/>
+		</report>
+	</coverage>
+	<php>
+		<const name="WP_TESTS_PHPUNIT_POLYFILLS_PATH" value="./vendor/yoast/phpunit-polyfills"/>
+	</php>
+</phpunit>
