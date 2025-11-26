@@ -12,14 +12,16 @@ use WP_Error;
 use ContentForge\Activator;
 
 global $wpdb;
-if ( ! defined( 'ABSPATH' ) ) {
+if ( !defined( 'ABSPATH' ) )
+{
     exit;
 }
 
 /**
  * Generator for fake posts.
  */
-class Post extends Generator {
+class Post extends Generator
+{
 
     /**
      * Generate fake posts.
@@ -29,9 +31,11 @@ class Post extends Generator {
      *
      * @return array Array of generated post IDs.
      */
-    public function generate( $count = 1, $args = [] ) {
+    public function generate( $count = 1, $args = [] )
+    {
         $ids = [];
-        for ( $i = 0; $i < $count; $i ++ ) {
+        for ( $i = 0; $i < $count; $i++ )
+        {
             $post_data = [
                 'post_title'   => $this->randomize_title(),
                 'post_content' => $this->randomize_content(),
@@ -39,13 +43,15 @@ class Post extends Generator {
                 'post_type'    => 'post',
                 'post_author'  => $this->user_id,
             ];
-            if ( ! empty( $args ) ) {
+            if ( !empty( $args ) )
+            {
                 $post_data = array_merge( $post_data, $args );
             }
             $post_id = wp_insert_post( $post_data );
-            if ( ! is_wp_error( $post_id ) && $post_id ) {
+            if ( !is_wp_error( $post_id ) && $post_id )
+            {
                 $ids[] = $post_id;
-                $this->track_generated( $post_id );
+                $this->track_generated( $post_id, 'post' );
             }
         }
 
@@ -57,7 +63,8 @@ class Post extends Generator {
      *
      * @return string Generated title
      */
-    private function randomize_title() {
+    private function randomize_title()
+    {
         $adjectives = [
             'Amazing',
             'Incredible',
@@ -105,7 +112,7 @@ class Post extends Generator {
             'State-of-the-art',
             'Top-notch',
         ];
-        $nouns = [
+        $nouns      = [
             'Guide',
             'Tips',
             'Secrets',
@@ -157,7 +164,7 @@ class Post extends Generator {
             'Reports',
             'Stories',
         ];
-        $verbs = [
+        $verbs      = [
             'Boost',
             'Improve',
             'Master',
@@ -212,7 +219,7 @@ class Post extends Generator {
             'Overcome',
             'Conquer',
         ];
-        $topics = [
+        $topics     = [
             'Productivity',
             'Marketing',
             'Writing',
@@ -343,8 +350,10 @@ class Post extends Generator {
         $template = $structures[ array_rand( $structures ) ];
         // Replace keywords with random words
         $title = array_map(
-            function( $word ) use ( $adjectives, $nouns, $verbs, $topics, $industries ) {
-                switch ( $word ) {
+            function ( $word ) use ( $adjectives, $nouns, $verbs, $topics, $industries )
+            {
+                switch ( $word )
+                {
                     case 'adjective':
                         return $adjectives[ array_rand( $adjectives ) ];
                     case 'noun':
@@ -380,8 +389,9 @@ class Post extends Generator {
      *
      * @return string Generated content
      */
-    private function randomize_content() {
-        $sentences = [
+    private function randomize_content()
+    {
+        $sentences  = [
             'In today\'s fast-paced digital world, businesses need to stay ahead of the competition by implementing innovative strategies.',
             'The key to success lies in understanding your target audience and delivering value that exceeds their expectations.',
             'Technology continues to evolve at an unprecedented rate, creating new opportunities for growth and development.',
@@ -425,15 +435,18 @@ class Post extends Generator {
         ];
         $paragraphs = wp_rand( 2, 5 );
         $content    = '';
-        for ( $i = 0; $i < $paragraphs; $i ++ ) {
+        for ( $i = 0; $i < $paragraphs; $i++ )
+        {
             $sentences_per_paragraph = wp_rand( 3, 6 );
             $paragraph               = '<p>';
-            for ( $j = 0; $j < $sentences_per_paragraph; $j ++ ) {
+            for ( $j = 0; $j < $sentences_per_paragraph; $j++ )
+            {
                 $paragraph .= $sentences[ array_rand( $sentences ) ] . ' ';
             }
-            $paragraph = trim( $paragraph ) . '</p>';
+            $paragraph  = trim( $paragraph ) . '</p>';
             $content   .= $paragraph;
-            if ( $i < $paragraphs - 1 ) {
+            if ( $i < $paragraphs - 1 )
+            {
                 $content .= "\n\n";
             }
         }
@@ -450,67 +463,18 @@ class Post extends Generator {
      *
      * @return int Number of items deleted.
      */
-    public function delete( array $object_ids ) {
+    public function delete( array $object_ids )
+    {
         $deleted = 0;
-        foreach ( $object_ids as $post_id ) {
-            if ( wp_delete_post( $post_id, true ) ) {
-                ++ $deleted;
-                $this->untrack_generated( $post_id );
+        foreach ( $object_ids as $post_id )
+        {
+            if ( wp_delete_post( $post_id, true ) )
+            {
+                ++$deleted;
+                $this->untrack_generated( $post_id, 'post' );
             }
         }
 
         return $deleted;
-    }
-
-    /**
-     * Track generated post in the custom DB table.
-     *
-     * @param int $post_id The post ID to track.
-     */
-    protected function track_generated( $post_id ) {
-        global $wpdb;
-        // We use direct DB access here because we are tracking generated posts in a custom table,
-        // and there is no WordPress API for this use case. All data is sanitized and prepared.
-        Activator::create_tracking_table();
-        $post       = get_post( $post_id );
-        $data_type  = $post ? $post->post_type : 'post';
-        $table_name = $wpdb->prefix . CFORGE_DBNAME;
-        $object_id  = intval( $post_id );
-        $data_type  = sanitize_key( $data_type );
-        $created_at = current_time( 'mysql' );
-        $created_by = intval( $this->user_id );
-        // Construct SQL without interpolation
-        $sql = "INSERT INTO {$table_name} (object_id, data_type, created_at, created_by) VALUES (%d, %s, %s, %d)";
-        $result = $wpdb->query(
-            $wpdb->prepare(
-                "INSERT INTO {$table_name} (object_id, data_type, created_at, created_by) VALUES (%d, %s, %s, %d)",
-                $object_id,
-                $data_type,
-                $created_at,
-                $created_by
-            )
-        );
-
-        if ( false === $result ) {
-            // Optionally log or handle the error - removing error_log for production
-            // error_log( 'Failed to insert generated post tracking record for post_id: ' . $object_id );
-            // For now, we silently handle the error
-        }
-    }
-
-    /**
-     * Remove tracking info for a deleted post.
-     *
-     * @param int $post_id The post ID to untrack.
-     */
-    protected function untrack_generated( $post_id ) {
-        global $wpdb;
-        $wpdb->delete(
-            $wpdb->prefix . CFORGE_DBNAME,
-            [
-                'object_id' => $post_id,
-            ],
-            [ '%d' ]
-        );
     }
 }

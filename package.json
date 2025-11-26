@@ -4,7 +4,7 @@
   "description": "Content Forge React admin app for WordPress plugin.",
   "main": "src/pages-posts-app.jsx",
   "scripts": {
-    "dev": "webpack --mode development --watch",
+    "start": "webpack --mode development --watch",
     "build": "webpack --mode production",
     "build:css": "webpack --mode production",
     "build:pages-posts": "webpack --config webpack.config.js --env entry=pages-posts.jsx --env output=assets/js/pagesPosts.js --mode production",
