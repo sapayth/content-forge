@@ -1,7 +1,7 @@
 import { useState, useEffect } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import '../css/common.css';
-import Header from './components/header';
+import Header from './components/Header';
 import apiFetch from '@wordpress/api-fetch';
 import ListView from './components/ListView';
 
@@ -34,9 +34,10 @@ function AddNewView({ onCancel, onSuccess }) {
       apiFetch.use(apiFetch.createRootURLMiddleware(window.cforge.apiUrl));
     }
     // Fetch pages for parent dropdown
-    fetch(window.cforgeData?.restUrl + 'wp/v2/pages')
+    fetch(window.cforge?.restUrl + 'wp/v2/pages')
       .then((response) => response.json())
-      .then((data) => setPages(data || []));
+      .then((data) => setPages(data || []))
+
   }, []);
 
   const validate = () => {
@@ -502,55 +503,55 @@ function PagesPostsApp() {
             </div>
           )}
           <ListView
-          items={items}
-          loading={loading}
-          error={error}
-          page={page}
-          totalPages={totalPages}
-          columns={[
-            { key: 'title', label: __('Title', 'content-forge') },
-            { key: 'author', label: __('Author', 'content-forge') },
-            { key: 'type', label: __('Type', 'content-forge') },
-            { key: 'date', label: __('Date', 'content-forge') },
-          ]}
-          renderRow={(item) => (
-            <>
-              <td
-                className="cforge-whitespace-nowrap cforge-py-4 cforge-pl-4 cforge-pr-3 cforge-text-sm cforge-font-medium cforge-text-gray-900 sm:cforge-pl-6 cforge-cursor-pointer cforge-underline cforge-text-blue-700 hover:cforge-text-blue-900"
-                onClick={() => {
-                  const editUrl = `${window.location.origin}/wp-admin/post.php?post=${item.ID}&action=edit`;
-                  window.open(editUrl, '_blank');
-                }}
-                title={__('Edit this post/page', 'content-forge')}
+            items={items}
+            loading={loading}
+            error={error}
+            page={page}
+            totalPages={totalPages}
+            columns={[
+              { key: 'title', label: __('Title', 'content-forge') },
+              { key: 'author', label: __('Author', 'content-forge') },
+              { key: 'type', label: __('Type', 'content-forge') },
+              { key: 'date', label: __('Date', 'content-forge') },
+            ]}
+            renderRow={(item) => (
+              <>
+                <td
+                  className="cforge-whitespace-nowrap cforge-py-4 cforge-pl-4 cforge-pr-3 cforge-text-sm cforge-font-medium cforge-text-gray-900 sm:cforge-pl-6 cforge-cursor-pointer cforge-underline cforge-text-blue-700 hover:cforge-text-blue-900"
+                  onClick={() => {
+                    const editUrl = `${window.location.origin}/wp-admin/post.php?post=${item.ID}&action=edit`;
+                    window.open(editUrl, '_blank');
+                  }}
+                  title={__('Edit this post/page', 'content-forge')}
+                >
+                  {item.title}
+                </td>
+                <td className="cforge-whitespace-nowrap cforge-px-3 cforge-py-4 cforge-text-sm cforge-text-gray-500">{item.author}</td>
+                <td className="cforge-whitespace-nowrap cforge-px-3 cforge-py-4 cforge-text-sm cforge-text-gray-500">{item.type}</td>
+                <td className="cforge-whitespace-nowrap cforge-px-3 cforge-py-4 cforge-text-sm cforge-text-gray-500">{item.date}</td>
+              </>
+            )}
+            actions={(item, onDelete, deleting, itemId) => (
+              <button
+                onClick={() => onDelete(itemId)}
+                disabled={deleting === itemId}
+                className="cforge-text-red-600 hover:cforge-text-red-800 cforge-p-1 cforge-rounded hover:cforge-bg-red-50"
+                title={__('Delete', 'content-forge')}
               >
-                {item.title}
-              </td>
-              <td className="cforge-whitespace-nowrap cforge-px-3 cforge-py-4 cforge-text-sm cforge-text-gray-500">{item.author}</td>
-              <td className="cforge-whitespace-nowrap cforge-px-3 cforge-py-4 cforge-text-sm cforge-text-gray-500">{item.type}</td>
-              <td className="cforge-whitespace-nowrap cforge-px-3 cforge-py-4 cforge-text-sm cforge-text-gray-500">{item.date}</td>
-            </>
-          )}
-          actions={(item, onDelete, deleting, itemId) => (
-            <button
-              onClick={() => onDelete(itemId)}
-              disabled={deleting === itemId}
-              className="cforge-text-red-600 hover:cforge-text-red-800 cforge-p-1 cforge-rounded hover:cforge-bg-red-50"
-              title={__('Delete', 'content-forge')}
-            >
-              {deleting === itemId ? (
-                <span className="cforge-text-xs">{__('...', 'content-forge')}</span>
-              ) : (
-                <svg className="cforge-w-4 cforge-h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
-              )}
-            </button>
-          )}
-          onAddNew={() => setView('add')}
-          onPageChange={handlePageChange}
-          onDelete={handleDelete}
-          onDeleteAll={handleDeleteAll}
-          deleting={deleting}
+                {deleting === itemId ? (
+                  <span className="cforge-text-xs">{__('...', 'content-forge')}</span>
+                ) : (
+                  <svg className="cforge-w-4 cforge-h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                )}
+              </button>
+            )}
+            onAddNew={() => setView('add')}
+            onPageChange={handlePageChange}
+            onDelete={handleDelete}
+            onDeleteAll={handleDeleteAll}
+            deleting={deleting}
             title={__('Pages/Posts', 'content-forge')}
             description={__('A list of all the generated pages and posts including their title, author, type and date.', 'content-forge')}
           />

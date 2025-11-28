@@ -1,10 +1,12 @@
-# Node and build output
-node_modules/
-dist/
-build/
-assets/
-release/
-
-# Editor and system files
-.DS_Store
-.cursor/
+# Node and build output
+node_modules/
+dist/
+build/
+assets/
+release/
+
+# Editor and system files
+.DS_Store
+.cursor/
+config.bat
+.env

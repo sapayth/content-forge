@@ -1,5 +1,5 @@
 import { __ } from '@wordpress/i18n';
-import Header from './components/header';
+import Header from './components/Header';
 
 export default function Dashboard() {
     return (

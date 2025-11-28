@@ -49,6 +49,12 @@ class Loader {
 
 		$this->container['api'] = new Api();
 
+		// Load and initialize telemetry tracking.
+		if ( file_exists( CFORGE_INCLUDES_PATH . 'Telemetry_Manager.php' ) ) {
+			require_once CFORGE_INCLUDES_PATH . 'Telemetry_Manager.php';
+		}
+		Telemetry_Manager::init();
+
 		if ( is_admin() ) {
 			$this->container['admin'] = new Admin();
 		}
