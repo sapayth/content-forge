@@ -1,7 +1,7 @@
 import { useState, useEffect } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import '../css/common.css';
-import Header from './components/header';
+import Header from './components/Header';
 import apiFetch from '@wordpress/api-fetch';
 import MultiSelect from './components/MultiSelect';
 import ListView from './components/ListView';
