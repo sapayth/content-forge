@@ -7,4 +7,5 @@ $baseDir = dirname($vendorDir);
 
 return array(
     'ContentForge\\' => array($baseDir . '/includes'),
+    'BitApps\\WPTelemetry\\' => array($vendorDir . '/bitapps/wp-telemetry/src'),
 );
