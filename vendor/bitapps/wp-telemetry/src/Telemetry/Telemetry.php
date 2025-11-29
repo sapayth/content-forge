@@ -51,18 +51,6 @@ class Telemetry
         ];
 
         $body = wp_json_encode(array_merge($data, ['wp_telemetry' => self::$version]));
-        
-        // Debug logging
-        error_log( '========================================' );
-        error_log( '=== WP-Telemetry: sendReport() ===' );
-        error_log( '========================================' );
-        error_log( 'API URL: ' . $apiUrl );
-        error_log( 'Route: ' . $route );
-        error_log( 'Blocking: ' . ( $blocking ? 'Yes' : 'No' ) );
-        error_log( 'Headers: ' . print_r( $headers, true ) );
-        error_log( 'Data keys: ' . implode( ', ', array_keys( $data ) ) );
-        error_log( 'Body length: ' . strlen( $body ) . ' bytes' );
-        error_log( 'Body preview: ' . substr( $body, 0, 500 ) );
 
         $response = wp_remote_post(
             $apiUrl,
@@ -77,21 +65,6 @@ class Telemetry
                 'cookies'     => [],
             ]
         );
-        
-        // Log response
-        if ( is_wp_error( $response ) )
-        {
-            error_log( '❌ WP Error: ' . $response->get_error_message() );
-            error_log( 'Error code: ' . $response->get_error_code() );
-        } else
-        {
-            $responseCode = wp_remote_retrieve_response_code( $response );
-            $responseBody = wp_remote_retrieve_body( $response );
-            error_log( '✅ Response Code: ' . $responseCode );
-            error_log( 'Response Body: ' . substr( $responseBody, 0, 500 ) );
-        }
-        
-        error_log( '========================================' );
 
         return $response;
     }

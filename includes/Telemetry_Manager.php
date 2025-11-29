@@ -165,8 +165,7 @@ class Telemetry_Manager
 	 */
 	public static function log_telemetry_send()
 	{
-		error_log( '=== Hook: cforge_tracking_opt_in fired ===' );
-		error_log( 'This means trackingOptIn() was called' );
+		// Hook fired - telemetry opt-in completed
 	}
 
 	/**

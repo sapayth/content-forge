@@ -51,8 +51,8 @@ class Report
             'optOutUrl'   => wp_nonce_url(add_query_arg(TelemetryConfig::getPrefix() . 'tracking_opt_out', 'true'), '_wpnonce'),
             'prefix'      => TelemetryConfig::getPrefix(),
             'title'       => TelemetryConfig::getTitle(),
-            'description' => $this->getDescription()
-            // 'dataWeCollect' => implode(', ', $this->dataWeCollect()),
+            'description' => $this->getDescription(),
+            'dataWeCollect' => $this->dataWeCollect(),
         ]);
     }
 
@@ -61,10 +61,7 @@ class Report
         return sprintf(
             // Translators: The user name and the plugin name.
             esc_html__(
-                'Hi, %1$s! This is an invitation to help our %2$s community.
-				If you opt-in, some data about your usage of %2$s will be shared with our teams (so they can work their butts off to improve).
-				We will also share some helpful info on WordPress, and our products from time to time.
-				And if you skip this, that’s okay! Plugin still work just fine.',
+                'Hi %1$s! Help us make %2$s even better by sharing anonymous usage data. This helps us prioritize features, fix bugs faster, and improve your experience. Your privacy matters—see exactly what we collect below.',
                 '%3$s'
             ),
             wp_get_current_user()->display_name,
@@ -104,6 +101,9 @@ class Report
     {
         update_option(TelemetryConfig::getPrefix() . 'allow_tracking', true);
         update_option(TelemetryConfig::getPrefix() . 'tracking_notice_dismissed', true);
+
+        // Clear last sent timestamp to allow immediate send on opt-in
+        delete_option(TelemetryConfig::getPrefix() . 'tracking_last_sended_at');
 
         $this->clearScheduleEvent();
         $this->scheduleEvent();
@@ -163,31 +163,18 @@ class Report
 
     public function sendTrackingReport()
     {
-        error_log( '========================================' );
-        error_log( '=== sendTrackingReport() called ===' );
-        error_log( '========================================' );
-        
         $trackingAllowed = $this->isTrackingAllowed();
         $sendedWithinWeek = $this->isSendedWithinWeek();
         
-        error_log( 'Tracking allowed: ' . ( $trackingAllowed ? 'Yes' : 'No' ) );
-        error_log( 'Sent within week: ' . ( $sendedWithinWeek ? 'Yes' : 'No' ) );
-        
         if (!$trackingAllowed || $sendedWithinWeek) {
-            error_log( '❌ sendTrackingReport() returning early - not allowed or sent within week' );
             return;
         }
 
-        error_log( '✅ Proceeding to send tracking report' );
-        $trackingData = $this->getTrackingData();
-        error_log( 'Tracking data prepared. Keys: ' . implode( ', ', array_keys( $trackingData ) ) );
-
-        $response = Telemetry::sendReport('plugin-track-create', $trackingData);
-        error_log( 'sendReport() called, response received' );
-
+        // Update timestamp FIRST to prevent duplicate sends if function is called again
         $this->updateLastSendedAt();
-        error_log( '✅ Last sent timestamp updated' );
-        error_log( '========================================' );
+
+        $trackingData = $this->getTrackingData();
+        Telemetry::sendReport('plugin-track-create', $trackingData);
     }
 
     public function getTrackingData()
@@ -201,15 +188,12 @@ class Report
         $data = [
             'url'              => esc_url(home_url()),
             'site'             => $reportInfo->getSiteName(),
-            'admin_email'      => get_option('admin_email'),
             'first_name'       => $user_name['firstName'],
             'last_name'        => $user_name['lastName'],
             'server'           => $reportInfo->getServerInfo(),
             'wp'               => $reportInfo->getWpInfo(),
-            'users'            => $reportInfo->getUserCounts(),
             'active_plugins'   => \count($allPlugins['activePlugins']),
             'inactive_plugins' => \count($allPlugins['inactivePlugins']),
-            'ip_address'       => $reportInfo->getUserIpAddress(),
             'plugin_slug'      => TelemetryConfig::getPrefix(),
             'plugin_version'   => TelemetryConfig::getversion(),
             'is_local'         => $reportInfo->isLocalServer(),
@@ -233,16 +217,18 @@ class Report
     protected function dataWeCollect()
     {
         $collectList = [
-            'Server environment details (php, mysql, server, WordPress versions)',
-            'Number of users in your site',
-            'Site language',
-            'Number of active and inactive plugins',
+            'Server environment details (PHP version, MySQL version, server software, PHP configuration)',
+            'WordPress information (version, locale, memory limit, debug mode, multisite status)',
+            'Theme information (name, version, author, URI)',
             'Site name and URL',
-            'Your name and email address',
+            'Administrator first name and last name',
+            'Number of active and inactive plugins',
+            'Local server detection status',
         ];
 
         if ($this->addPluginData) {
-            array_splice($collectList, 4, 0, ["active plugins' name"]);
+            $collectList[] = 'Active plugins list (name and version)';
+            $collectList[] = 'Inactive plugins list (name, version, and author)';
         }
 
         return $collectList;
