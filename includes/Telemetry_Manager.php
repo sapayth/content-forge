@@ -177,20 +177,14 @@ class Telemetry_Manager
 	 */
 	public static function opt_in()
 	{
-		error_log( '========================================' );
-		error_log( '=== Telemetry_Manager::opt_in() ===' );
-		error_log( '========================================' );
-
 		// Ensure autoloader is loaded
 		if ( file_exists( CFORGE_PATH . '/vendor/autoload.php' ) )
 		{
 			require_once CFORGE_PATH . '/vendor/autoload.php';
-			error_log( '✅ Autoloader loaded in opt_in()' );
 		}
 
 		// Check if class exists with full namespace
 		$telemetryClass = 'BitApps\\WPTelemetry\\Telemetry\\Telemetry';
-		$configClass = 'BitApps\\WPTelemetry\\Telemetry\\TelemetryConfig';
 		
 		// Try autoloading by attempting to use the class
 		if ( !class_exists( $telemetryClass ) )
@@ -198,52 +192,25 @@ class Telemetry_Manager
 			// Try to trigger autoloader
 			try
 			{
-				// Check if autoloader function exists
-				if ( function_exists( 'spl_autoload_functions' ) )
-				{
-					$autoloaders = spl_autoload_functions();
-					error_log( 'Autoloaders registered: ' . count( $autoloaders ) );
-				}
-				
 				// Try to use the class to trigger autoload
 				class_exists( $telemetryClass, true );
 			} catch ( \Exception $e )
 			{
-				error_log( 'Exception during autoload: ' . $e->getMessage() );
+				// Class not found, return early
 			}
 		}
 
 		// Final check
 		if ( !class_exists( $telemetryClass ) )
 		{
-			error_log( '❌ WPTelemetry class not found: ' . $telemetryClass );
-			error_log( 'CFORGE_PATH: ' . ( defined( 'CFORGE_PATH' ) ? CFORGE_PATH : 'NOT DEFINED' ) );
-			error_log( 'Autoload file exists: ' . ( file_exists( CFORGE_PATH . '/vendor/autoload.php' ) ? 'Yes' : 'No' ) );
 			return;
 		}
 
-		error_log( '✅ WPTelemetry class exists' );
-
-		// Check current state
-		$trackingAllowed = Telemetry::report()->isTrackingAllowed();
-		$lastSent        = get_option( 'cforge_tracking_last_sended_at' );
-		$serverUrl       = TelemetryConfig::getServerBaseUrl();
-
-		error_log( 'Tracking allowed (before): ' . ( $trackingAllowed ? 'Yes' : 'No' ) );
-		error_log( 'Last sent at: ' . ( $lastSent ? date( 'Y-m-d H:i:s', $lastSent ) : 'Never' ) );
-		error_log( 'Server URL: ' . $serverUrl );
-
 		// Clear last sent timestamp to force immediate send (bypass weekly check)
 		delete_option( 'cforge_tracking_last_sended_at' );
-		error_log( '✅ Cleared last_sended_at timestamp' );
 
 		// Call trackingOptIn
 		Telemetry::report()->trackingOptIn();
-		error_log( '✅ Called Telemetry::report()->trackingOptIn()' );
-
-		// Check state after opt-in
-		$trackingAllowedAfter = Telemetry::report()->isTrackingAllowed();
-		error_log( 'Tracking allowed (after): ' . ( $trackingAllowedAfter ? 'Yes' : 'No' ) );
 
 		// Use reflection to call sendTrackingReport directly to bypass weekly check
 		try
@@ -252,10 +219,9 @@ class Telemetry_Manager
 			$method     = $reflection->getMethod( 'sendTrackingReport' );
 			$method->setAccessible( true );
 			$method->invoke( Telemetry::report() );
-			error_log( '✅ Called sendTrackingReport() via reflection' );
 		} catch ( \Exception $e )
 		{
-			error_log( '❌ Error calling sendTrackingReport(): ' . $e->getMessage() );
+			// Error calling sendTrackingReport
 		}
 	}
 

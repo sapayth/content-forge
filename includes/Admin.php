@@ -118,52 +118,30 @@ class Admin
 	 */
 	public function handle_telemetry_opt_in()
 	{
-		error_log( '=== Telemetry Opt-in Handler Called ===' );
-		error_log( 'POST data: ' . print_r( $_POST, true ) );
-		error_log( 'Nonce from POST: ' . ( $_POST[ 'nonce' ] ?? 'NOT SET' ) );
-		error_log( 'Action from POST: ' . ( $_POST[ 'action' ] ?? 'NOT SET' ) );
-
 		// Ensure autoloader is loaded (important for AJAX context)
 		if ( file_exists( CFORGE_PATH . '/vendor/autoload.php' ) )
 		{
 			require_once CFORGE_PATH . '/vendor/autoload.php';
-			error_log( '✅ Autoloader loaded' );
-		} else
-		{
-			error_log( '❌ Autoloader file not found at: ' . CFORGE_PATH . '/vendor/autoload.php' );
 		}
 
 		// Verify nonce
 		if ( !isset( $_POST[ 'nonce' ] ) || !wp_verify_nonce( $_POST[ 'nonce' ], 'cforge_telemetry' ) )
 		{
-			error_log( '❌ Nonce verification failed' );
 			wp_send_json_error( [ 'message' => __( 'Invalid security token.', 'content-forge' ) ] );
 		}
-
-		error_log( '✅ Nonce verified' );
 
 		// Check user capability
 		if ( !current_user_can( 'manage_options' ) )
 		{
-			error_log( '❌ User capability check failed' );
 			wp_send_json_error( [ 'message' => __( 'Insufficient permissions.', 'content-forge' ) ] );
 		}
-
-		error_log( '✅ User has manage_options capability' );
-
-		// Check if class exists before calling
-		error_log( 'Checking for WPTelemetry class...' );
-		$telemetryClass = 'BitApps\\WPTelemetry\\Telemetry\\Telemetry';
-		error_log( 'Class exists check: ' . ( class_exists( $telemetryClass ) ? 'Yes' : 'No' ) );
 
 		// Opt in to telemetry
 		try
 		{
 			Telemetry_Manager::opt_in();
-			error_log( '✅ Telemetry opt-in successful' );
 		} catch ( Exception $e )
 		{
-			error_log( '❌ Telemetry opt-in error: ' . $e->getMessage() );
 			wp_send_json_error( [ 'message' => 'Error: ' . $e->getMessage() ] );
 		}
 
