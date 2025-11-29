@@ -58,7 +58,7 @@ class Telemetry_Manager
 		TelemetryConfig::setVersion( CFORGE_VERSION );
 
 		// Set server base URL for telemetry.
-		$server_url = apply_filters( 'cforge_telemetry_server_url', 'http://feedio.test/api/' );
+		$server_url = apply_filters( 'cforge_telemetry_server_url', 'http://feedio.sapayth.com/api/' );
 		if ( !empty( $server_url ) )
 		{
 			TelemetryConfig::setServerBaseUrl( $server_url );
