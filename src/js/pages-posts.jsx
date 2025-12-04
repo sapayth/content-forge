@@ -23,6 +23,7 @@ function AddNewView({ onCancel, onSuccess }) {
   });
   const [generateImage, setGenerateImage] = useState(false);
   const [imageSources, setImageSources] = useState({ picsum: true, placehold: false });
+  const [generateExcerpt, setGenerateExcerpt] = useState(true);
   const [pages, setPages] = useState([]);
   const [errors, setErrors] = useState({});
   const [notice, setNotice] = useState(null);
@@ -95,6 +96,10 @@ function AddNewView({ onCancel, onSuccess }) {
       if (imageSources.picsum) selectedSources.push('picsum');
       if (imageSources.placehold) selectedSources.push('placehold');
       payload.image_sources = selectedSources.length > 0 ? selectedSources : ['picsum'];
+    }
+    // Add excerpt generation option
+    if (tab === 'auto') {
+      payload.generate_excerpt = generateExcerpt;
     }
     if (tab === 'auto') {
       payload.post_number = Number(post.post_number);
@@ -290,6 +295,14 @@ function AddNewView({ onCancel, onSuccess }) {
                       )}
                     </div>
                   )}
+                </div>
+                <div className="cforge-mb-4 cforge-border cforge-border-gray-200 cforge-rounded-lg cforge-p-4 cforge-bg-gray-50">
+                  <ToggleControl
+                    label={__('Generate Post Excerpt', 'content-forge')}
+                    checked={generateExcerpt}
+                    onChange={setGenerateExcerpt}
+                    help={__('Automatically generate a post excerpt from the content (55 words by default)', 'content-forge')}
+                  />
                 </div>
               </>
             ) : (

@@ -119,6 +119,9 @@ class Post extends CForge_REST_Controller {
         $generate_image = isset( $params['generate_image'] ) && $params['generate_image'];
         $image_sources  = isset( $params['image_sources'] ) && is_array( $params['image_sources'] ) ? array_map( 'sanitize_text_field', $params['image_sources'] ) : [];
 
+        // Extract excerpt generation parameter (defaults to true for backward compatibility)
+        $generate_excerpt = isset( $params['generate_excerpt'] ) ? (bool) $params['generate_excerpt'] : true;
+
         if ( $generate_image ) {
             error_log( sprintf( 'Content Forge API: Image generation requested - Sources: %s', implode( ', ', $image_sources ) ) );
         }
@@ -148,6 +151,8 @@ class Post extends CForge_REST_Controller {
                         $args['image_sources'] = $image_sources;
                     }
                 }
+                // Add excerpt generation parameter
+                $args['generate_excerpt'] = $generate_excerpt;
                 $ids     = $generator->generate( 1, $args );
                 if ( empty( $ids ) ) {
                     return new \WP_REST_Response(
@@ -177,6 +182,8 @@ class Post extends CForge_REST_Controller {
                     $args['image_sources'] = $image_sources;
                 }
             }
+            // Add excerpt generation parameter
+            $args['generate_excerpt'] = $generate_excerpt;
             $ids  = $generator->generate( $post_number, $args );
             if ( empty( $ids ) ) {
                 return new \WP_REST_Response(

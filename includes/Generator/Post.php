@@ -38,14 +38,13 @@ class Post extends Generator
 
             for ( $i = 0; $i < $count; $i++ )
             {
-                  $title   = $this->randomize_title();
-                  $content = $this->randomize_content();
-                  $excerpt = $this->generate_excerpt( $content );
+                  // Generate default title and content if not provided in args
+                  $title   = isset( $args['post_title'] ) ? $args['post_title'] : $this->randomize_title();
+                  $content = isset( $args['post_content'] ) ? $args['post_content'] : $this->randomize_content();
 
                   $post_data = [
                         'post_title'   => $title,
                         'post_content' => $content,
-                        'post_excerpt' => $excerpt,
                         'post_status'  => 'publish',
                         'post_type'    => 'post',
                         'post_author'  => $this->user_id,
@@ -54,6 +53,23 @@ class Post extends Generator
                   if ( !empty( $args ) )
                   {
                         $post_data = array_merge( $post_data, $args );
+                  }
+
+                  // Generate excerpt from final content (after merge) if not explicitly provided
+                  // Only generate if generate_excerpt is true (defaults to true for backward compatibility)
+                  $should_generate_excerpt = isset( $post_data['generate_excerpt'] ) ? (bool) $post_data['generate_excerpt'] : true;
+                  
+                  // Remove generate_excerpt from post_data as it's not a valid wp_insert_post parameter
+                  unset( $post_data['generate_excerpt'] );
+                  
+                  if ( $should_generate_excerpt && ( !isset( $post_data['post_excerpt'] ) || empty( $post_data['post_excerpt'] ) ) )
+                  {
+                        $post_data['post_excerpt'] = $this->generate_excerpt( $post_data['post_content'] );
+                  }
+                  elseif ( !$should_generate_excerpt )
+                  {
+                        // Explicitly set empty excerpt if generation is disabled
+                        $post_data['post_excerpt'] = '';
                   }
 
                   $post_id = wp_insert_post( $post_data );
@@ -67,7 +83,7 @@ class Post extends Generator
                         if ( isset( $args[ 'generate_image' ] ) && $args[ 'generate_image' ] )
                         {
                               $image_args     = [
-                                    'title'   => $title,
+                                    'title'   => $post_data['post_title'],
                                     'sources' => isset( $args[ 'image_sources' ] ) ? $args[ 'image_sources' ] : [ 'picsum' ],
                               ];
                               $attachment_ids = $image_generator->generate( 1, $image_args );
@@ -548,14 +564,53 @@ class Post extends Generator
       /**
        * Generate a short excerpt from content.
        *
+       * Creates a meaningful excerpt following WordPress standards (55 words default).
+       * Handles edge cases like empty content, very short content, and HTML content.
+       *
        * @param string $content The post content.
+       * @param int    $length  Optional. Excerpt length in words. Default 55 (WordPress standard).
        * @return string The generated excerpt.
        */
-      private function generate_excerpt( $content )
+      private function generate_excerpt( $content, $length = 55 )
       {
-            $text    = wp_strip_all_tags( $content );
-            $words   = explode( ' ', $text );
-            $excerpt = implode( ' ', array_slice( $words, 0, 20 ) );
+            // Handle empty content
+            if ( empty( $content ) )
+            {
+                  return '';
+            }
+
+            // Strip all HTML tags and decode entities
+            $text = wp_strip_all_tags( $content );
+            $text = html_entity_decode( $text, ENT_QUOTES, 'UTF-8' );
+
+            // Remove extra whitespace
+            $text = preg_replace( '/\s+/', ' ', $text );
+            $text = trim( $text );
+
+            // Handle very short content
+            if ( empty( $text ) )
+            {
+                  return '';
+            }
+
+            // Split into words
+            $words = explode( ' ', $text );
+            $word_count = count( $words );
+
+            // If content is shorter than requested length, return it as-is
+            if ( $word_count <= $length )
+            {
+                  return $text;
+            }
+
+            // Take the first N words
+            $excerpt_words = array_slice( $words, 0, $length );
+            $excerpt = implode( ' ', $excerpt_words );
+
+            // Ensure excerpt ends properly (remove trailing punctuation that might look odd)
+            $excerpt = rtrim( $excerpt, '.,;:!?' );
+
+            // Add ellipsis
             return $excerpt . '...';
       }
 
