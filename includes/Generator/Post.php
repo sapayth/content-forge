@@ -12,9 +12,8 @@ use WP_Error;
 use ContentForge\Activator;
 
 global $wpdb;
-if ( !defined( 'ABSPATH' ) )
-{
-    exit;
+if (!defined('ABSPATH')) {
+	exit;
 }
 
 /**
@@ -23,49 +22,46 @@ if ( !defined( 'ABSPATH' ) )
 class Post extends Generator
 {
 
-    /**
-     * Generate fake posts.
-     *
-     * @param int   $count Number of posts to generate.
-     * @param array $args  Arguments array for post generation.
-     *
-     * @return array Array of generated post IDs.
-     */
-    public function generate( $count = 1, $args = [] )
-    {
-        $ids = [];
-        for ( $i = 0; $i < $count; $i++ )
-        {
-            $post_data = [
-                'post_title'   => $this->randomize_title(),
-                'post_content' => $this->randomize_content(),
-                'post_status'  => 'publish',
-                'post_type'    => 'post',
-                'post_author'  => $this->user_id,
-            ];
-            if ( !empty( $args ) )
-            {
-                $post_data = array_merge( $post_data, $args );
-            }
-            $post_id = wp_insert_post( $post_data );
-            if ( !is_wp_error( $post_id ) && $post_id )
-            {
-                $ids[] = $post_id;
-                $this->track_generated( $post_id );
-            }
-        }
+	/**
+	 * Generate fake posts.
+	 *
+	 * @param int   $count Number of posts to generate.
+	 * @param array $args  Arguments array for post generation.
+	 *
+	 * @return array Array of generated post IDs.
+	 */
+	public function generate($count = 1, $args = [])
+	{
+		$ids = [];
+		for ($i = 0; $i < $count; $i++) {
+			$post_data = [
+				'post_title' => $this->randomize_title(),
+				'post_content' => $this->randomize_content(),
+				'post_status' => 'publish',
+				'post_type' => 'post',
+				'post_author' => $this->user_id,
+			];
+			if (!empty($args)) {
+				$post_data = array_merge($post_data, $args);
+			}
+			$post_id = wp_insert_post($post_data);
+			if (!is_wp_error($post_id) && $post_id) {
+				$ids[] = $post_id;
+				$this->track_generated($post_id, 'post');
+			}
+		}
 
-        return $ids;
-    }
+		return $ids;
+	}
 
     /**
      * Generate a random meaningful title for posts.
      *
      * @return string Generated title
      */
-    private function randomize_title()
-    {
-        $adjectives          = [
+	private function randomize_title()
+	{
+		$adjectives = [
             'Amazing',
             'Incredible',
             'Essential',
@@ -111,8 +107,8 @@ class Post extends Generator
             'Cutting-edge',
             'State-of-the-art',
             'Top-notch',
-        ];
-        $nouns               = [
+		];
+		$nouns = [
             'Guide',
             'Tips',
             'Secrets',
@@ -163,8 +159,8 @@ class Post extends Generator
             'News',
             'Reports',
             'Stories',
-        ];
-        $verbs               = [
+		];
+		$verbs = [
             'Boost',
             'Improve',
             'Master',
@@ -218,8 +214,8 @@ class Post extends Generator
             'Resolve',
             'Overcome',
             'Conquer',
-        ];
-        $topics              = [
+		];
+		$topics = [
             'Productivity',
             'Marketing',
             'Writing',
@@ -275,8 +271,8 @@ class Post extends Generator
             'Content Creation',
             'SEO',
             'Web Development',
-        ];
-        $industries          = [
+		];
+		$industries = [
             'Healthcare',
             'Education',
             'Real Estate',
@@ -309,8 +305,8 @@ class Post extends Generator
             'Sustainability',
             'Non-profit',
             'Government',
-        ];
-        $time_modifiers      = [
+		];
+		$time_modifiers = [
             '2025',
             'This Year',
             'Next Year',
@@ -319,8 +315,8 @@ class Post extends Generator
             'Right Now',
             'This Month',
             'This Week',
-        ];
-        $intensity_modifiers = [
+		];
+		$intensity_modifiers = [
             'Proven',
             'Data-Driven',
             'Science-Backed',
@@ -333,8 +329,8 @@ class Post extends Generator
             'Time-Tested',
             'Actionable',
             'Practical',
-        ];
-        $structures          = [
+		];
+		$structures = [
             // Basic structures
             [ 'verb', 'your', 'adjective', 'noun' ],
             // e.g., Boost Your Creative Ideas
@@ -417,130 +413,126 @@ class Post extends Generator
             [ 'stop', 'wasting', 'time', 'verb', 'topic', 'the', 'adjective', 'way' ],
             // Stop Wasting Time: Master Marketing the Right Way
         ];
-        // Randomly pick a structure
-        $template = $structures[ array_rand( $structures ) ];
-        // Replace keywords with random words
-        $title = array_map(
-            function ( $word ) use ( $adjectives, $nouns, $verbs, $topics, $industries, $time_modifiers, $intensity_modifiers )
-            {
-                switch ( $word )
-                {
-                    case 'adjective':
-                        return $adjectives[ array_rand( $adjectives ) ];
-                    case 'noun':
-                        return $nouns[ array_rand( $nouns ) ];
-                    case 'nouns':
-                        return $nouns[ array_rand( $nouns ) ];
-                    case 'verb':
-                        return $verbs[ array_rand( $verbs ) ];
-                    case 'topic':
-                        return $topics[ array_rand( $topics ) ];
-                    case 'industry':
-                        return $industries[ array_rand( $industries ) ];
-                    case 'timemod':
-                        return $time_modifiers[ array_rand( $time_modifiers ) ];
-                    case 'intensity':
-                        return $intensity_modifiers[ array_rand( $intensity_modifiers ) ];
-                    case 'x':
-                        return wp_rand( 3, 15 ); // Number
-                    case 'ways':
-                        return 2 === wp_rand( 2, 4 ) ? 'Ways' : 'Methods';
-                    case 'professional':
-                        return 2 === wp_rand( 2, 4 ) ? 'Professional' : 'Expert';
-                    case 'percent':
-                        return wp_rand( 50, 500 ) . '%';
-                    default:
-                        return $word;
-                }
-            },
-            $template
-        );
-        // Capitalize the first letter of the sentence and join
-        $title_str = ucfirst( implode( ' ', $title ) );
+		// Randomly pick a structure
+		$template = $structures[array_rand($structures)];
+		// Replace keywords with random words
+		$title = array_map(
+			function ($word) use ($adjectives, $nouns, $verbs, $topics, $industries, $time_modifiers, $intensity_modifiers)
+			{
+				switch ($word) {
+					case 'adjective':
+						return $adjectives[array_rand($adjectives)];
+					case 'noun':
+						return $nouns[array_rand($nouns)];
+					case 'nouns':
+						return $nouns[array_rand($nouns)];
+					case 'verb':
+						return $verbs[array_rand($verbs)];
+					case 'topic':
+						return $topics[array_rand($topics)];
+					case 'industry':
+						return $industries[array_rand($industries)];
+					case 'timemod':
+						return $time_modifiers[array_rand($time_modifiers)];
+					case 'intensity':
+						return $intensity_modifiers[array_rand($intensity_modifiers)];
+					case 'x':
+						return wp_rand(3, 15); // Number
+					case 'ways':
+						return 2 === wp_rand(2, 4) ? 'Ways' : 'Methods';
+					case 'professional':
+						return 2 === wp_rand(2, 4) ? 'Professional' : 'Expert';
+					case 'percent':
+						return wp_rand(50, 500) . '%';
+					default:
+						return $word;
+				}
+			},
+			$template
+		);
+		// Capitalize the first letter of the sentence and join
+		$title_str = ucfirst(implode(' ', $title));
 
-        return $title_str;
-    }
+		return $title_str;
+	}
 
-    /**
-     * Generate random content for posts.
-     *
-     * @return string Generated content
-     */
-    private function randomize_content()
-    {
-        // Randomly select a content type
-        $content_types = [ 'listicle', 'howto', 'news', 'opinion', 'casestudy' ];
-        $content_type  = $content_types[ array_rand( $content_types ) ];
+	/**
+	 * Generate random content for posts.
+	 *
+	 * @return string Generated content
+	 */
+	private function randomize_content()
+	{
+		// Randomly select a content type
+		$content_types = ['listicle', 'howto', 'news', 'opinion', 'casestudy'];
+		$content_type = $content_types[array_rand($content_types)];
 
-        // Generate content based on type
-        switch ( $content_type )
-        {
-            case 'listicle':
-                $content = $this->generate_listicle_content();
-                break;
-            case 'howto':
-                $content = $this->generate_howto_content();
-                break;
-            case 'news':
-                $content = $this->generate_news_content();
-                break;
-            case 'opinion':
-                $content = $this->generate_opinion_content();
-                break;
-            case 'casestudy':
-                $content = $this->generate_casestudy_content();
-                break;
-            default:
-                $content = $this->generate_standard_content();
-        }
+		// Generate content based on type
+		switch ($content_type) {
+			case 'listicle':
+				$content = $this->generate_listicle_content();
+				break;
+			case 'howto':
+				$content = $this->generate_howto_content();
+				break;
+			case 'news':
+				$content = $this->generate_news_content();
+				break;
+			case 'opinion':
+				$content = $this->generate_opinion_content();
+				break;
+			case 'casestudy':
+				$content = $this->generate_casestudy_content();
+				break;
+			default:
+				$content = $this->generate_standard_content();
+		}
 
-        // Calculate metadata
-        $word_count   = str_word_count( wp_strip_all_tags( $content ) );
-        $reading_time = max( 1, ceil( $word_count / 200 ) ); // Average reading speed: 200 words/min
+		// Calculate metadata
+		$word_count = str_word_count(wp_strip_all_tags($content));
+		$reading_time = max(1, ceil($word_count / 200)); // Average reading speed: 200 words/min
 
-        // Add metadata as HTML comment
-        $metadata = "\n<!-- Content Type: {$content_type} | Word Count: {$word_count} | Reading Time: {$reading_time} min -->\n\n";
+		// Add metadata as HTML comment
+		$metadata = "\n<!-- Content Type: {$content_type} | Word Count: {$word_count} | Reading Time: {$reading_time} min -->\n\n";
 
-        // Append the Content Forge attribution
-        $content .= "\n\n<p><em>This is a fake post generated by Content Forge.</em></p>";
+		// Append the Content Forge attribution
+		$content .= "\n\n<p><em>This is a fake post generated by Content Forge.</em></p>";
 
-        return $metadata . $content;
-    }
+		return $metadata . $content;
+	}
 
-    /**
-     * Get a random sentence from the sentence bank.
-     *
-     * @param string $category Optional category filter.
-     * @return string Random sentence
-     */
-    private function get_random_sentence( $category = '' )
-    {
-        $sentences = $this->get_sentence_bank();
+	/**
+	 * Get a random sentence from the sentence bank.
+	 *
+	 * @param string $category Optional category filter.
+	 * @return string Random sentence
+	 */
+	private function get_random_sentence($category = '')
+	{
+		$sentences = $this->get_sentence_bank();
 
-        if ( $category && isset( $sentences[ $category ] ) )
-        {
-            return $sentences[ $category ][ array_rand( $sentences[ $category ] ) ];
-        }
+		if ($category && isset($sentences[$category])) {
+			return $sentences[$category][array_rand($sentences[$category])];
+		}
 
-        // Get from all categories
-        $all_sentences = [];
-        foreach ( $sentences as $cat_sentences )
-        {
-            $all_sentences = array_merge( $all_sentences, $cat_sentences );
-        }
+		// Get from all categories
+		$all_sentences = [];
+		foreach ($sentences as $cat_sentences) {
+			$all_sentences = array_merge($all_sentences, $cat_sentences);
+		}
 
-        return $all_sentences[ array_rand( $all_sentences ) ];
-    }
+		return $all_sentences[array_rand($all_sentences)];
+	}
 
-    /**
-     * Get sentence bank organized by category.
-     *
-     * @return array Categorized sentences
-     */
-    private function get_sentence_bank()
-    {
-        return [
-            'business'    => [
+	/**
+	 * Get sentence bank organized by category.
+	 *
+	 * @return array Categorized sentences
+	 */
+	private function get_sentence_bank()
+	{
+		return [
+			'business' => [
                 'In today\'s fast-paced digital world, businesses need to stay ahead of the competition by implementing innovative strategies.',
                 'The key to success lies in understanding your target audience and delivering value that exceeds their expectations.',
                 'Data-driven decision making has become essential for companies looking to optimize their operations and maximize ROI.',
@@ -556,8 +548,8 @@ class Post extends Generator
                 'Resource optimization maximizes efficiency while minimizing waste and costs.',
                 'Quality assurance processes ensure products meet or exceed customer expectations.',
                 'Performance metrics and KPIs provide valuable insights for strategic decision making.',
-            ],
-            'technology'  => [
+			],
+			'technology' => [
                 'Technology continues to evolve at an unprecedented rate, creating new opportunities for growth and development.',
                 'Automation and artificial intelligence are transforming industries and reshaping the future of work.',
                 'Remote work has fundamentally changed how teams collaborate and organizations operate.',
@@ -573,8 +565,8 @@ class Post extends Generator
                 'Machine learning algorithms are enabling predictive analytics and personalized experiences.',
                 '5G technology is unlocking new possibilities for connectivity and real-time applications.',
                 'Quantum computing represents the next frontier in computational power and problem-solving.',
-            ],
-            'marketing'   => [
+			],
+			'marketing' => [
                 'Effective communication is the foundation of any successful organization, fostering collaboration and driving results.',
                 'Content marketing has proven to be one of the most effective ways to build brand awareness.',
                 'Social media platforms continue to evolve, offering new ways to connect with audiences.',
@@ -590,8 +582,8 @@ class Post extends Generator
                 'Marketing automation enables personalized communication at scale.',
                 'Customer segmentation allows for more targeted and effective messaging.',
                 'A/B testing provides data-driven insights for continuous improvement.',
-            ],
-            'general'     => [
+			],
+			'general' => [
                 'Cross-functional collaboration is essential for delivering complex projects successfully.',
                 'Continuous learning has become a necessity in rapidly changing professional landscapes.',
                 'Diversity and inclusion initiatives drive innovation and improve organizational performance.',
@@ -607,8 +599,8 @@ class Post extends Generator
                 'Stakeholder engagement is crucial for project success and organizational alignment.',
                 'Time management and productivity tools help professionals maximize their effectiveness.',
                 'Professional development and upskilling are essential for career advancement.',
-            ],
-            'transitions' => [
+			],
+			'transitions' => [
                 'Furthermore, this approach has proven effective across multiple industries.',
                 'However, it\'s important to consider the potential challenges and limitations.',
                 'In addition, organizations must remain flexible and adaptable to changing conditions.',
@@ -619,79 +611,77 @@ class Post extends Generator
                 'Consequently, industry leaders are adopting these practices at an accelerating pace.',
                 'Similarly, other sectors are experiencing comparable transformations.',
                 'In contrast, outdated approaches are becoming increasingly ineffective.',
-            ],
-        ];
-    }
+			],
+		];
+	}
 
-    /**
-     * Generate a paragraph with specified length.
-     *
-     * @param string $length Paragraph length: 'short', 'medium', or 'long'.
-     * @param string $category Optional sentence category.
-     * @return string Generated paragraph
-     */
-    private function generate_paragraph( $length = 'medium', $category = '' )
-    {
-        $sentence_counts = [
-            'short'  => [ 2, 3 ],
-            'medium' => [ 4, 5 ],
-            'long'   => [ 6, 8 ],
-        ];
+	/**
+	 * Generate a paragraph with specified length.
+	 *
+	 * @param string $length Paragraph length: 'short', 'medium', or 'long'.
+	 * @param string $category Optional sentence category.
+	 * @return string Generated paragraph
+	 */
+	private function generate_paragraph($length = 'medium', $category = '')
+	{
+		$sentence_counts = [
+			'short' => [2, 3],
+			'medium' => [4, 5],
+			'long' => [6, 8],
+		];
 
-        $range          = $sentence_counts[ $length ] ?? $sentence_counts[ 'medium' ];
-        $sentence_count = wp_rand( $range[ 0 ], $range[ 1 ] );
-        $paragraph      = '<p>';
+		$range = $sentence_counts[$length] ?? $sentence_counts['medium'];
+		$sentence_count = wp_rand($range[0], $range[1]);
+		$paragraph = '<p>';
 
-        for ( $i = 0; $i < $sentence_count; $i++ )
-        {
-            $paragraph .= $this->get_random_sentence( $category ) . ' ';
-        }
+		for ($i = 0; $i < $sentence_count; $i++) {
+			$paragraph .= $this->get_random_sentence($category) . ' ';
+		}
 
-        $paragraph = trim( $paragraph ) . '</p>';
+		$paragraph = trim($paragraph) . '</p>';
 
-        return $paragraph;
-    }
+		return $paragraph;
+	}
 
-    /**
-     * Generate listicle-style content.
-     *
-     * @return string Generated content
-     */
-    private function generate_listicle_content()
-    {
-        $content    = '';
-        $item_count = wp_rand( 5, 10 );
+	/**
+	 * Generate listicle-style content.
+	 *
+	 * @return string Generated content
+	 */
+	private function generate_listicle_content()
+	{
+		$content = '';
+		$item_count = wp_rand(5, 10);
 
-        // Introduction
-        $content .= $this->generate_paragraph( 'medium' );
-        $content .= "\n\n";
+		// Introduction
+		$content .= $this->generate_paragraph('medium');
+		$content .= "\n\n";
 
-        // List items
-        $list_type  = wp_rand( 1, 2 ) === 1 ? 'ol' : 'ul';
-        $content   .= "<{$list_type}>\n";
+		// List items
+		$list_type = wp_rand(1, 2) === 1 ? 'ol' : 'ul';
+		$content .= "<{$list_type}>\n";
 
-        for ( $i = 0; $i < $item_count; $i++ )
-        {
-            $content .= '<li><strong>' . $this->get_list_item_title() . '</strong> - ';
-            $content .= $this->get_random_sentence() . "</li>\n";
-        }
+		for ($i = 0; $i < $item_count; $i++) {
+			$content .= '<li><strong>' . $this->get_list_item_title() . '</strong> - ';
+			$content .= $this->get_random_sentence() . "</li>\n";
+		}
 
-        $content .= "</{$list_type}>\n\n";
+		$content .= "</{$list_type}>\n\n";
 
-        // Conclusion
-        $content .= $this->generate_paragraph( 'short' );
+		// Conclusion
+		$content .= $this->generate_paragraph('short');
 
-        return $content;
-    }
+		return $content;
+	}
 
-    /**
-     * Get a random list item title.
-     *
-     * @return string List item title
-     */
-    private function get_list_item_title()
-    {
-        $titles = [
+	/**
+	 * Get a random list item title.
+	 *
+	 * @return string List item title
+	 */
+	private function get_list_item_title()
+	{
+		$titles = [
             'Leverage Advanced Analytics',
             'Embrace Digital Transformation',
             'Focus on Customer Experience',
@@ -707,293 +697,231 @@ class Post extends Generator
             'Utilize Automation Tools',
             'Foster Innovation Culture',
             'Measure Key Metrics',
-        ];
+		];
 
-        return $titles[ array_rand( $titles ) ];
-    }
+		return $titles[array_rand($titles)];
+	}
 
-    /**
-     * Generate how-to guide content.
-     *
-     * @return string Generated content
-     */
-    private function generate_howto_content()
-    {
-        $content    = '';
-        $step_count = wp_rand( 4, 7 );
+	/**
+	 * Generate how-to guide content.
+	 *
+	 * @return string Generated content
+	 */
+	private function generate_howto_content()
+	{
+		$content = '';
+		$step_count = wp_rand(4, 7);
 
-        // Introduction
-        $content .= $this->generate_paragraph( 'medium' );
-        $content .= "\n\n";
+		// Introduction
+		$content .= $this->generate_paragraph('medium');
+		$content .= "\n\n";
 
-        // Steps
-        for ( $i = 1; $i <= $step_count; $i++ )
-        {
-            $content .= "<h2>Step {$i}: " . $this->get_step_title() . "</h2>\n\n";
-            $content .= $this->generate_paragraph( 'medium' );
-            $content .= "\n\n";
-        }
+		// Steps
+		for ($i = 1; $i <= $step_count; $i++) {
+			$content .= "<h2>Step {$i}: " . $this->get_step_title() . "</h2>\n\n";
+			$content .= $this->generate_paragraph('medium');
+			$content .= "\n\n";
+		}
 
-        // Conclusion
-        $content .= "<h2>Conclusion</h2>\n\n";
-        $content .= $this->generate_paragraph( 'short' );
+		// Conclusion
+		$content .= "<h2>Conclusion</h2>\n\n";
+		$content .= $this->generate_paragraph('short');
 
-        return $content;
-    }
+		return $content;
+	}
 
-    /**
-     * Get a random step title for how-to content.
-     *
-     * @return string Step title
-     */
-    private function get_step_title()
-    {
-        $titles = [
-            'Define Your Objectives',
-            'Research Your Options',
-            'Create a Detailed Plan',
-            'Implement Your Strategy',
-            'Monitor and Measure Results',
-            'Optimize Based on Data',
-            'Scale Your Efforts',
-            'Gather Stakeholder Feedback',
-            'Document Your Process',
-            'Train Your Team',
-        ];
+	/**
+	 * Get a random step title for how-to content.
+	 *
+	 * @return string Step title
+	 */
+	private function get_step_title()
+	{
+		$titles = [
+			'Define Your Objectives',
+			'Research Your Options',
+			'Create a Detailed Plan',
+			'Implement Your Strategy',
+			'Monitor and Measure Results',
+			'Optimize Based on Data',
+			'Scale Your Efforts',
+			'Gather Stakeholder Feedback',
+			'Document Your Process',
+			'Train Your Team',
+		];
 
-        return $titles[ array_rand( $titles ) ];
-    }
+		return $titles[array_rand($titles)];
+	}
 
-    /**
-     * Generate news article content.
-     *
-     * @return string Generated content
-     */
-    private function generate_news_content()
-    {
-        $content = '';
+	/**
+	 * Generate news article content.
+	 *
+	 * @return string Generated content
+	 */
+	private function generate_news_content()
+	{
+		$content = '';
 
-        // Lead paragraph (most important info)
-        $content .= $this->generate_paragraph( 'medium' );
-        $content .= "\n\n";
+		// Lead paragraph (most important info)
+		$content .= $this->generate_paragraph('medium');
+		$content .= "\n\n";
 
-        // Supporting paragraphs
-        $paragraph_count = wp_rand( 3, 5 );
-        for ( $i = 0; $i < $paragraph_count; $i++ )
-        {
-            $lengths  = [ 'short', 'medium', 'long' ];
-            $content .= $this->generate_paragraph( $lengths[ array_rand( $lengths ) ] );
-            $content .= "\n\n";
-        }
+		// Supporting paragraphs
+		$paragraph_count = wp_rand(3, 5);
+		for ($i = 0; $i < $paragraph_count; $i++) {
+			$lengths = ['short', 'medium', 'long'];
+			$content .= $this->generate_paragraph($lengths[array_rand($lengths)]);
+			$content .= "\n\n";
+		}
 
-        // Quote
-        $content .= '<blockquote><p>"' . $this->get_random_sentence() . '"</p></blockquote>';
-        $content .= "\n\n";
+		// Quote
+		$content .= '<blockquote><p>"' . $this->get_random_sentence() . '"</p></blockquote>';
+		$content .= "\n\n";
 
-        // Final paragraph
-        $content .= $this->generate_paragraph( 'short' );
+		// Final paragraph
+		$content .= $this->generate_paragraph('short');
 
-        return $content;
-    }
+		return $content;
+	}
 
-    /**
-     * Generate opinion/editorial content.
-     *
-     * @return string Generated content
-     */
-    private function generate_opinion_content()
-    {
-        $content = '';
+	/**
+	 * Generate opinion/editorial content.
+	 *
+	 * @return string Generated content
+	 */
+	private function generate_opinion_content()
+	{
+		$content = '';
 
-        // Strong opening thesis
-        $content .= $this->generate_paragraph( 'short' );
-        $content .= "\n\n";
+		// Strong opening thesis
+		$content .= $this->generate_paragraph('short');
+		$content .= "\n\n";
 
-        // Supporting arguments with subheadings
-        $section_count = wp_rand( 3, 4 );
-        for ( $i = 0; $i < $section_count; $i++ )
-        {
-            $content .= '<h2>' . $this->get_opinion_heading() . "</h2>\n\n";
-            $content .= $this->generate_paragraph( 'medium' );
-            $content .= "\n\n";
-            $content .= $this->generate_paragraph( 'short' );
-            $content .= "\n\n";
-        }
+		// Supporting arguments with subheadings
+		$section_count = wp_rand(3, 4);
+		for ($i = 0; $i < $section_count; $i++) {
+			$content .= '<h2>' . $this->get_opinion_heading() . "</h2>\n\n";
+			$content .= $this->generate_paragraph('medium');
+			$content .= "\n\n";
+			$content .= $this->generate_paragraph('short');
+			$content .= "\n\n";
+		}
 
-        // Counterargument
-        $content .= "<h2>Addressing Concerns</h2>\n\n";
-        $content .= $this->generate_paragraph( 'medium' );
-        $content .= "\n\n";
+		// Counterargument
+		$content .= "<h2>Addressing Concerns</h2>\n\n";
+		$content .= $this->generate_paragraph('medium');
+		$content .= "\n\n";
 
-        // Strong conclusion
-        $content .= $this->generate_paragraph( 'short' );
+		// Strong conclusion
+		$content .= $this->generate_paragraph('short');
 
-        return $content;
-    }
+		return $content;
+	}
 
-    /**
-     * Get a random opinion heading.
-     *
-     * @return string Opinion heading
-     */
-    private function get_opinion_heading()
-    {
-        $headings = [
-            'The Current State of Affairs',
-            'Why This Matters Now',
-            'The Evidence is Clear',
-            'What Experts Are Saying',
-            'The Long-Term Implications',
-            'A Better Approach',
-            'Learning from Success',
-            'The Path Forward',
-        ];
+	/**
+	 * Get a random opinion heading.
+	 *
+	 * @return string Opinion heading
+	 */
+	private function get_opinion_heading()
+	{
+		$headings = [
+			'The Current State of Affairs',
+			'Why This Matters Now',
+			'The Evidence is Clear',
+			'What Experts Are Saying',
+			'The Long-Term Implications',
+			'A Better Approach',
+			'Learning from Success',
+			'The Path Forward',
+		];
 
-        return $headings[ array_rand( $headings ) ];
-    }
+		return $headings[array_rand($headings)];
+	}
 
-    /**
-     * Generate case study content.
-     *
-     * @return string Generated content
-     */
-    private function generate_casestudy_content()
-    {
-        $content = '';
+	/**
+	 * Generate case study content.
+	 *
+	 * @return string Generated content
+	 */
+	private function generate_casestudy_content()
+	{
+		$content = '';
 
-        // Background
-        $content .= "<h2>Background</h2>\n\n";
-        $content .= $this->generate_paragraph( 'medium' );
-        $content .= "\n\n";
+		// Background
+		$content .= "<h2>Background</h2>\n\n";
+		$content .= $this->generate_paragraph('medium');
+		$content .= "\n\n";
 
-        // The Challenge
-        $content .= "<h2>The Challenge</h2>\n\n";
-        $content .= $this->generate_paragraph( 'medium' );
-        $content .= "\n\n";
+		// The Challenge
+		$content .= "<h2>The Challenge</h2>\n\n";
+		$content .= $this->generate_paragraph('medium');
+		$content .= "\n\n";
 
-        // The Solution
-        $content .= "<h2>The Solution</h2>\n\n";
-        $content .= $this->generate_paragraph( 'long' );
-        $content .= "\n\n";
+		// The Solution
+		$content .= "<h2>The Solution</h2>\n\n";
+		$content .= $this->generate_paragraph('long');
+		$content .= "\n\n";
 
-        // Implementation
-        $content .= "<h2>Implementation</h2>\n\n";
-        $content .= $this->generate_paragraph( 'medium' );
-        $content .= "\n\n";
+		// Implementation
+		$content .= "<h2>Implementation</h2>\n\n";
+		$content .= $this->generate_paragraph('medium');
+		$content .= "\n\n";
 
-        // Results
-        $content .= "<h2>Results</h2>\n\n";
-        $content .= '<ul>';
-        $content .= '<li>Increased efficiency by ' . wp_rand( 20, 80 ) . '%</li>';
-        $content .= '<li>Reduced costs by ' . wp_rand( 15, 50 ) . '%</li>';
-        $content .= '<li>Improved customer satisfaction by ' . wp_rand( 25, 70 ) . '%</li>';
-        $content .= '<li>Achieved ROI in ' . wp_rand( 3, 12 ) . ' months</li>';
-        $content .= "</ul>\n\n";
+		// Results
+		$content .= "<h2>Results</h2>\n\n";
+		$content .= '<ul>';
+		$content .= '<li>Increased efficiency by ' . wp_rand(20, 80) . '%</li>';
+		$content .= '<li>Reduced costs by ' . wp_rand(15, 50) . '%</li>';
+		$content .= '<li>Improved customer satisfaction by ' . wp_rand(25, 70) . '%</li>';
+		$content .= '<li>Achieved ROI in ' . wp_rand(3, 12) . ' months</li>';
+		$content .= "</ul>\n\n";
 
-        // Conclusion
-        $content .= "<h2>Key Takeaways</h2>\n\n";
-        $content .= $this->generate_paragraph( 'short' );
+		// Conclusion
+		$content .= "<h2>Key Takeaways</h2>\n\n";
+		$content .= $this->generate_paragraph('short');
 
-        return $content;
-    }
+		return $content;
+	}
 
-    /**
-     * Generate standard content (fallback).
-     *
-     * @return string Generated content
-     */
-    private function generate_standard_content()
-    {
-        $paragraphs = wp_rand( 3, 6 );
-        $content    = '';
+	/**
+	 * Generate standard content (fallback).
+	 *
+	 * @return string Generated content
+	 */
+	private function generate_standard_content()
+	{
+		$paragraphs = wp_rand(3, 6);
+		$content = '';
 
-        for ( $i = 0; $i < $paragraphs; $i++ )
-        {
-            $lengths  = [ 'short', 'medium', 'long' ];
-            $content .= $this->generate_paragraph( $lengths[ array_rand( $lengths ) ] );
+		for ($i = 0; $i < $paragraphs; $i++) {
+			$lengths = ['short', 'medium', 'long'];
+			$content .= $this->generate_paragraph($lengths[array_rand($lengths)]);
 
-            if ( $i < $paragraphs - 1 )
-            {
-                $content .= "\n\n";
-            }
-        }
+			if ($i < $paragraphs - 1) {
+				$content .= "\n\n";
+			}
+		}
 
-        return $content;
-    }
-    /**
-     * Delete generated posts by IDs.
-     *
-     * @param array $object_ids Array of post IDs to delete.
-     *
-     * @return int Number of items deleted.
-     */
-    public function delete( array $object_ids )
-    {
-        $deleted = 0;
-        foreach ( $object_ids as $post_id )
-        {
-            if ( wp_delete_post( $post_id, true ) )
-            {
-                ++$deleted;
-                $this->untrack_generated( $post_id );
-            }
-        }
+		return $content;
+	}
+	/**
+	 * Delete generated posts by IDs.
+	 *
+	 * @param array $object_ids Array of post IDs to delete.
+	 *
+	 * @return int Number of items deleted.
+	 */
+	public function delete(array $object_ids)
+	{
+		$deleted = 0;
+		foreach ($object_ids as $post_id) {
+			if (wp_delete_post($post_id, true)) {
+				++$deleted;
+				$this->untrack_generated($post_id, 'post');
+			}
+		}
 
-        return $deleted;
-    }
-
-    /**
-     * Track generated post in the custom DB table.
-     *
-     * @param int $post_id The post ID to track.
-     */
-    protected function track_generated( $post_id )
-    {
-        global $wpdb;
-        // We use direct DB access here because we are tracking generated posts in a custom table,
-        // and there is no WordPress API for this use case. All data is sanitized and prepared.
-        Activator::create_tracking_table();
-        $post       = get_post( $post_id );
-        $data_type  = $post ? $post->post_type : 'post';
-        $table_name = $wpdb->prefix . CFORGE_DBNAME;
-        $object_id  = intval( $post_id );
-        $data_type  = sanitize_key( $data_type );
-        $created_at = current_time( 'mysql' );
-        $created_by = intval( $this->user_id );
-        // Construct SQL without interpolation
-        $sql    = "INSERT INTO {$table_name} (object_id, data_type, created_at, created_by) VALUES (%d, %s, %s, %d)";
-        $result = $wpdb->query(
-            $wpdb->prepare(
-                "INSERT INTO {$table_name} (object_id, data_type, created_at, created_by) VALUES (%d, %s, %s, %d)",
-                $object_id,
-                $data_type,
-                $created_at,
-                $created_by
-            )
-        );
-
-        if ( false === $result )
-        {
-            // Optionally log or handle the error - removing error_log for production
-            // error_log( 'Failed to insert generated post tracking record for post_id: ' . $object_id );
-            // For now, we silently handle the error
-        }
-    }
-
-    /**
-     * Remove tracking info for a deleted post.
-     *
-     * @param int $post_id The post ID to untrack.
-     */
-    protected function untrack_generated( $post_id )
-    {
-        global $wpdb;
-        $wpdb->delete(
-            $wpdb->prefix . CFORGE_DBNAME,
-            [
-                'object_id' => $post_id,
-            ],
-            [ '%d' ]
-        );
-    }
+		return $deleted;
+	}
 }

@@ -26,6 +26,7 @@ class Admin
 	{
 		add_action('admin_menu', [$this, 'register_menu']);
 		add_action('admin_enqueue_scripts', [$this, 'enqueue_assets']);
+		add_action('wp_ajax_cforge_telemetry_opt_in', [$this, 'handle_telemetry_opt_in']);
 	}
 
 	/**
@@ -69,6 +70,14 @@ class Admin
 			'cforge-users',
 			[__CLASS__, 'render_users_page']
 		);
+		add_submenu_page(
+			$parent_slug,
+			__( 'Taxonomies', 'content-forge' ),
+			__( 'Taxonomies', 'content-forge' ),
+			$capability,
+			'cforge-taxonomies',
+			[ __CLASS__, 'render_taxonomies_page' ]
+		);
 	}
 
 	/**
@@ -96,6 +105,50 @@ class Admin
 	}
 
 	/**
+	 * Render the Taxonomies React app root div.
+	 */
+	public static function render_taxonomies_page()
+	{
+		echo '<div id="cforge-taxonomies-app" style="margin-left: -20px"></div>';
+	}
+
+	/**
+	 * Handle telemetry opt-in AJAX request.
+	 */
+	/**
+	 * Handle telemetry opt-in AJAX request.
+	 */
+	public function handle_telemetry_opt_in()
+	{
+		// Ensure autoloader is loaded (important for AJAX context)
+		if (file_exists(CFORGE_PATH . '/vendor/autoload.php')) {
+			require_once CFORGE_PATH . '/vendor/autoload.php';
+		}
+
+		// Verify nonce
+		if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'cforge_telemetry')) {
+			wp_send_json_error(['message' => __('Invalid security token.', 'content-forge')]);
+		}
+
+		// Check user capability
+		if (!current_user_can('manage_options')) {
+			wp_send_json_error(['message' => __('Insufficient permissions.', 'content-forge')]);
+		}
+
+		// Opt in to telemetry
+		try {
+			Telemetry_Manager::opt_in();
+		} catch (Exception $e) {
+			wp_send_json_error(['message' => 'Error: ' . $e->getMessage()]);
+		}
+
+		wp_send_json_success([
+			'message' => __('Telemetry tracking enabled successfully!', 'content-forge'),
+			'enabled' => true,
+		]);
+	}
+
+	/**
 	 * Enqueue React app assets on the plugin pages only.
 	 *
 	 * @param string $hook The current admin page hook.
@@ -111,6 +164,11 @@ class Admin
 				'localize_data' => [
 					'apiUrl' => esc_url_raw(rest_url('cforge/v1/')),
 					'rest_nonce' => wp_create_nonce('wp_rest'),
+					'ajax_url' => admin_url('admin-ajax.php'),
+					'ajax_nonce' => wp_create_nonce('cforge_telemetry'),
+					'telemetry_enabled' => Telemetry_Manager::is_tracking_allowed(),
+					'pluginVersion' => CFORGE_VERSION,
+					'restUrl' => rest_url(),
 				],
 			],
 			'content-forge_page_cforge-comments' => [
@@ -122,6 +180,9 @@ class Admin
 					'apiUrl' => esc_url_raw(rest_url('cforge/v1/')),
 					'rest_nonce' => wp_create_nonce('wp_rest'),
 					'post_types' => get_post_types(['public' => true]),
+					'ajax_url' => admin_url('admin-ajax.php'),
+					'ajax_nonce' => wp_create_nonce('cforge_telemetry'),
+					'telemetry_enabled' => Telemetry_Manager::is_tracking_allowed(),
 				],
 			],
 			'content-forge_page_cforge-users' => [
@@ -133,6 +194,30 @@ class Admin
 					'apiUrl' => esc_url_raw(rest_url('cforge/v1/')),
 					'rest_nonce' => wp_create_nonce('wp_rest'),
 					'roles' => wp_roles()->get_names(),
+					'ajax_url' => admin_url('admin-ajax.php'),
+					'ajax_nonce' => wp_create_nonce('cforge_telemetry'),
+					'telemetry_enabled' => Telemetry_Manager::is_tracking_allowed(),
+				],
+			],
+			'content-forge_page_cforge-taxonomies' => [
+				'script_handle' => 'cforge-taxonomies-app',
+				'script_file' => 'taxonomy.js',
+				'style_handle' => 'cforge-taxonomies-style',
+				'style_file' => 'taxonomy.css',
+				'localize_data' => [
+					'apiUrl' => esc_url_raw(rest_url('cforge/v1/')),
+					'rest_nonce' => wp_create_nonce('wp_rest'),
+					'ajax_url' => admin_url('admin-ajax.php'),
+					'ajax_nonce' => wp_create_nonce('cforge_telemetry'),
+					'telemetry_enabled' => Telemetry_Manager::is_tracking_allowed(),
+					'taxonomies' => array_filter(
+						get_taxonomies(['public' => true], 'objects'),
+						function ($taxonomy) {
+							// Exclude internal WordPress taxonomies that shouldn't have custom terms
+							$excluded = ['post_format', 'nav_menu', 'link_category', 'wp_theme', 'wp_template_part_area'];
+							return !in_array($taxonomy->name, $excluded, true);
+						}
+					),
 				],
 			],
 		];

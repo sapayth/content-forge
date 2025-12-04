@@ -4,7 +4,7 @@ Tags: fake data, dummy content, testing, development, generator
 Requires at least: 5.6
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 1.0.0
+Stable tag: 1.0.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -81,22 +81,10 @@ Yes, Content Forge is fully translation ready and includes a .pot file for trans
 4. Bulk content management tools
 
 == Changelog ==
-
-= 1.0.0 =
-* Initial release
-* Post generation functionality
-* Page generation with hierarchy support
-* User generation with role assignment
-* Taxonomy generation (categories and tags)
-* Comment generation with threading
-* Bulk generation capabilities
-* Clean admin interface
-* Translation support
-
-== Upgrade Notice ==
-
-= 1.0.0 =
-Initial release of Content Forge. Start generating realistic dummy content for your WordPress development and testing needs.
+= 1.0.2 2025-11-30 =
+* Added taxonomy generation feature with support for custom taxonomies
+* Improved admin interface styling and user experience
+* Code optimizations and performance improvements
 
 == Developer Notes ==
 

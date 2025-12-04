@@ -1,234 +1,12 @@
 import { useState, useEffect } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import '../css/common.css';
-import Header from './components/header';
+import Header from './components/Header';
 import apiFetch from '@wordpress/api-fetch';
 import MultiSelect from './components/MultiSelect';
+import ListView from './components/ListView';
 import { createRoot } from 'react-dom/client';
 
-// New: ListViewComments component for comments listing
-function ListViewComments({ endpoint, onAddNew }) {
-  const [items, setItems] = useState([]);
-  const [total, setTotal] = useState(0);
-  const [page, setPage] = useState(1);
-  const [perPage] = useState(15);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [deleting, setDeleting] = useState(null);
-  const totalPages = Math.ceil(total / perPage);
-
-  useEffect(() => {
-    let isMounted = true;
-    setLoading(true);
-    setError(null);
-    if (window.cforge?.rest_nonce) {
-      apiFetch.use(apiFetch.createNonceMiddleware(window.cforge.rest_nonce));
-    }
-    if (window.cforge?.apiUrl) {
-      apiFetch.use(apiFetch.createRootURLMiddleware(window.cforge.apiUrl));
-    }
-    apiFetch({
-      path: `${endpoint}?page=${page}&per_page=${perPage}`,
-      method: 'GET',
-    })
-      .then((res) => {
-        if (!isMounted) return;
-        setItems(res.items || []);
-        setTotal(res.total || 0);
-        setLoading(false);
-      })
-      .catch((err) => {
-        if (!isMounted) return;
-        setError(err.message || __('Failed to load data', 'content-forge'));
-        setLoading(false);
-      });
-    return () => {
-      isMounted = false;
-    };
-  }, [page, perPage, endpoint]);
-
-  const refreshList = () => {
-    setLoading(true);
-    setError(null);
-    apiFetch({
-      path: `${endpoint}/list?page=${page}&per_page=${perPage}`,
-      method: 'GET',
-    })
-      .then((res) => {
-        setItems(res.items || []);
-        setTotal(res.total || 0);
-        setLoading(false);
-      })
-      .catch((err) => {
-        setError(err.message || __('Failed to load data', 'content-forge'));
-        setLoading(false);
-      });
-  };
-
-  const handleDeleteAll = async () => {
-    if (!confirm(__('Are you sure you want to delete all generated comments?', 'content-forge'))) {
-      return;
-    }
-    setDeleting('all');
-    try {
-      await apiFetch({
-        path: `${endpoint}/bulk`,
-        method: 'DELETE',
-      });
-      setItems([]);
-      setTotal(0);
-      setDeleting(null);
-    } catch (err) {
-      setError(err.message || __('Failed to delete comments', 'content-forge'));
-      setDeleting(null);
-    }
-  };
-
-  const handleIndividualDelete = async (itemId) => {
-    if (!confirm(__('Are you sure you want to delete this comment?', 'content-forge'))) {
-      return;
-    }
-    setDeleting(itemId);
-    try {
-      await apiFetch({
-        path: `${endpoint}/${itemId}`,
-        method: 'DELETE',
-      });
-      refreshList();
-      setDeleting(null);
-    } catch (err) {
-      setError(err.message || __('Failed to delete comment', 'content-forge'));
-      setDeleting(null);
-    }
-  };
-
-  return (
-    <>
-      {items.length === 0 && (
-        <div className="cforge-flex cforge-justify-end cforge-mb-8">
-          <button className="cforge-btn cforge-btn-primary cforge-mr-4" onClick={onAddNew}>{__('Add New', 'content-forge')}</button>
-        </div>
-      )}
-      <div className="cforge-bg-tertiary cforge-rounded cforge-p-6 cforge-shadow cforge-overflow-x-auto">
-        {items.length > 0 && (
-          <div className="cforge-flex cforge-justify-end cforge-mb-4">
-            <button className="cforge-btn cforge-btn-primary cforge-mr-4" onClick={onAddNew}>{__('Add New', 'content-forge')}</button>
-            <button
-              onClick={handleDeleteAll}
-              disabled={deleting === 'all'}
-              className="cforge-btn cforge-btn-danger"
-            >
-              {deleting === 'all' ? __('Deleting...', 'content-forge') : __('Delete All', 'content-forge')}
-            </button>
-          </div>
-        )}
-        {loading ? (
-          <p className="cforge-text-center cforge-text-text-secondary">{__('Loading...', 'content-forge')}</p>
-        ) : error ? (
-          <p className="cforge-text-center cforge-text-error">{error}</p>
-        ) : items.length === 0 ? (
-          <p className="cforge-text-center cforge-text-text-secondary">{__('No comments found. Click "Add New" to generate comments.', 'content-forge')}</p>
-        ) : (
-          <table className="cforge-min-w-full cforge-table-auto cforge-bg-white">
-            <thead>
-              <tr>
-                <th className="cforge-px-4 cforge-py-2 cforge-text-left cforge-font-semibold">{__('Content', 'content-forge')}</th>
-                <th className="cforge-px-4 cforge-py-2 cforge-text-left cforge-font-semibold">{__('Author', 'content-forge')}</th>
-                <th className="cforge-px-4 cforge-py-2 cforge-text-left cforge-font-semibold">{__('In response to', 'content-forge')}</th>
-                <th className="cforge-px-4 cforge-py-2 cforge-text-left cforge-font-semibold">{__('Status', 'content-forge')}</th>
-                <th className="cforge-px-4 cforge-py-2 cforge-text-left cforge-font-semibold">{__('Date', 'content-forge')}</th>
-                <th className="cforge-px-4 cforge-py-2 cforge-text-left cforge-font-semibold">{__('Actions', 'content-forge')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.map((item) => (
-                <tr key={item.ID || item.id} className="cforge-border-t cforge-border-gray-200">
-                  <td className="cforge-px-4 cforge-py-2">
-                    <div className="cforge-max-w-xs cforge-truncate" title={item.content}>
-                      {item.content}
-                    </div>
-                  </td>
-                  <td className="cforge-px-4 cforge-py-2">
-                    <div>
-                      <div className="cforge-font-medium">{item.author_name}</div>
-                      <div className="cforge-text-sm cforge-text-text-secondary">{item.author_email}</div>
-                    </div>
-                  </td>
-                  <td className="cforge-px-4 cforge-py-2">
-                    {item.post_edit_link ? (
-                      <a
-                        href={item.post_edit_link}
-                        className="cforge-text-primary hover:cforge-underline"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        {item.post_title}
-                      </a>
-                    ) : (
-                      item.post_title
-                    )}
-                  </td>
-                  <td className="cforge-px-4 cforge-py-2">
-                    <span className={`cforge-px-2 cforge-py-1 cforge-rounded cforge-text-xs ${item.status === 'approved' ? 'cforge-bg-success cforge-text-white' :
-                      item.status === 'unapproved' ? 'cforge-bg-warning cforge-text-white' :
-                        'cforge-bg-error cforge-text-white'
-                      }`}>
-                      {item.status}
-                    </span>
-                  </td>
-                  <td className="cforge-px-4 cforge-py-2 cforge-text-sm cforge-text-text-secondary">
-                    {new Date(item.date).toLocaleDateString()}
-                  </td>
-                  <td className="cforge-px-4 cforge-py-2">
-                    <button
-                      onClick={() => handleIndividualDelete(item.id)}
-                      disabled={deleting === item.id}
-                      className="cforge-text-error hover:cforge-text-error cforge-p-1 cforge-rounded hover:cforge-bg-tertiary"
-                      title={__('Delete', 'content-forge')}
-                    >
-                      {deleting === item.id ? (
-                        <span className="cforge-text-xs">{__('...', 'content-forge')}</span>
-                      ) : (
-                        <svg className="cforge-w-4 cforge-h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                      )}
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-        {totalPages > 1 && (
-          <div className="cforge-flex cforge-justify-end cforge-items-center cforge-gap-2 cforge-mt-4">
-            <button
-              className="cforge-px-2 cforge-py-1 cforge-rounded cforge-bg-gray-200"
-              onClick={() => setPage(1)}
-              disabled={page === 1}
-            >&laquo;</button>
-            <button
-              className="cforge-px-2 cforge-py-1 cforge-rounded cforge-bg-gray-200"
-              onClick={() => setPage(page - 1)}
-              disabled={page === 1}
-            >&lsaquo;</button>
-            <span className="cforge-px-2">{page} {__('of', 'content-forge')} {totalPages}</span>
-            <button
-              className="cforge-px-2 cforge-py-1 cforge-rounded cforge-bg-gray-200"
-              onClick={() => setPage(page + 1)}
-              disabled={page === totalPages}
-            >&rsaquo;</button>
-            <button
-              className="cforge-px-2 cforge-py-1 cforge-rounded cforge-bg-gray-200"
-              onClick={() => setPage(totalPages)}
-              disabled={page === totalPages}
-            >&raquo;</button>
-          </div>
-        )}
-      </div>
-    </>
-  );
-}
 
 const allowedCommentStatuses = ['0', '1', 'hold', 'spam'];
 
@@ -378,23 +156,244 @@ function AddNewView({ onCancel, onSuccess }) {
 
 function CommentsApp() {
   const [view, setView] = useState('list');
-  const handleAddNew = () => setView('add');
-  const handleCancel = () => setView('list');
-  const handleSuccess = () => setView('list');
+  const [items, setItems] = useState([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [perPage] = useState(15);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [deleting, setDeleting] = useState(null);
+  const [notice, setNotice] = useState(null);
+  const totalPages = Math.ceil(total / perPage);
+
+  useEffect(() => {
+    if (view !== 'list') return;
+
+    let isMounted = true;
+    setLoading(true);
+    setError(null);
+
+    // Configure apiFetch middleware for nonce and root URL
+    if (window.cforge?.rest_nonce) {
+      apiFetch.use(apiFetch.createNonceMiddleware(window.cforge.rest_nonce));
+    }
+    if (window.cforge?.apiUrl) {
+      apiFetch.use(apiFetch.createRootURLMiddleware(window.cforge.apiUrl));
+    }
+
+    apiFetch({
+      path: `comments?page=${page}&per_page=${perPage}`,
+      method: 'GET',
+    })
+      .then((res) => {
+        if (!isMounted) return;
+        setItems(res.items || []);
+        setTotal(res.total || 0);
+        setLoading(false);
+      })
+      .catch((err) => {
+        if (!isMounted) return;
+        setError(err.message || __('Failed to load data', 'content-forge'));
+        setLoading(false);
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, [page, perPage, view]);
+
+  const handlePageChange = (newPage) => {
+    setPage(newPage);
+  };
+
+  const refreshList = (targetPage = null) => {
+    const pageToLoad = targetPage !== null ? targetPage : page;
+    setLoading(true);
+    setError(null);
+
+    apiFetch({
+      path: `comments?page=${pageToLoad}&per_page=${perPage}`,
+      method: 'GET',
+    })
+      .then((res) => {
+        setItems(res.items || []);
+        setTotal(res.total || 0);
+        if (targetPage !== null) {
+          setPage(pageToLoad);
+        }
+        setLoading(false);
+      })
+      .catch((err) => {
+        setError(err.message || __('Failed to load data', 'content-forge'));
+        setLoading(false);
+      });
+  };
+
+  const handleDelete = async (itemId) => {
+    if (!confirm(__('Are you sure you want to delete this comment?', 'content-forge'))) {
+      return;
+    }
+
+    setDeleting(itemId);
+    setNotice(null);
+    try {
+      await apiFetch({
+        path: `comments/${itemId}`,
+        method: 'DELETE',
+      });
+      setNotice({
+        message: __('Comment deleted successfully!', 'content-forge'),
+        status: 'success',
+      });
+      // Refresh the list - if current page becomes empty, go to previous page
+      const currentPageItemCount = items.length;
+      if (currentPageItemCount === 1 && page > 1) {
+        // If this was the last item on the page, go to previous page
+        refreshList(page - 1);
+      } else {
+        // Otherwise refresh current page
+        refreshList();
+      }
+      setDeleting(null);
+      setTimeout(() => setNotice(null), 3000);
+    } catch (err) {
+      setNotice({
+        message: err.message || __('Failed to delete comment', 'content-forge'),
+        status: 'error',
+      });
+      setDeleting(null);
+      setTimeout(() => setNotice(null), 5000);
+    }
+  };
+
+  const handleDeleteAll = async () => {
+    if (!confirm(__('Are you sure you want to delete all generated comments?', 'content-forge'))) {
+      return;
+    }
+
+    setDeleting('all');
+    setNotice(null);
+    try {
+      await apiFetch({
+        path: 'comments/bulk',
+        method: 'DELETE',
+      });
+      setNotice({
+        message: __('All comments deleted successfully!', 'content-forge'),
+        status: 'success',
+      });
+      setItems([]);
+      setTotal(0);
+      setDeleting(null);
+      setTimeout(() => setNotice(null), 3000);
+    } catch (err) {
+      setNotice({
+        message: err.message || __('Failed to delete comments', 'content-forge'),
+        status: 'error',
+      });
+      setDeleting(null);
+      setTimeout(() => setNotice(null), 5000);
+    }
+  };
+
+  const handleSuccess = () => {
+    setView('list');
+    setPage(1); // Reset to first page after adding new item
+  };
+
   return (
     <div className="cforge-bg-white cforge-p-8 cforge-min-h-screen">
       <Header
         title={__('Comments', 'content-forge')}
       />
       {view === 'list' && (
-        <ListViewComments
-          endpoint="comments"
-          onAddNew={handleAddNew}
-        />
+        <>
+          {notice && (
+            <div className={`cforge-mb-4 cforge-p-3 cforge-rounded cforge-text-white ${notice.status === 'success' ? 'cforge-bg-success' : 'cforge-bg-error'}`}>
+              {notice.message}
+            </div>
+          )}
+          <ListView
+          items={items}
+          loading={loading}
+          error={error}
+          page={page}
+          totalPages={totalPages}
+          columns={[
+            { key: 'content', label: __('Content', 'content-forge') },
+            { key: 'author', label: __('Author', 'content-forge') },
+            { key: 'post', label: __('In response to', 'content-forge') },
+            { key: 'status', label: __('Status', 'content-forge') },
+            { key: 'date', label: __('Date', 'content-forge') },
+          ]}
+          renderRow={(item) => (
+            <>
+              <td className="cforge-whitespace-nowrap cforge-py-4 cforge-pl-4 cforge-pr-3 cforge-text-sm cforge-text-gray-900 sm:cforge-pl-6">
+                <div className="cforge-max-w-xs cforge-truncate" title={item.content}>
+                  {item.content}
+                </div>
+              </td>
+              <td className="cforge-whitespace-nowrap cforge-px-3 cforge-py-4 cforge-text-sm cforge-text-gray-500">
+                <div>
+                  <div className="cforge-font-medium">{item.author_name}</div>
+                  <div className="cforge-text-sm cforge-text-gray-400">{item.author_email}</div>
+                </div>
+              </td>
+              <td className="cforge-whitespace-nowrap cforge-px-3 cforge-py-4 cforge-text-sm cforge-text-gray-500">
+                {item.post_edit_link ? (
+                  <a
+                    href={item.post_edit_link}
+                    className="cforge-text-indigo-600 hover:cforge-text-indigo-900"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {item.post_title}
+                  </a>
+                ) : (
+                  item.post_title
+                )}
+              </td>
+              <td className="cforge-whitespace-nowrap cforge-px-3 cforge-py-4 cforge-text-sm cforge-text-gray-500">
+                <span className={`cforge-px-2 cforge-py-1 cforge-rounded cforge-text-xs ${item.status === 'approved' ? 'cforge-bg-success cforge-text-white' :
+                  item.status === 'unapproved' ? 'cforge-bg-warning cforge-text-white' :
+                    'cforge-bg-error cforge-text-white'
+                }`}>
+                  {item.status}
+                </span>
+              </td>
+              <td className="cforge-whitespace-nowrap cforge-px-3 cforge-py-4 cforge-text-sm cforge-text-gray-500">
+                {new Date(item.date).toLocaleDateString()}
+              </td>
+            </>
+          )}
+          actions={(item, onDelete, deleting, itemId) => (
+            <button
+              onClick={() => onDelete(itemId)}
+              disabled={deleting === itemId}
+              className="cforge-text-indigo-600 hover:cforge-text-indigo-900"
+              title={__('Delete', 'content-forge')}
+            >
+              {deleting === itemId ? (
+                <span className="cforge-text-xs">{__('...', 'content-forge')}</span>
+              ) : (
+                <svg className="cforge-w-4 cforge-h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              )}
+            </button>
+          )}
+          onAddNew={() => setView('add')}
+          onPageChange={handlePageChange}
+          onDelete={handleDelete}
+          onDeleteAll={handleDeleteAll}
+          deleting={deleting}
+            title={__('Comments', 'content-forge')}
+            description={__('A list of all the generated comments including their content, author, status and date.', 'content-forge')}
+          />
+        </>
       )}
       {view === 'add' && (
         <AddNewView
-          onCancel={handleCancel}
+          onCancel={() => setView('list')}
           onSuccess={handleSuccess}
         />
       )}

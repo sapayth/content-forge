@@ -8,24 +8,30 @@ import { createRoot } from 'react-dom/client';
 
 
 function AddNewView({ onCancel, onSuccess }) {
-    const [user, setUser] = useState({
-        user_number: 1,
-        roles: ['subscriber'],
+    const [taxonomy, setTaxonomy] = useState({
+        taxonomy_type: 'category',
+        count: 5,
     });
     const [errors, setErrors] = useState({});
     const [notice, setNotice] = useState(null);
     const [submitting, setSubmitting] = useState(false);
 
-    const roles = Object.entries(cforge.roles || {});
+    const taxonomies = window.cforge?.taxonomies ? Object.values(window.cforge.taxonomies).map(tax => ({
+        label: tax.label,
+        value: tax.name,
+    })) : [];
 
     const validate = () => {
         const newErrors = {};
-        const num = Number(user['user_number']);
+        const num = Number(taxonomy['count']);
         if (!num || num < 1) {
-            newErrors['user_number'] = __('Number of users must be at least 1', 'content-forge');
+            newErrors['count'] = __('Number of terms must be at least 1', 'content-forge');
         }
-        if (!user['roles'] || user['roles'].length === 0) {
-            newErrors['roles'] = __('Please select at least one role', 'content-forge');
+        if (num > 100) {
+            newErrors['count'] = __('Number of terms cannot exceed 100', 'content-forge');
+        }
+        if (!taxonomy['taxonomy_type']) {
+            newErrors['taxonomy_type'] = __('Please select a taxonomy', 'content-forge');
         }
         return newErrors;
     };
@@ -40,18 +46,18 @@ function AddNewView({ onCancel, onSuccess }) {
         setSubmitting(true);
         setNotice(null);
         const payload = {
-            user_number: Number(user.user_number),
-            roles: user.roles,
+            taxonomy: taxonomy.taxonomy_type,
+            count: Number(taxonomy.count),
         };
         try {
             await apiFetch({
-                path: 'users/bulk',
+                path: 'taxonomy/bulk',
                 method: 'POST',
                 data: payload,
             });
             setSubmitting(false);
             setNotice({
-                message: __('Users generated successfully!', 'content-forge'),
+                message: __('Terms generated successfully!', 'content-forge'),
                 status: 'success',
             });
             setTimeout(() => {
@@ -72,52 +78,49 @@ function AddNewView({ onCancel, onSuccess }) {
     return (
         <div className="cforge-w-full cforge-bg-white cforge-rounded cforge-p-6 cforge-relative">
             {notice && (
-                <div className={`cforge-mb-4 cforge-p-3 cforge-rounded cforge-text-white ${notice.status === 'success' ? 'cforge-bg-green-500' : 'cforge-bg-red-500'}`}>{notice.message}</div>
+                <div className={`cforge-mb-4 cforge-p-3 cforge-rounded cforge-text-white ${notice.status === 'success' ? 'cforge-bg-success' : 'cforge-bg-error'}`}>{notice.message}</div>
             )}
             <div className="cforge-flex cforge-gap-4">
                 <form className="cforge-w-2/3" onSubmit={handleSubmit}>
                     <div className="cforge-mt-8">
                         <div className="cforge-mb-4">
                             <label className="cforge-block cforge-mb-1 cforge-font-medium">
-                                {__('Number of Users', 'content-forge')}
+                                {__('Select Taxonomy', 'content-forge')}
                             </label>
-                            <input
-                                type="number"
-                                min="1"
-                                className={`cforge-input ${errorClass('user_number')}`}
-                                value={user['user_number']}
-                                onChange={e => setUser({ ...user, user_number: e.target.value })}
-                            />
-                            {errors['user_number'] && (
-                                <p className="cforge-text-red-500 cforge-text-sm">{errors['user_number']}</p>
+                            <select
+                                className={`cforge-input ${errorClass('taxonomy_type')}`}
+                                value={taxonomy['taxonomy_type']}
+                                onChange={e => setTaxonomy({ ...taxonomy, taxonomy_type: e.target.value })}
+                            >
+                                {taxonomies.map((tax) => (
+                                    <option key={tax.value} value={tax.value}>{tax.label}</option>
+                                ))}
+                            </select>
+                            {errors['taxonomy_type'] && (
+                                <p className="cforge-text-error cforge-text-sm">{errors['taxonomy_type']}</p>
                             )}
                         </div>
                         <div className="cforge-mb-4">
                             <label className="cforge-block cforge-mb-1 cforge-font-medium">
-                                {__('Roles', 'content-forge')}
+                                {__('Number of Terms', 'content-forge')}
                             </label>
-                            <select
-                                multiple
-                                className={`cforge-input ${errorClass('roles')}`}
-                                value={user['roles']}
-                                onChange={e => {
-                                    const selected = Array.from(e.target.selectedOptions).map(opt => opt.value);
-                                    setUser({ ...user, roles: selected });
-                                }}
-                            >
-                                {roles.map(([role, label]) => (
-                                    <option key={role} value={role}>{label}</option>
-                                ))}
-                            </select>
-                            {errors['roles'] && (
-                                <p className="cforge-text-red-500 cforge-text-sm">{errors['roles']}</p>
+                            <input
+                                type="number"
+                                min="1"
+                                max="100"
+                                className={`cforge-input ${errorClass('count')}`}
+                                value={taxonomy['count']}
+                                onChange={e => setTaxonomy({ ...taxonomy, count: e.target.value })}
+                            />
+                            {errors['count'] && (
+                                <p className="cforge-text-error cforge-text-sm">{errors['count']}</p>
                             )}
                         </div>
                     </div>
                     <div className="cforge-flex cforge-justify-end cforge-mt-6 cforge-gap-2">
                         <button
                             type="button"
-                            className="cforge-bg-gray-200 cforge-text-gray-700 cforge-px-4 cforge-py-2 cforge-rounded cforge-font-semibold hover:cforge-bg-gray-300"
+                            className="cforge-bg-tertiary cforge-text-text-primary cforge-px-4 cforge-py-2 cforge-rounded cforge-font-semibold hover:cforge-bg-border"
                             onClick={onCancel}
                             disabled={submitting}
                         >
@@ -128,7 +131,7 @@ function AddNewView({ onCancel, onSuccess }) {
                             className="cforge-bg-primary cforge-text-white cforge-px-4 cforge-py-2 cforge-rounded cforge-font-semibold hover:cforge-bg-primaryHover"
                             disabled={submitting}
                         >
-                            {submitting ? __('Generating...', 'content-forge') : __('Generate Users', 'content-forge')}
+                            {submitting ? __('Generating...', 'content-forge') : __('Generate Terms', 'content-forge')}
                         </button>
                     </div>
                 </form>
@@ -137,7 +140,7 @@ function AddNewView({ onCancel, onSuccess }) {
     );
 }
 
-function UsersApp() {
+function TaxonomiesApp() {
     const [view, setView] = useState('list');
     const [items, setItems] = useState([]);
     const [total, setTotal] = useState(0);
@@ -165,7 +168,7 @@ function UsersApp() {
         }
 
         apiFetch({
-            path: `users?page=${page}&per_page=${perPage}`,
+            path: `taxonomy/list?page=${page}&per_page=${perPage}`,
             method: 'GET',
         })
             .then((res) => {
@@ -194,7 +197,7 @@ function UsersApp() {
         setError(null);
 
         apiFetch({
-            path: `users?page=${pageToLoad}&per_page=${perPage}`,
+            path: `taxonomy/list?page=${pageToLoad}&per_page=${perPage}`,
             method: 'GET',
         })
             .then((res) => {
@@ -212,7 +215,7 @@ function UsersApp() {
     };
 
     const handleDelete = async (itemId) => {
-        if (!confirm(__('Are you sure you want to delete this user?', 'content-forge'))) {
+        if (!confirm(__('Are you sure you want to delete this term?', 'content-forge'))) {
             return;
         }
 
@@ -220,11 +223,11 @@ function UsersApp() {
         setNotice(null);
         try {
             await apiFetch({
-                path: `users/${itemId}`,
+                path: `taxonomy/${itemId}`,
                 method: 'DELETE',
             });
             setNotice({
-                message: __('User deleted successfully!', 'content-forge'),
+                message: __('Term deleted successfully!', 'content-forge'),
                 status: 'success',
             });
             // Refresh the list - if current page becomes empty, go to previous page
@@ -240,7 +243,7 @@ function UsersApp() {
             setTimeout(() => setNotice(null), 3000);
         } catch (err) {
             setNotice({
-                message: err.message || __('Failed to delete user', 'content-forge'),
+                message: err.message || __('Failed to delete term', 'content-forge'),
                 status: 'error',
             });
             setDeleting(null);
@@ -249,7 +252,7 @@ function UsersApp() {
     };
 
     const handleDeleteAll = async () => {
-        if (!confirm(__('Are you sure you want to delete all generated users?', 'content-forge'))) {
+        if (!confirm(__('Are you sure you want to delete all generated terms? This cannot be undone.', 'content-forge'))) {
             return;
         }
 
@@ -257,11 +260,11 @@ function UsersApp() {
         setNotice(null);
         try {
             await apiFetch({
-                path: 'users/bulk',
+                path: 'taxonomy/bulk',
                 method: 'DELETE',
             });
             setNotice({
-                message: __('All users deleted successfully!', 'content-forge'),
+                message: __('All terms deleted successfully!', 'content-forge'),
                 status: 'success',
             });
             setItems([]);
@@ -270,7 +273,7 @@ function UsersApp() {
             setTimeout(() => setNotice(null), 3000);
         } catch (err) {
             setNotice({
-                message: err.message || __('Failed to delete users', 'content-forge'),
+                message: err.message || __('Failed to delete terms', 'content-forge'),
                 status: 'error',
             });
             setDeleting(null);
@@ -286,12 +289,12 @@ function UsersApp() {
     return (
         <div className="cforge-bg-white cforge-p-8 cforge-min-h-screen">
             <Header
-                title={__('Users', 'content-forge')}
+                title={__('Taxonomies', 'content-forge')}
             />
             {view === 'list' && (
                 <>
                     {notice && (
-                        <div className={`cforge-mb-4 cforge-p-3 cforge-rounded cforge-text-white ${notice.status === 'success' ? 'cforge-bg-green-500' : 'cforge-bg-red-500'}`}>
+                        <div className={`cforge-mb-4 cforge-p-3 cforge-rounded cforge-text-white ${notice.status === 'success' ? 'cforge-bg-success' : 'cforge-bg-error'}`}>
                             {notice.message}
                         </div>
                     )}
@@ -302,20 +305,20 @@ function UsersApp() {
                     page={page}
                     totalPages={totalPages}
                     columns={[
-                        { key: 'username', label: __('Username', 'content-forge') },
-                        { key: 'email', label: __('Email', 'content-forge') },
-                        { key: 'role', label: __('Role', 'content-forge') },
+                        { key: 'title', label: __('Title', 'content-forge') },
+                        { key: 'taxonomy', label: __('Taxonomy', 'content-forge') },
+                        { key: 'date', label: __('Date', 'content-forge') },
                     ]}
                     renderRow={(item) => (
                         <>
                             <td className="cforge-whitespace-nowrap cforge-py-4 cforge-pl-4 cforge-pr-3 cforge-text-sm cforge-font-medium cforge-text-gray-900 sm:cforge-pl-6">
-                                {item.user_login}
+                                {item.title}
                             </td>
                             <td className="cforge-whitespace-nowrap cforge-px-3 cforge-py-4 cforge-text-sm cforge-text-gray-500">
-                                {item.user_email}
+                                {item.taxonomy}
                             </td>
                             <td className="cforge-whitespace-nowrap cforge-px-3 cforge-py-4 cforge-text-sm cforge-text-gray-500">
-                                {item.role}
+                                {new Date(item.date).toLocaleDateString()}
                             </td>
                         </>
                     )}
@@ -340,8 +343,8 @@ function UsersApp() {
                     onDelete={handleDelete}
                     onDeleteAll={handleDeleteAll}
                     deleting={deleting}
-                    title={__('Users', 'content-forge')}
-                    description={__('A list of all the users in your account including their name, email and role.', 'content-forge')}
+                    title={__('Taxonomies', 'content-forge')}
+                    description={__('A list of all the generated taxonomy terms including their title, taxonomy type and date.', 'content-forge')}
                     />
                 </>
             )}
@@ -355,9 +358,9 @@ function UsersApp() {
     );
 }
 
-const container = document.getElementById('cforge-users-app');
+const container = document.getElementById('cforge-taxonomies-app');
 if (container) {
     const { createRoot } = require('react-dom/client');
     const root = createRoot(container);
-    root.render(<UsersApp />);
+    root.render(<TaxonomiesApp />);
 }

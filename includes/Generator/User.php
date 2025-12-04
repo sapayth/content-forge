@@ -12,14 +12,16 @@ use WP_Error;
 use ContentForge\Activator;
 
 global $wpdb;
-if ( ! defined( 'ABSPATH' ) ) {
+if ( !defined( 'ABSPATH' ) )
+{
     exit;
 }
 
 /**
  * Generator for fake users.
  */
-class User extends Generator {
+class User extends Generator
+{
 
     /**
      * Data type for this generator.
@@ -39,8 +41,9 @@ class User extends Generator {
     public function generate( $count = 1, $args = [] )
     {
         $ids   = [];
-        $roles = isset( $args['roles'] ) ? (array) $args['roles'] : [ 'subscriber' ];
-        for ( $i = 0; $i < $count; $i++ ) {
+        $roles = isset( $args[ 'roles' ] ) ? (array) $args[ 'roles' ] : [ 'subscriber' ];
+        for ( $i = 0; $i < $count; $i++ )
+        {
             $userdata = [
                 'user_login' => $this->randomize_login(),
                 'user_pass'  => wp_generate_password( 12, true ),
@@ -58,9 +61,10 @@ class User extends Generator {
              */
             do_action( 'cforge_before_generate_user', $userdata, $i, $args );
             $user_id = wp_insert_user( $userdata );
-            if ( ! is_wp_error( $user_id ) && $user_id ) {
+            if ( !is_wp_error( $user_id ) && $user_id )
+            {
                 $ids[] = $user_id;
-                $this->track_generated( $user_id );
+                $this->track_generated( $user_id, 'user' );
                 /**
                  * Action after user is created.
                  */
@@ -166,73 +170,21 @@ class User extends Generator {
     {
         $deleted = 0;
 
-        if ( ! function_exists( 'wp_delete_user' ) ) {
+        if ( !function_exists( 'wp_delete_user' ) )
+        {
             // require user.php file
             require_once ABSPATH . 'wp-admin/includes/user.php';
 
         }
 
-        foreach ( $object_ids as $user_id ) {
-            if ( wp_delete_user( $user_id ) ) {
+        foreach ( $object_ids as $user_id )
+        {
+            if ( wp_delete_user( $user_id ) )
+            {
                 ++$deleted;
-                $this->untrack_generated( $user_id );
+                $this->untrack_generated( $user_id, 'user' );
             }
         }
         return $deleted;
-    }
-
-    /**
-     * Track generated user in the custom DB table.
-     *
-     * @param int $user_id The user ID to track.
-     */
-    protected function track_generated( $user_id )
-    {
-        global $wpdb;
-        // We use direct DB access here because we are tracking generated users in a custom table,
-        // and there is no WordPress API for this use case. All data is sanitized and prepared.
-        Activator::create_tracking_table();
-
-        $table      = $wpdb->prefix . 'cforge';
-        $object_id  = intval( $user_id );
-        $data_type  = 'user';
-        $created_at = current_time( 'mysql' );
-        $created_by = intval( $this->user_id );
-
-        $result = $wpdb->query(
-            $wpdb->prepare(
-                "INSERT INTO {$wpdb->prefix}cforge (object_id, data_type, created_at, created_by) VALUES (%d, %s, %s, %d)",
-                $object_id,
-                $data_type,
-                $created_at,
-                $created_by
-            )
-        );
-
-        if ( false === $result ) {
-            // Optionally log or handle the error - removing error_log for production
-            // error_log( 'Failed to insert generated user tracking record for user_id: ' . $object_id );
-            // For now, we silently handle the error
-        }
-    }
-
-    /**
-     * Remove tracking info for a deleted user.
-     *
-     * @param int $user_id The user ID to untrack.
-     */
-    protected function untrack_generated( $user_id )
-    {
-        global $wpdb;
-        $table     = $wpdb->prefix . 'cforge';
-        $object_id = intval( $user_id );
-        $data_type = 'user';
-        $wpdb->query(
-            $wpdb->prepare(
-                "DELETE FROM {$wpdb->prefix}cforge WHERE object_id = %d AND data_type = %s",
-                $object_id,
-                $data_type
-            )
-        );
     }
 }
