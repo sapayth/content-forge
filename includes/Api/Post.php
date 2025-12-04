@@ -115,6 +115,14 @@ class Post extends CForge_REST_Controller {
         if ( ! in_array( $comment_status, [ 'closed', 'open' ], true ) ) {
             return new \WP_REST_Response( [ 'message' => __( 'Invalid comment status.', 'content-forge' ) ], 400 );
         }
+        // Extract image generation parameters
+        $generate_image = isset( $params['generate_image'] ) && $params['generate_image'];
+        $image_sources  = isset( $params['image_sources'] ) && is_array( $params['image_sources'] ) ? array_map( 'sanitize_text_field', $params['image_sources'] ) : [];
+
+        if ( $generate_image ) {
+            error_log( sprintf( 'Content Forge API: Image generation requested - Sources: %s', implode( ', ', $image_sources ) ) );
+        }
+
         $generator = new GeneratorPost( get_current_user_id() );
         // Manual mode: expects post_titles (array) and post_contents (array)
         if ( isset( $params['post_titles'] ) && is_array( $params['post_titles'] ) ) {
@@ -133,6 +141,13 @@ class Post extends CForge_REST_Controller {
                     'post_title'     => $title,
                     'post_content'   => $content,
                 ];
+                // Add image generation parameters if requested
+                if ( $generate_image ) {
+                    $args['generate_image'] = true;
+                    if ( ! empty( $image_sources ) ) {
+                        $args['image_sources'] = $image_sources;
+                    }
+                }
                 $ids     = $generator->generate( 1, $args );
                 if ( empty( $ids ) ) {
                     return new \WP_REST_Response(
@@ -155,6 +170,13 @@ class Post extends CForge_REST_Controller {
                 'comment_status' => $comment_status,
                 'post_parent'    => $post_parent,
             ];
+            // Add image generation parameters if requested
+            if ( $generate_image ) {
+                $args['generate_image'] = true;
+                if ( ! empty( $image_sources ) ) {
+                    $args['image_sources'] = $image_sources;
+                }
+            }
             $ids  = $generator->generate( $post_number, $args );
             if ( empty( $ids ) ) {
                 return new \WP_REST_Response(

@@ -1,5 +1,6 @@
 import { useState, useEffect } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
+import { ToggleControl } from '@wordpress/components';
 import '../css/common.css';
 import Header from './components/Header';
 import apiFetch from '@wordpress/api-fetch';
@@ -20,6 +21,8 @@ function AddNewView({ onCancel, onSuccess }) {
     post_title: '',
     post_content: '',
   });
+  const [generateImage, setGenerateImage] = useState(false);
+  const [imageSources, setImageSources] = useState({ picsum: true, placehold: false });
   const [pages, setPages] = useState([]);
   const [errors, setErrors] = useState({});
   const [notice, setNotice] = useState(null);
@@ -85,6 +88,14 @@ function AddNewView({ onCancel, onSuccess }) {
       comment_status: post.comment_status,
       post_parent: post.post_type === 'page' ? post.post_parent : '0',
     };
+    // Add featured image options for auto-generated posts
+    if (tab === 'auto' && generateImage) {
+      payload.generate_image = true;
+      const selectedSources = [];
+      if (imageSources.picsum) selectedSources.push('picsum');
+      if (imageSources.placehold) selectedSources.push('placehold');
+      payload.image_sources = selectedSources.length > 0 ? selectedSources : ['picsum'];
+    }
     if (tab === 'auto') {
       payload.post_number = Number(post.post_number);
     } else {
@@ -239,6 +250,47 @@ function AddNewView({ onCancel, onSuccess }) {
                     {errors['post_parent'] && <p className="cforge-text-red-500 cforge-text-sm">{errors['post_parent']}</p>}
                   </div>
                 )}
+                <div className="cforge-mb-4 cforge-border cforge-border-gray-200 cforge-rounded-lg cforge-p-4 cforge-bg-gray-50">
+                  <ToggleControl
+                    label={__('Generate Featured Image', 'content-forge')}
+                    checked={generateImage}
+                    onChange={setGenerateImage}
+                  />
+                  {generateImage && (
+                    <div className="cforge-ml-6 cforge-space-y-2 cforge-mt-3">
+                      <p className="cforge-text-sm cforge-text-gray-600 cforge-mb-2">{__('Image Sources:', 'content-forge')}</p>
+                      <div className="cforge-flex cforge-items-center">
+                        <input
+                          type="checkbox"
+                          id="source-picsum"
+                          className="cforge-h-4 cforge-w-4 cforge-text-primary cforge-border-gray-300 cforge-rounded focus:cforge-ring-primary"
+                          checked={imageSources.picsum}
+                          onChange={(e) => setImageSources({ ...imageSources, picsum: e.target.checked })}
+                        />
+                        <label htmlFor="source-picsum" className="cforge-ml-2 cforge-block cforge-text-sm cforge-text-gray-700">
+                          {__('Picsum Photos', 'content-forge')} <span className="cforge-text-gray-500">({__('Real photos', 'content-forge')})</span>
+                        </label>
+                      </div>
+                      <div className="cforge-flex cforge-items-center">
+                        <input
+                          type="checkbox"
+                          id="source-placehold"
+                          className="cforge-h-4 cforge-w-4 cforge-text-primary cforge-border-gray-300 cforge-rounded focus:cforge-ring-primary"
+                          checked={imageSources.placehold}
+                          onChange={(e) => setImageSources({ ...imageSources, placehold: e.target.checked })}
+                        />
+                        <label htmlFor="source-placehold" className="cforge-ml-2 cforge-block cforge-text-sm cforge-text-gray-700">
+                          {__('Placehold.co', 'content-forge')} <span className="cforge-text-gray-500">({__('Simple placeholders', 'content-forge')})</span>
+                        </label>
+                      </div>
+                      {!imageSources.picsum && !imageSources.placehold && (
+                        <p className="cforge-text-xs cforge-text-yellow-600 cforge-mt-1">
+                          {__('⚠ No source selected. Will default to Picsum.', 'content-forge')}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
               </>
             ) : (
               <>
