@@ -7,7 +7,6 @@
 - [x] Add more realistic content patterns to `randomize_content()`
 - [x] Include different content types (listicles, how-to guides, news articles, etc.)
 - [x] Add paragraph variation (short, medium, long)
-- [x] Include realistic metadata (reading time, word count variations)
 
 **Note:** We are NOT using the Faker library. All content generation will be custom-built.
 

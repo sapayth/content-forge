@@ -39,14 +39,51 @@ class Post extends Generator
             for ( $i = 0; $i < $count; $i++ )
             {
                   // Generate default title and content if not provided in args
-                  $title   = isset( $args['post_title'] ) ? $args['post_title'] : $this->randomize_title();
-                  $content = isset( $args['post_content'] ) ? $args['post_content'] : $this->randomize_content();
-
+                  $post_type = isset( $args['post_type'] ) ? $args['post_type'] : 'post';
+                  $title     = isset( $args['post_title'] ) ? $args['post_title'] : $this->randomize_title();
+                  
+                  // Detect editor type for this post type (before generating content)
+                  $editor_type = cforge_detect_editor_type( $post_type );
+                  
+                  // Log editor detection
+                  error_log( sprintf( 
+                      '[Content Forge] Post #%d - Detected editor type: %s for post_type: %s',
+                      $i + 1,
+                      $editor_type,
+                      $post_type
+                  ) );
+                  
+                  // Generate or get content
+                  if ( isset( $args['post_content'] ) )
+                  {
+                        // User provided content - format it based on editor type
+                        $content = $this->format_content_for_editor( $args['post_content'], $editor_type );
+                        error_log( sprintf( 
+                            '[Content Forge] Post #%d - Using user-provided content (formatted for %s editor)',
+                            $i + 1,
+                            $editor_type
+                        ) );
+                  }
+                  else
+                  {
+                        // Generate content (will be formatted inside randomize_content)
+                        $content = $this->randomize_content( $post_type );
+                  }
+                  
+                  // Log what we're generating
+                  error_log( sprintf( 
+                      '[Content Forge] Generating post #%d - Title: %s | Content length: %d chars | Content preview: %s',
+                      $i + 1,
+                      $title,
+                      strlen( $content ),
+                      substr( wp_strip_all_tags( $content ), 0, 100 )
+                  ) );
+                  
                   $post_data = [
                         'post_title'   => $title,
                         'post_content' => $content,
                         'post_status'  => 'publish',
-                        'post_type'    => 'post',
+                        'post_type'    => $post_type,
                         'post_author'  => $this->user_id,
                   ];
 
@@ -76,6 +113,28 @@ class Post extends Generator
 
                   if ( !is_wp_error( $post_id ) && $post_id )
                   {
+                        // Log final content that was saved
+                        $saved_post = get_post( $post_id );
+                        $saved_content = $saved_post->post_content;
+                        $has_block_format = ( strpos( $saved_content, '<!-- wp:' ) !== false );
+                        
+                        error_log( sprintf( 
+                            '[Content Forge] Post #%d saved successfully - Post ID: %d | Content length: %d chars | Editor type: %s | Has block format: %s',
+                            $i + 1,
+                            $post_id,
+                            strlen( $saved_content ),
+                            $editor_type,
+                            $has_block_format ? 'YES' : 'NO'
+                        ) );
+                        
+                        // Log a sample of the actual saved content (first 400 chars) to verify format
+                        $content_sample = substr( $saved_content, 0, 400 );
+                        error_log( sprintf( 
+                            '[Content Forge] Post #%d saved content sample (first 400 chars): %s',
+                            $i + 1,
+                            $content_sample
+                        ) );
+                        
                         $ids[] = $post_id;
                         $this->track_generated( $post_id, 'post' );
 
@@ -504,9 +563,10 @@ class Post extends Generator
       /**
        * Generate random content for posts.
        *
+       * @param string $post_type Optional post type. Default 'post'.
        * @return string Generated content
        */
-      private function randomize_content()
+      private function randomize_content( $post_type = 'post' )
       {
             // Randomly select a content type
             $content_types = [ 'listicle', 'howto', 'news', 'opinion', 'casestudy' ];
@@ -534,31 +594,92 @@ class Post extends Generator
                         $content = $this->generate_standard_content();
             }
 
-            // Calculate metadata
-            $word_count   = str_word_count( wp_strip_all_tags( $content ) );
-            $reading_time = max( 1, ceil( $word_count / 200 ) ); // Average reading speed: 200 words/min
-
-            // Add metadata as HTML comment
-            $metadata = "\n<!-- Content Type: {$content_type} | Word Count: {$word_count} | Reading Time: {$reading_time} min -->\n\n";
-
+            // Detect editor type before formatting
+            $editor_type = cforge_detect_editor_type( $post_type );
+            
             // Append the Content Forge attribution
             $content .= "\n\n<p><em>This is a fake post generated by Content Forge.</em></p>";
 
-            // Block Editor Compatibility
-            if ( function_exists( 'use_block_editor_for_post_type' ) && use_block_editor_for_post_type( 'post' ) )
-            {
-                  // Convert paragraphs to blocks
-                  $content = preg_replace( '/<p>(.*?)<\/p>/s', '<!-- wp:paragraph --><p>$1</p><!-- /wp:paragraph -->', $content );
-                  // Convert headings to blocks
-                  $content = preg_replace( '/<(h[1-6])>(.*?)<\/\1>/s', '<!-- wp:heading -->\n<$1>$2</$1>\n<!-- /wp:heading -->', $content );
-                  // Convert lists to blocks
-                  $content = preg_replace( '/<ul>(.*?)<\/ul>/s', '<!-- wp:list -->\n<ul>$1</ul>\n<!-- /wp:list -->', $content );
-                  $content = preg_replace( '/<ol>(.*?)<\/ol>/s', '<!-- wp:list {"ordered":true} -->\n<ol>$1</ol>\n<!-- /wp:list -->', $content );
-                  // Convert blockquotes to blocks
-                  $content = preg_replace( '/<blockquote>(.*?)<\/blockquote>/s', '<!-- wp:quote -->\n<blockquote class="wp-block-quote">$1</blockquote>\n<!-- /wp:quote -->', $content );
-            }
+            // Format content for the appropriate editor
+            $content = $this->format_content_for_editor( $content, $editor_type );
+            
+            return $content;
+      }
 
-            return $metadata . $content;
+      /**
+       * Format content for the appropriate editor type.
+       *
+       * @param string $content     The content to format.
+       * @param string $editor_type The editor type: 'block' or 'classic'.
+       * @return string Formatted content.
+       */
+      private function format_content_for_editor( $content, $editor_type )
+      {
+            $original_content = $content;
+            
+            if ( 'block' === $editor_type )
+            {
+                  // Remove any existing block markers to avoid duplication
+                  $content = preg_replace( '/<!--\s*\/?wp:.*?-->/s', '', $content );
+                  
+                  // Convert in order: headings first, then blockquotes, lists, then paragraphs
+                  // This prevents nested matches
+                  
+                  // Convert headings (must be first to avoid matching inside other elements)
+                  $content = preg_replace( '/<(h[1-6])>(.*?)<\/\1>/s', "\n\n<!-- wp:heading -->\n<$1>$2</$1>\n<!-- /wp:heading -->\n\n", $content );
+                  
+                  // Convert blockquotes
+                  $content = preg_replace( '/<blockquote[^>]*>(.*?)<\/blockquote>/s', "\n\n<!-- wp:quote -->\n<blockquote class=\"wp-block-quote\">$1</blockquote>\n<!-- /wp:quote -->\n\n", $content );
+                  
+                  // Convert ordered lists
+                  $content = preg_replace( '/<ol[^>]*>(.*?)<\/ol>/s', "\n\n<!-- wp:list {\"ordered\":true} -->\n<ol>$1</ol>\n<!-- /wp:list -->\n\n", $content );
+                  
+                  // Convert unordered lists
+                  $content = preg_replace( '/<ul[^>]*>(.*?)<\/ul>/s', "\n\n<!-- wp:list -->\n<ul>$1</ul>\n<!-- /wp:list -->\n\n", $content );
+                  
+                  // Convert paragraphs (do this last)
+                  // Only convert paragraphs that don't already have block markers around them
+                  $content = preg_replace( '/<p>(.*?)<\/p>/s', "\n\n<!-- wp:paragraph -->\n<p>$1</p>\n<!-- /wp:paragraph -->\n\n", $content );
+                  
+                  // Remove duplicate block markers (in case conversion ran twice)
+                  $content = preg_replace( '/(<!-- wp:paragraph -->\s*){2,}/', '<!-- wp:paragraph -->', $content );
+                  $content = preg_replace( '/(<!-- \/wp:paragraph -->\s*){2,}/', '<!-- /wp:paragraph -->', $content );
+                  
+                  // Clean up excessive newlines (max 2 consecutive)
+                  $content = preg_replace( '/\n{3,}/', "\n\n", $content );
+                  
+                  // Trim leading/trailing whitespace
+                  $content = trim( $content );
+                  
+                  // Log a sample of the formatted content to verify block format
+                  $sample_length = min( 300, strlen( $content ) );
+                  $content_sample = substr( $content, 0, $sample_length );
+                  error_log( sprintf( 
+                      '[Content Forge] Content formatted for Block Editor | Sample (first %d chars): %s',
+                      $sample_length,
+                      $content_sample
+                  ) );
+                  
+                  // Verify block format was applied
+                  $has_block_format = ( strpos( $content, '<!-- wp:' ) !== false );
+                  error_log( sprintf( 
+                      '[Content Forge] Block format verification: %s (contains <!-- wp: -->)',
+                      $has_block_format ? 'PASS' : 'FAIL'
+                  ) );
+            }
+            else
+            {
+                  // Classic Editor: Keep as plain HTML (already in correct format)
+                  $sample_length = min( 200, strlen( $content ) );
+                  $content_sample = substr( $content, 0, $sample_length );
+                  error_log( sprintf( 
+                      '[Content Forge] Content formatted for Classic Editor (plain HTML) | Sample (first %d chars): %s',
+                      $sample_length,
+                      $content_sample
+                  ) );
+            }
+            
+            return $content;
       }
 
       /**
