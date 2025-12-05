@@ -15,7 +15,6 @@ This document outlines the release schedule for Content Forge, targeting a moder
   - *Classic:* Set `_thumbnail_id`.
   - *Block:* Set `_thumbnail_id` (compatible with all block themes).
 - **Feature:** Basic Post Excerpts.
-- **Enhancement:** Dashboard Statistics Widget (Basic counts).
 - **Fix:** Ensure all current generators respect the active editor (wrap content in blocks if Block Editor is active, plain HTML if Classic).
 
 ### v1.2.0 - The AI & Smart Update (Month 2)

@@ -1,4 +1,4 @@
-=== Content Forge ===
+=== Content Forge - Generate realistic dummy content, posts, comments, users, taxonomies, and pages ===
 Contributors: sapayth
 Tags: fake data, dummy content, testing, development, generator
 Requires at least: 5.6
@@ -81,10 +81,10 @@ Yes, Content Forge is fully translation ready and includes a .pot file for trans
 4. Bulk content management tools
 
 == Changelog ==
-= 1.0.2 2025-11-30 =
-* Added taxonomy generation feature with support for custom taxonomies
-* Improved admin interface styling and user experience
-* Code optimizations and performance improvements
+= 1.1.0 05-12-2025 =
+* New - Added featured image generation with placeholder support
+* New - Added post excerpt generation
+* Enhancement – Content formatting for both Block and Classic editors
 
 == Developer Notes ==
 

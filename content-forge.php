@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Content Forge
  * Description: Generate fake/dummy posts, pages, users, comments for development/testing.
- * Version: 1.0.2
+ * Version: 1.1.0
  * Author: Sapayth H.
  * Author URI: https://sapayth.com
  * Text Domain: content-forge
@@ -20,6 +20,7 @@ use ContentForge\Loader;
 if (!defined('ABSPATH')) {
 	exit;
 }
+
 if (file_exists(__DIR__ . '/vendor/autoload.php')) {
 	require_once __DIR__ . '/vendor/autoload.php';
 }
@@ -27,7 +28,7 @@ if (file_exists(__DIR__ . '/vendor/autoload.php')) {
 final class ContentForge
 {
 
-	const VERSION = '1.0.2';
+	const VERSION = '1.1.0';
 
 	/**
 	 * Class constructor.
