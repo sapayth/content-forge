@@ -11,9 +11,7 @@ namespace ContentForge\Api;
 use WP_REST_Server;
 use ContentForge\Generator\Taxonomy as GeneratorTaxonomy;
 
-class Taxonomy extends CForge_REST_Controller
-{
-
+class Taxonomy extends CForge_REST_Controller {
     /**
      * Route base
      *
@@ -26,8 +24,7 @@ class Taxonomy extends CForge_REST_Controller
      *
      * @since 1.0.0
      */
-    public function __construct()
-    {
+    public function __construct() {
         add_action( 'rest_api_init', [ $this, 'register_routes' ] );
     }
 
@@ -36,8 +33,7 @@ class Taxonomy extends CForge_REST_Controller
      *
      * @since 1.0.0
      */
-    public function register_routes()
-    {
+    public function register_routes() {
         register_rest_route(
             $this->namespace,
             '/' . $this->base . '/bulk',
@@ -102,39 +98,30 @@ class Taxonomy extends CForge_REST_Controller
      *
      * @param \WP_REST_Request $request The REST API request object.
      */
-    public function handle_bulk_create( $request )
-    {
+    public function handle_bulk_create( $request ) {
         $params   = $request->get_json_params();
-        $taxonomy = isset( $params[ 'taxonomy' ] ) ? sanitize_key( $params[ 'taxonomy' ] ) : 'category';
-        $count    = isset( $params[ 'count' ] ) ? intval( $params[ 'count' ] ) : 1;
-
-        if ( !taxonomy_exists( $taxonomy ) )
-        {
+        $taxonomy = isset( $params['taxonomy'] ) ? sanitize_key( $params['taxonomy'] ) : 'category';
+        $count    = isset( $params['count'] ) ? intval( $params['count'] ) : 1;
+        if ( ! taxonomy_exists( $taxonomy ) ) {
             return new \WP_REST_Response( [ 'message' => __( 'Invalid taxonomy.', 'content-forge' ) ], 400 );
         }
-
-        if ( $count < 1 )
-        {
+        if ( $count < 1 ) {
             return new \WP_REST_Response(
                 [ 'message' => __( 'Number of terms must be at least 1.', 'content-forge' ) ],
                 400
             );
         }
-
         $generator = new GeneratorTaxonomy( get_current_user_id() );
         $args      = [
             'taxonomy' => $taxonomy,
         ];
         $ids       = $generator->generate( $count, $args );
-
-        if ( empty( $ids ) )
-        {
+        if ( empty( $ids ) ) {
             return new \WP_REST_Response(
                 [ 'message' => __( 'Failed to generate terms.', 'content-forge' ) ],
                 500
             );
         }
-
         return new \WP_REST_Response( [ 'created' => $ids ], 200 );
     }
 
@@ -143,35 +130,28 @@ class Taxonomy extends CForge_REST_Controller
      *
      * @param \WP_REST_Request $request The REST API request object.
      */
-    public function handle_list( $request )
-    {
+    public function handle_list( $request ) {
         // Validate and sanitize request parameters
         $page     = absint( $request->get_param( 'page' ) );
         $per_page = absint( $request->get_param( 'per_page' ) );
-        if ( $page < 1 )
-        {
+        if ( $page < 1 ) {
             $page = 1;
         }
-        if ( $per_page < 1 )
-        {
+        if ( $per_page < 1 ) {
             $per_page = 15;
-        } elseif ( $per_page > 50 )
-        {
+        } elseif ( $per_page > 50 ) {
             $per_page = 50;
         }
         $offset = ( $page - 1 ) * $per_page;
-
         // Get total count and items
         global $wpdb;
         $table_name = $wpdb->prefix . CFORGE_DBNAME;
-
         // We need to filter by taxonomy types. For now, we assume any non-post/user/comment type is a taxonomy?
         // Or better, we query for known taxonomies.
         // Actually, in track_generated for Taxonomy, we store the taxonomy name as data_type.
         // So we should query for data_types that are valid taxonomies.
         $taxonomies = get_taxonomies();
-        if ( empty( $taxonomies ) )
-        {
+        if ( empty( $taxonomies ) ) {
             return new \WP_REST_Response(
                 [
                     'total' => 0,
@@ -180,30 +160,26 @@ class Taxonomy extends CForge_REST_Controller
                 200
             );
         }
-
         // Build placeholders for IN clause
         $placeholders = implode( ',', array_fill( 0, count( $taxonomies ), '%s' ) );
-
+        // phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber
         $total_count = $wpdb->get_var(
             $wpdb->prepare(
                 "SELECT COUNT(*) FROM {$table_name} WHERE data_type IN ({$placeholders})",
                 array_keys( $taxonomies )
             )
         );
-
-        $results = $wpdb->get_results(
+        $results     = $wpdb->get_results(
             $wpdb->prepare(
                 "SELECT object_id, data_type, created_at FROM {$table_name} WHERE data_type IN ({$placeholders}) ORDER BY id DESC LIMIT %d OFFSET %d",
                 array_merge( array_keys( $taxonomies ), [ $per_page, $offset ] )
             )
         );
-
+        // phpcs:enable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber
         $formatted_items = [];
-        foreach ( $results as $row )
-        {
+        foreach ( $results as $row ) {
             $term = get_term( $row->object_id, $row->data_type );
-            if ( is_wp_error( $term ) || !$term )
-            {
+            if ( is_wp_error( $term ) || ! $term ) {
                 continue;
             }
             $formatted_items[] = [
@@ -214,7 +190,6 @@ class Taxonomy extends CForge_REST_Controller
                 'date'     => sanitize_text_field( $row->created_at ),
             ];
         }
-
         return new \WP_REST_Response(
             [
                 'total' => absint( $total_count ),
@@ -229,28 +204,29 @@ class Taxonomy extends CForge_REST_Controller
      *
      * @param \WP_REST_Request $request The REST API request object.
      */
-    public function handle_bulk_delete( $request )
-    {
+    public function handle_bulk_delete( $request ) {
         global $wpdb;
         $table_name = $wpdb->prefix . CFORGE_DBNAME;
         $taxonomies = get_taxonomies();
-
-        if ( empty( $taxonomies ) )
-        {
-            return new \WP_REST_Response( [ 'deleted' => 0, 'message' => 'No taxonomies found.' ], 200 );
+        if ( empty( $taxonomies ) ) {
+            return new \WP_REST_Response(
+                [
+                    'deleted' => 0,
+                    'message' => 'No taxonomies found.',
+                ],
+                200
+            );
         }
-
         $placeholders = implode( ',', array_fill( 0, count( $taxonomies ), '%s' ) );
-
+        // phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
         $term_ids = $wpdb->get_col(
             $wpdb->prepare(
                 "SELECT object_id FROM {$table_name} WHERE data_type IN ({$placeholders})",
                 array_keys( $taxonomies )
             )
         );
-
-        if ( empty( $term_ids ) )
-        {
+        // phpcs:enable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
+        if ( empty( $term_ids ) ) {
             return new \WP_REST_Response(
                 [
                     'deleted' => 0,
@@ -259,14 +235,13 @@ class Taxonomy extends CForge_REST_Controller
                 200
             );
         }
-
         $generator     = new GeneratorTaxonomy( get_current_user_id() );
         $deleted_count = $generator->delete( array_map( 'absint', $term_ids ) );
-
         return new \WP_REST_Response(
             [
                 'deleted' => $deleted_count,
                 'message' => sprintf(
+                    /* translators: %d: Number of deleted terms */
                     __( 'Successfully deleted %d terms.', 'content-forge' ),
                     $deleted_count
                 ),
@@ -280,38 +255,24 @@ class Taxonomy extends CForge_REST_Controller
      *
      * @param \WP_REST_Request $request The REST API request object.
      */
-    public function handle_individual_delete( $request )
-    {
+    public function handle_individual_delete( $request ) {
         $term_id = absint( $request->get_param( 'id' ) );
-
-        // Log the deletion attempt
-        error_log( sprintf( 'Content Forge: Attempting to delete term ID: %d', $term_id ) );
-
-        if ( !$term_id )
-        {
-            error_log( 'Content Forge: Invalid term ID provided for deletion' );
+        if ( ! $term_id ) {
             return new \WP_Error(
                 'cforge_invalid_id',
                 __( 'Invalid term ID provided.', 'content-forge' ),
                 [ 'status' => 400 ]
             );
         }
-
         $generator     = new GeneratorTaxonomy( get_current_user_id() );
         $deleted_count = $generator->delete( [ $term_id ] );
-
-        if ( 0 === $deleted_count )
-        {
-            error_log( sprintf( 'Content Forge: Failed to delete term ID: %d. Deleted count: %d', $term_id, $deleted_count ) );
+        if ( 0 === $deleted_count ) {
             return new \WP_Error(
                 'cforge_delete_failed',
                 __( 'Failed to delete the term.', 'content-forge' ),
                 [ 'status' => 500 ]
             );
         }
-
-        error_log( sprintf( 'Content Forge: Successfully deleted term ID: %d', $term_id ) );
-
         return new \WP_REST_Response(
             [
                 'deleted' => $deleted_count,

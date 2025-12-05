@@ -12,7 +12,6 @@ use WP_REST_Server;
 use ContentForge\Generator\Comment as GeneratorComment;
 
 class Comment extends CForge_REST_Controller {
-
     /**
      * Route base
      *
@@ -78,7 +77,7 @@ class Comment extends CForge_REST_Controller {
                         'comment_ids' => [
                             'required'          => true,
                             'type'              => 'array',
-                            'sanitize_callback' => function( $param ) {
+                            'sanitize_callback' => function ( $param ) {
                                 return array_map( 'absint', $param );
                             },
                         ],
@@ -112,7 +111,7 @@ class Comment extends CForge_REST_Controller {
      * @param \WP_REST_Request $request The REST API request object.
      */
     public function handle_bulk_create( $request ) {
-        $params = $request->get_json_params();
+        $params            = $request->get_json_params();
         $comment_number    = isset( $params['comment_number'] ) ? intval( $params['comment_number'] ) : 1;
         $comment_post_id   = isset( $params['comment_post_ID'] ) ? intval( $params['comment_post_ID'] ) : 0;
         $comment_status    = isset( $params['comment_status'] ) ? sanitize_key( $params['comment_status'] ) : '0';
@@ -121,7 +120,8 @@ class Comment extends CForge_REST_Controller {
         // Validate comment number
         if ( $comment_number < 1 ) {
             return new \WP_REST_Response(
-                [ 'message' => __( 'Number of comments must be at least 1.', 'content-forge' ) ], 400
+                [ 'message' => __( 'Number of comments must be at least 1.', 'content-forge' ) ],
+                400
             );
         }
         // Validate comment status
@@ -137,29 +137,31 @@ class Comment extends CForge_REST_Controller {
             $post = get_post( $comment_post_id );
             if ( ! $post || 'publish' !== $post->post_status || 'open' !== $post->comment_status ) {
                 return new \WP_REST_Response(
-                    [ 'message' => __( 'Invalid post ID or post does not allow comments.', 'content-forge' ) ], 400
+                    [ 'message' => __( 'Invalid post ID or post does not allow comments.', 'content-forge' ) ],
+                    400
                 );
             }
         }
         $generator = new GeneratorComment( get_current_user_id() );
-        $args = [
+        $args      = [
             'comment_post_ID'   => $comment_post_id,
             'comment_status'    => $comment_status,
             'allow_replies'     => $allow_replies,
             'reply_probability' => $reply_probability,
         ];
-        $created = $generator->generate( $comment_number, $args );
+        $created   = $generator->generate( $comment_number, $args );
         if ( empty( $created ) ) {
             /* translators: Error message when comment generation fails */
             return new \WP_REST_Response(
                 [
                     'message' => __(
-                        'Failed to generate comments. No suitable posts found or other error occurred.', 'content-forge'
+                        'Failed to generate comments. No suitable posts found or other error occurred.',
+                        'content-forge'
                     ),
-                ], 500
+                ],
+                500
             );
         }
-
         return new \WP_REST_Response( [ 'created' => $created ], 200 );
     }
 
@@ -189,7 +191,6 @@ class Comment extends CForge_REST_Controller {
         if ( is_wp_error( $formatted_items ) ) {
             return $formatted_items;
         }
-
         // Prepare and return response
         return $this->prepare_list_response( $total_count, $formatted_items );
     }
@@ -206,12 +207,11 @@ class Comment extends CForge_REST_Controller {
         }
         $generator = new GeneratorComment( get_current_user_id() );
         $deleted   = $generator->delete( $comment_ids );
-
         return new \WP_REST_Response(
             [
                 'deleted' => $deleted,
                 'message' => sprintf(
-                /* translators: %d: Number of deleted comments */
+                    /* translators: %d: Number of deleted comments */
                     __( 'Successfully deleted %d comments.', 'content-forge' ),
                     $deleted
                 ),
@@ -250,12 +250,11 @@ class Comment extends CForge_REST_Controller {
         // Use the generator to delete comments
         $generator     = new GeneratorComment( get_current_user_id() );
         $deleted_count = $generator->delete( $comment_ids );
-
         return new \WP_REST_Response(
             [
                 'deleted' => $deleted_count,
                 'message' => sprintf(
-                /* translators: %d: Number of deleted comments */
+                    /* translators: %d: Number of deleted comments */
                     __( 'Successfully deleted %d comments.', 'content-forge' ),
                     $deleted_count
                 ),
@@ -273,13 +272,15 @@ class Comment extends CForge_REST_Controller {
      */
     private function get_all_tracked_comments_ids() {
         global $wpdb;
-        $table_name  = $wpdb->prefix . CFORGE_DBNAME;
+        $table_name = $wpdb->prefix . CFORGE_DBNAME;
+        // phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
         $comment_ids = $wpdb->get_col(
             $wpdb->prepare(
                 "SELECT object_id FROM {$table_name} WHERE data_type = %s ORDER BY id DESC",
                 'comment'
             )
         );
+        // phpcs:enable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
         if ( $wpdb->last_error ) {
             return new \WP_Error(
                 'cforge_db_error',
@@ -287,7 +288,6 @@ class Comment extends CForge_REST_Controller {
                 [ 'status' => 500 ]
             );
         }
-
         return array_map( 'absint', $comment_ids );
     }
 
@@ -330,7 +330,6 @@ class Comment extends CForge_REST_Controller {
                 [ 'status' => 500 ]
             );
         }
-
         return new \WP_REST_Response(
             [
                 'deleted' => $deleted_count,
@@ -352,14 +351,15 @@ class Comment extends CForge_REST_Controller {
     private function is_comment_tracked( $comment_id ) {
         global $wpdb;
         $table_name = $wpdb->prefix . CFORGE_DBNAME;
-        $count      = $wpdb->get_var(
+        // phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+        $count = $wpdb->get_var(
             $wpdb->prepare(
                 "SELECT COUNT(*) FROM {$table_name} WHERE object_id = %d AND data_type = %s",
                 $comment_id,
                 'comment'
             )
         );
-
+        // phpcs:enable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
         return $count > 0;
     }
 
@@ -384,7 +384,6 @@ class Comment extends CForge_REST_Controller {
             $per_page = 50; // Maximum allowed
         }
         $offset = ( $page - 1 ) * $per_page;
-
         return [
             'page'     => $page,
             'per_page' => $per_page,
@@ -399,22 +398,21 @@ class Comment extends CForge_REST_Controller {
      */
     private function get_tracked_comments_count() {
         global $wpdb;
-        
         $table_name = $wpdb->prefix . CFORGE_DBNAME;
+        // phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
         $count = $wpdb->get_var(
             $wpdb->prepare(
                 "SELECT COUNT(*) FROM {$table_name} WHERE data_type = %s",
                 'comment'
             )
         );
-        
+        // phpcs:enable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
         if ( $wpdb->last_error ) {
             return new \WP_Error(
-                'database_error', 
+                'database_error',
                 __( 'Database error occurred while counting comments.', 'content-forge' )
             );
         }
-
         return (int) $count;
     }
 
@@ -428,6 +426,7 @@ class Comment extends CForge_REST_Controller {
     private function get_tracked_comments_ids( $pagination_params ) {
         global $wpdb;
         $table_name = $wpdb->prefix . CFORGE_DBNAME;
+        // phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
         $comment_ids = $wpdb->get_col(
             $wpdb->prepare(
                 "SELECT object_id FROM {$table_name} WHERE data_type = 'comment' ORDER BY created_at DESC LIMIT %d OFFSET %d",
@@ -435,12 +434,13 @@ class Comment extends CForge_REST_Controller {
                 $pagination_params['offset']
             )
         );
+        // phpcs:enable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
         if ( $wpdb->last_error ) {
             return new \WP_Error(
-                'database_error', __( 'Database error occurred while fetching comment IDs.', 'content-forge' )
+                'database_error',
+                __( 'Database error occurred while fetching comment IDs.', 'content-forge' )
             );
         }
-
         return array_map( 'intval', $comment_ids );
     }
 
@@ -461,9 +461,9 @@ class Comment extends CForge_REST_Controller {
             if ( ! $comment ) {
                 continue; // Skip if comment no longer exists
             }
-            $post           = get_post( $comment->comment_post_ID );
-            $post_title     = $post ? $post->post_title : __( 'Unknown Post', 'content-forge' );
-            $post_edit_link = $post ? get_edit_post_link( $post->ID ) : '';
+            $post              = get_post( $comment->comment_post_ID );
+            $post_title        = $post ? $post->post_title : __( 'Unknown Post', 'content-forge' );
+            $post_edit_link    = $post ? get_edit_post_link( $post->ID ) : '';
             $formatted_items[] = [
                 'id'             => (int) $comment_id,
                 'content'        => wp_trim_words( $comment->comment_content, 15 ),
@@ -478,7 +478,6 @@ class Comment extends CForge_REST_Controller {
                 'edit_link'      => admin_url( 'comment.php?action=editcomment&c=' . $comment_id ),
             ];
         }
-
         return $formatted_items;
     }
 

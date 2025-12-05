@@ -8,6 +8,7 @@
     <exclude-pattern>/node_modules/*</exclude-pattern>
     <exclude-pattern>/build/*</exclude-pattern>
     <exclude-pattern>/dist/*</exclude-pattern>
+    <exclude-pattern>/release/*</exclude-pattern>
     <exclude-pattern>*.asset.php</exclude-pattern>
 
     <!-- How to scan -->
@@ -40,18 +41,16 @@
         <!-- Allow text domain to be passed as a variable -->
         <exclude name="WordPress.WP.I18n.MissingArgDomain"/>
 
-        <!-- Text Domain Rules -->
-        <rule ref="WordPress.WP.I18n">
-            <!-- Require text domain in all translation functions -->
-            <include name="WordPress.WP.I18n.MissingTextDomain"/>
-            <include name="WordPress.WP.I18n.NonSingularStringLiteralDomain"/>
-            <include name="WordPress.WP.I18n.TextDomainMismatch"/>
+        <!-- Require text domain in all translation functions -->
+        <!-- <include> is not a valid child of <rule> in this context for enabling specific sniffs from a ref,
+             but since we are ref-ing the whole standard, we get them by default.
+             We just need to set the property. -->
 
-            <!-- Enforce consistent text domain -->
-            <properties>
-                <property name="text_domain" value="content-forge"/>
-            </properties>
-        </rule>
+        <properties>
+            <property name="text_domain" type="array">
+                <element value="content-forge"/>
+            </property>
+        </properties>
     </rule>
 
     <!-- Documentation Standards -->

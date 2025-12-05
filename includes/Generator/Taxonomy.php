@@ -10,17 +10,14 @@ namespace ContentForge\Generator;
 
 use WP_Error;
 
-if ( !defined( 'ABSPATH' ) )
-{
+if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
 /**
  * Generator for fake taxonomy terms.
  */
-class Taxonomy extends Generator
-{
-
+class Taxonomy extends Generator {
     /**
      * Generate fake terms.
      *
@@ -29,29 +26,21 @@ class Taxonomy extends Generator
      *
      * @return array Array of generated term IDs.
      */
-    public function generate( $count = 1, $args = [] )
-    {
+    public function generate( $count = 1, $args = [] ) {
         $ids      = [];
-        $taxonomy = isset( $args[ 'taxonomy' ] ) ? sanitize_key( $args[ 'taxonomy' ] ) : 'category';
-
-        if ( !taxonomy_exists( $taxonomy ) )
-        {
+        $taxonomy = isset( $args['taxonomy'] ) ? sanitize_key( $args['taxonomy'] ) : 'category';
+        if ( ! taxonomy_exists( $taxonomy ) ) {
             return $ids;
         }
-
-        for ( $i = 0; $i < $count; $i++ )
-        {
+        for ( $i = 0; $i < $count; $i++ ) {
             $term_name = $this->randomize_name();
             $term      = wp_insert_term( $term_name, $taxonomy );
-
-            if ( !is_wp_error( $term ) && isset( $term[ 'term_id' ] ) )
-            {
-                $term_id = $term[ 'term_id' ];
+            if ( ! is_wp_error( $term ) && isset( $term['term_id'] ) ) {
+                $term_id = $term['term_id'];
                 $ids[]   = $term_id;
                 $this->track_generated( $term_id, $taxonomy );
             }
         }
-
         return $ids;
     }
 
@@ -60,8 +49,7 @@ class Taxonomy extends Generator
      *
      * @return string
      */
-    private function randomize_name()
-    {
+    private function randomize_name() {
         // Single-word categories
         $single_words = [
             'Technology',
@@ -85,7 +73,6 @@ class Taxonomy extends Generator
             'Art',
             'Nature',
         ];
-
         // Two-word categories
         $prefixes = [
             'Digital',
@@ -107,8 +94,7 @@ class Taxonomy extends Generator
             'Online',
             'Mobile',
         ];
-
-        $topics = [
+        $topics   = [
             'Marketing',
             'Development',
             'Design',
@@ -128,7 +114,6 @@ class Taxonomy extends Generator
             'Leadership',
             'Innovation',
         ];
-
         // Specific topic categories
         $specific_categories = [
             'Web Development',
@@ -162,12 +147,9 @@ class Taxonomy extends Generator
             'Investment Tips',
             'DIY Projects',
         ];
-
         // Randomly choose a pattern
         $pattern = wp_rand( 1, 3 );
-
-        switch ( $pattern )
-        {
+        switch ( $pattern ) {
             case 1:
                 // Single word
                 $name = $single_words[ array_rand( $single_words ) ];
@@ -183,30 +165,23 @@ class Taxonomy extends Generator
             default:
                 $name = $single_words[ array_rand( $single_words ) ];
         }
-
         // Check if term already exists, if so, try again (max 5 attempts)
         $attempts      = 0;
         $original_name = $name;
-        while ( term_exists( $name ) && $attempts < 5 )
-        {
+        while ( term_exists( $name ) && $attempts < 5 ) {
             // Try a different pattern or add a subtle variation
-            $attempts++;
-            if ( $attempts === 1 )
-            {
+            ++$attempts;
+            if ( 1 === $attempts ) {
                 $name = $prefixes[ array_rand( $prefixes ) ] . ' ' . $original_name;
-            } elseif ( $attempts === 2 )
-            {
+            } elseif ( 2 === $attempts ) {
                 $name = $specific_categories[ array_rand( $specific_categories ) ];
-            } elseif ( $attempts === 3 )
-            {
+            } elseif ( 3 === $attempts ) {
                 $name = $single_words[ array_rand( $single_words ) ];
-            } else
-            {
+            } else {
                 // Last resort: add a number but make it look more natural
                 $name = $original_name . ' ' . wp_rand( 2020, 2025 );
             }
         }
-
         return $name;
     }
 
@@ -217,49 +192,45 @@ class Taxonomy extends Generator
      *
      * @return int Number of items deleted.
      */
-    public function delete( array $object_ids )
-    {
+    public function delete( array $object_ids ) {
         $deleted = 0;
         // We need to know the taxonomy to delete a term, but delete() interface only accepts IDs.
         // However, wp_delete_term requires taxonomy.
         // First try to get taxonomy from tracking table, then fallback to WordPress term_taxonomy table.
-
         global $wpdb;
         $table_name = $wpdb->prefix . CFORGE_DBNAME;
-
-        foreach ( $object_ids as $term_id )
-        {
+        foreach ( $object_ids as $term_id ) {
             // Get taxonomy from tracking table
+            // phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
             $taxonomy = $wpdb->get_var(
                 $wpdb->prepare(
                     "SELECT data_type FROM $table_name WHERE object_id = %d",
                     $term_id
                 )
             );
-
+            // phpcs:enable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
             // If taxonomy from tracking table doesn't exist or is invalid, query WordPress directly
-            if ( !$taxonomy || !taxonomy_exists( $taxonomy ) )
-            {
+            if ( ! $taxonomy || ! taxonomy_exists( $taxonomy ) ) {
                 // Get taxonomy from WordPress term_taxonomy table
+                // phpcs:ignore WordPress.DB.DirectDatabaseQuery
                 $term_taxonomy = $wpdb->get_var(
                     $wpdb->prepare(
                         "SELECT taxonomy FROM {$wpdb->term_taxonomy} WHERE term_id = %d LIMIT 1",
                         $term_id
                     )
                 );
-
-                if ( $term_taxonomy && taxonomy_exists( $term_taxonomy ) )
-                {
+                if ( $term_taxonomy && taxonomy_exists( $term_taxonomy ) ) {
                     $taxonomy = $term_taxonomy;
-                    
                     // Update tracking table with correct taxonomy (we know it had invalid data since we're here)
                     // Delete old invalid entry if it exists
+                    // phpcs:ignore WordPress.DB.DirectDatabaseQuery
                     $wpdb->delete(
                         $table_name,
                         [ 'object_id' => $term_id ],
                         [ '%d' ]
                     );
                     // Insert correct entry
+                    // phpcs:ignore WordPress.DB.DirectDatabaseQuery
                     $wpdb->insert(
                         $table_name,
                         [
@@ -270,34 +241,31 @@ class Taxonomy extends Generator
                         ],
                         [ '%d', '%s', '%s', '%d' ]
                     );
-                } else
-                {
+                } else {
                     // Clean up invalid tracking entry if it exists
-                    if ( $taxonomy )
-                    {
+                    if ( $taxonomy ) {
+                        // phpcs:ignore WordPress.DB.DirectDatabaseQuery
                         $wpdb->delete(
                             $table_name,
-                            [ 'object_id' => $term_id, 'data_type' => $taxonomy ],
+                            [
+                                'object_id' => $term_id,
+                                'data_type' => $taxonomy,
+                            ],
                             [ '%d', '%s' ]
                         );
                     }
                     continue;
                 }
             }
-
             // At this point, we have a valid taxonomy
-            if ( $taxonomy && taxonomy_exists( $taxonomy ) )
-            {
+            if ( $taxonomy && taxonomy_exists( $taxonomy ) ) {
                 $delete_result = wp_delete_term( $term_id, $taxonomy );
-
-                if ( $delete_result && !is_wp_error( $delete_result ) )
-                {
+                if ( $delete_result && ! is_wp_error( $delete_result ) ) {
                     ++$deleted;
                     $this->untrack_generated( $term_id, $taxonomy );
                 }
             }
         }
-
         return $deleted;
     }
 }

@@ -12,7 +12,6 @@ use WP_REST_Server;
 use ContentForge\Generator\Post as GeneratorPost;
 
 class Post extends CForge_REST_Controller {
-
     /**
      * Route base
      *
@@ -118,15 +117,9 @@ class Post extends CForge_REST_Controller {
         // Extract image generation parameters
         $generate_image = isset( $params['generate_image'] ) && $params['generate_image'];
         $image_sources  = isset( $params['image_sources'] ) && is_array( $params['image_sources'] ) ? array_map( 'sanitize_text_field', $params['image_sources'] ) : [];
-
         // Extract excerpt generation parameter (defaults to true for backward compatibility)
         $generate_excerpt = isset( $params['generate_excerpt'] ) ? (bool) $params['generate_excerpt'] : true;
-
-        if ( $generate_image ) {
-            error_log( sprintf( 'Content Forge API: Image generation requested - Sources: %s', implode( ', ', $image_sources ) ) );
-        }
-
-        $generator = new GeneratorPost( get_current_user_id() );
+        $generator        = new GeneratorPost( get_current_user_id() );
         // Manual mode: expects post_titles (array) and post_contents (array)
         if ( isset( $params['post_titles'] ) && is_array( $params['post_titles'] ) ) {
             $titles   = array_map( 'sanitize_text_field', $params['post_titles'] );
@@ -153,10 +146,11 @@ class Post extends CForge_REST_Controller {
                 }
                 // Add excerpt generation parameter
                 $args['generate_excerpt'] = $generate_excerpt;
-                $ids     = $generator->generate( 1, $args );
+                $ids                      = $generator->generate( 1, $args );
                 if ( empty( $ids ) ) {
                     return new \WP_REST_Response(
-                        [ 'message' => __( 'Failed to generate post.', 'content-forge' ) ], 500
+                        [ 'message' => __( 'Failed to generate post.', 'content-forge' ) ],
+                        500
                     );
                 }
                 $created[] = $ids[0];
@@ -166,7 +160,8 @@ class Post extends CForge_REST_Controller {
             $post_number = isset( $params['post_number'] ) ? intval( $params['post_number'] ) : 1;
             if ( $post_number < 1 ) {
                 return new \WP_REST_Response(
-                    [ 'message' => __( 'Number of posts/pages must be at least 1.', 'content-forge' ) ], 400
+                    [ 'message' => __( 'Number of posts/pages must be at least 1.', 'content-forge' ) ],
+                    400
                 );
             }
             $args = [
@@ -184,15 +179,15 @@ class Post extends CForge_REST_Controller {
             }
             // Add excerpt generation parameter
             $args['generate_excerpt'] = $generate_excerpt;
-            $ids  = $generator->generate( $post_number, $args );
+            $ids                      = $generator->generate( $post_number, $args );
             if ( empty( $ids ) ) {
                 return new \WP_REST_Response(
-                    [ 'message' => __( 'Failed to generate posts/pages.', 'content-forge' ) ], 500
+                    [ 'message' => __( 'Failed to generate posts/pages.', 'content-forge' ) ],
+                    500
                 );
             }
             $created = array_merge( $created, $ids );
         }
-
         return new \WP_REST_Response( [ 'created' => $created ], 200 );
     }
 
@@ -229,7 +224,6 @@ class Post extends CForge_REST_Controller {
         if ( is_wp_error( $formatted_items ) ) {
             return $formatted_items;
         }
-
         // Prepare and return response
         return $this->prepare_list_response( $total_count, $formatted_items );
     }
@@ -257,7 +251,6 @@ class Post extends CForge_REST_Controller {
             $per_page = 50; // Maximum allowed
         }
         $offset = ( $page - 1 ) * $per_page;
-
         return [
             'page'     => $page,
             'per_page' => $per_page,
@@ -278,12 +271,14 @@ class Post extends CForge_REST_Controller {
         $data_types = [ 'post', 'page' ];
         // Build placeholders for IN clause
         $placeholders = implode( ',', array_fill( 0, count( $data_types ), '%s' ) );
+        // phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
         $total = $wpdb->get_var(
             $wpdb->prepare(
                 "SELECT COUNT(*) FROM {$table_name} WHERE data_type IN ({$placeholders})",
                 $data_types
             )
         );
+        // phpcs:enable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
         if ( $wpdb->last_error ) {
             return new \WP_Error(
                 'cforge_db_error',
@@ -291,7 +286,6 @@ class Post extends CForge_REST_Controller {
                 [ 'status' => 500 ]
             );
         }
-
         return absint( $total );
     }
 
@@ -315,12 +309,14 @@ class Post extends CForge_REST_Controller {
             $data_types,
             [ $pagination_params['per_page'], $pagination_params['offset'] ]
         );
+        // phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber
         $post_ids = $wpdb->get_col(
             $wpdb->prepare(
                 "SELECT object_id FROM {$table_name} WHERE data_type IN ({$placeholders}) ORDER BY id DESC LIMIT %d OFFSET %d",
                 $query_params
             )
         );
+        // phpcs:enable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber
         if ( $wpdb->last_error ) {
             return new \WP_Error(
                 'cforge_db_error',
@@ -328,7 +324,6 @@ class Post extends CForge_REST_Controller {
                 [ 'status' => 500 ]
             );
         }
-
         return array_map( 'absint', $post_ids );
     }
 
@@ -371,7 +366,6 @@ class Post extends CForge_REST_Controller {
                 'date'   => sanitize_text_field( get_date_from_gmt( $post->post_date_gmt, 'Y/m/d H:i A' ) ),
             ];
         }
-
         return $formatted_items;
     }
 
@@ -401,7 +395,6 @@ class Post extends CForge_REST_Controller {
                 [ 'status' => 500 ]
             );
         }
-
         return new \WP_REST_Response(
             [
                 'total' => absint( $total_count ),
@@ -441,12 +434,11 @@ class Post extends CForge_REST_Controller {
         // Use the generator to delete posts
         $generator     = new GeneratorPost( get_current_user_id() );
         $deleted_count = $generator->delete( $post_ids );
-
         return new \WP_REST_Response(
             [
                 'deleted' => $deleted_count,
                 'message' => sprintf(
-                /* translators: %d: Number of deleted posts */
+                    /* translators: %d: Number of deleted posts */
                     __( 'Successfully deleted %d posts/pages.', 'content-forge' ),
                     $deleted_count
                 ),
@@ -466,14 +458,13 @@ class Post extends CForge_REST_Controller {
         global $wpdb;
         $table_name = $wpdb->prefix . CFORGE_DBNAME;
         $data_types = [ 'post', 'page' ];
-        
         // Build placeholders for IN clause
         $placeholders = implode( ',', array_fill( 0, count( $data_types ), '%s' ) );
-    
+        // phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
         $post_ids = $wpdb->get_col(
             $wpdb->prepare( "SELECT object_id FROM {$table_name} WHERE data_type IN ({$placeholders}) ORDER BY id DESC", $data_types )
         );
-        
+        // phpcs:enable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
         if ( $wpdb->last_error ) {
             return new \WP_Error(
                 'cforge_db_error',
@@ -481,7 +472,6 @@ class Post extends CForge_REST_Controller {
                 [ 'status' => 500 ]
             );
         }
-
         return array_map( 'absint', $post_ids );
     }
 
@@ -524,7 +514,6 @@ class Post extends CForge_REST_Controller {
                 [ 'status' => 500 ]
             );
         }
-
         return new \WP_REST_Response(
             [
                 'deleted' => $deleted_count,
@@ -551,10 +540,11 @@ class Post extends CForge_REST_Controller {
         $placeholders = implode( ',', array_fill( 0, count( $data_types ), '%s' ) );
         // Prepare query parameters
         $query_params = array_merge( [ $post_id ], $data_types );
+        // phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
         $count = $wpdb->get_var(
             $wpdb->prepare( "SELECT COUNT(*) FROM {$table_name} WHERE object_id = %d AND data_type IN ({$placeholders})", $query_params )
         );
-
+        // phpcs:enable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
         return $count > 0;
     }
 }

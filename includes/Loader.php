@@ -10,13 +10,12 @@ namespace ContentForge;
 
 use ContentForge\Traits\ContainerTrait;
 
-if ( !defined( 'ABSPATH' ) )
-{
+if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class Loader
-{
+class Loader {
+
 
 	use ContainerTrait;
 
@@ -33,10 +32,8 @@ class Loader
 	protected function load_generators()
 	{
 		$generator_dir = CFORGE_INCLUDES_PATH . 'Generator/';
-		if ( is_dir( $generator_dir ) )
-		{
-			foreach ( glob( $generator_dir . '*.php' ) as $file )
-			{
+		if ( is_dir( $generator_dir ) ) {
+			foreach ( glob( $generator_dir . '*.php' ) as $file ) {
 				require_once $file;
 			}
 		}
@@ -51,18 +48,16 @@ class Loader
 	{
 		$this->load_generators();
 
-		$this->container[ 'api' ] = new Api();
+		$this->container['api'] = new Api();
 
 		// Load and initialize telemetry tracking.
-		if ( file_exists( CFORGE_INCLUDES_PATH . 'Telemetry_Manager.php' ) )
-		{
+		if ( file_exists( CFORGE_INCLUDES_PATH . 'Telemetry_Manager.php' ) ) {
 			require_once CFORGE_INCLUDES_PATH . 'Telemetry_Manager.php';
 		}
 		Telemetry_Manager::init();
 
-		if ( is_admin() )
-		{
-			$this->container[ 'admin' ] = new Admin();
+		if ( is_admin() ) {
+			$this->container['admin'] = new Admin();
 		}
 	}
 }

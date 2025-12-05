@@ -12,16 +12,15 @@ use WP_Error;
 use ContentForge\Activator;
 
 global $wpdb;
-if ( !defined( 'ABSPATH' ) )
-{
+if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
 /**
  * Generator for fake users.
  */
-class User extends Generator
-{
+class User extends Generator {
+
 
     /**
      * Data type for this generator.
@@ -41,9 +40,8 @@ class User extends Generator
     public function generate( $count = 1, $args = [] )
     {
         $ids   = [];
-        $roles = isset( $args[ 'roles' ] ) ? (array) $args[ 'roles' ] : [ 'subscriber' ];
-        for ( $i = 0; $i < $count; $i++ )
-        {
+        $roles = isset( $args['roles'] ) ? (array) $args['roles'] : [ 'subscriber' ];
+        for ( $i = 0; $i < $count; $i++ ) {
             $userdata = [
                 'user_login' => $this->randomize_login(),
                 'user_pass'  => wp_generate_password( 12, true ),
@@ -61,8 +59,7 @@ class User extends Generator
              */
             do_action( 'cforge_before_generate_user', $userdata, $i, $args );
             $user_id = wp_insert_user( $userdata );
-            if ( !is_wp_error( $user_id ) && $user_id )
-            {
+            if ( ! is_wp_error( $user_id ) && $user_id ) {
                 $ids[] = $user_id;
                 $this->track_generated( $user_id, 'user' );
                 /**
@@ -170,17 +167,14 @@ class User extends Generator
     {
         $deleted = 0;
 
-        if ( !function_exists( 'wp_delete_user' ) )
-        {
+        if ( ! function_exists( 'wp_delete_user' ) ) {
             // require user.php file
             require_once ABSPATH . 'wp-admin/includes/user.php';
 
         }
 
-        foreach ( $object_ids as $user_id )
-        {
-            if ( wp_delete_user( $user_id ) )
-            {
+        foreach ( $object_ids as $user_id ) {
+            if ( wp_delete_user( $user_id ) ) {
                 ++$deleted;
                 $this->untrack_generated( $user_id, 'user' );
             }

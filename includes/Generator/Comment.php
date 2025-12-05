@@ -12,16 +12,15 @@ use WP_Error;
 use ContentForge\Activator;
 
 global $wpdb;
-if ( !defined( 'ABSPATH' ) )
-{
+if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
 /**
  * Generator for fake comments.
  */
-class Comment extends Generator
-{
+class Comment extends Generator {
+
 
     /**
      * Data type for this generator.
@@ -41,20 +40,17 @@ class Comment extends Generator
     public function generate( $count = 1, $args = [] )
     {
         $ids            = [];
-        $post_types     = isset( $args[ 'post_types' ] ) ? (array) $args[ 'post_types' ] : [ 'post' ];
-        $comment_status = isset( $args[ 'comment_status' ] ) ? $args[ 'comment_status' ] : 'approve';
+        $post_types     = isset( $args['post_types'] ) ? (array) $args['post_types'] : [ 'post' ];
+        $comment_status = isset( $args['comment_status'] ) ? $args['comment_status'] : 'approve';
         $posts          = cforge_get_random_post_ids( $post_types, $count );
 
-        for ( $i = 0; $i < $count; $i++ )
-        {
+        for ( $i = 0; $i < $count; $i++ ) {
             $post_id = $posts[ array_rand( $posts ) ];
 
             // Map UI status to wp_insert_comment 'comment_approved' value
-            if ( 'hold' === $comment_status )
-            {
+            if ( 'hold' === $comment_status ) {
                 $comment_status = 0;
-            } elseif ( 'spam' === $comment_status )
-            {
+            } elseif ( 'spam' === $comment_status ) {
                 $comment_status = 'spam';
             }
             $comment_data = [
@@ -65,8 +61,7 @@ class Comment extends Generator
                 'user_id'          => $this->user_id,
             ];
             $comment_id   = wp_insert_comment( $comment_data );
-            if ( !is_wp_error( $comment_id ) && $comment_id )
-            {
+            if ( ! is_wp_error( $comment_id ) && $comment_id ) {
                 $ids[] = $comment_id;
                 $this->track_generated( $comment_id, 'comment' );
             }
@@ -141,10 +136,8 @@ class Comment extends Generator
     public function delete( array $object_ids )
     {
         $deleted = 0;
-        foreach ( $object_ids as $comment_id )
-        {
-            if ( wp_delete_comment( $comment_id, true ) )
-            {
+        foreach ( $object_ids as $comment_id ) {
+            if ( wp_delete_comment( $comment_id, true ) ) {
                 ++$deleted;
                 $this->untrack_generated( $comment_id, 'comment' );
             }
