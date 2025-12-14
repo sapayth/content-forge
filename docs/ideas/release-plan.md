@@ -9,13 +9,13 @@ This document outlines the release schedule for Content Forge, targeting a moder
 
 ## Phase 1: Core Content & Intelligence (Month 1-2)
 
-### v1.1.0 - The Visual Update (Month 1)
+### v1.1.0 - The Visual Update (Month 1) ✅ **COMPLETED**
 **Focus:** Media generation and basic post enhancements.
-- **Feature:** Featured Image Generation (Placeholders).
+- **Feature:** Featured Image Generation (Placeholders). ✅
   - *Classic:* Set `_thumbnail_id`.
   - *Block:* Set `_thumbnail_id` (compatible with all block themes).
-- **Feature:** Basic Post Excerpts.
-- **Fix:** Ensure all current generators respect the active editor (wrap content in blocks if Block Editor is active, plain HTML if Classic).
+- **Feature:** Basic Post Excerpts. ✅
+- **Fix:** Ensure all current generators respect the active editor (wrap content in blocks if Block Editor is active, plain HTML if Classic). ✅
 
 ### v1.2.0 - The AI & Smart Update (Month 2)
 **Focus:** AI Integration & Smart Context.

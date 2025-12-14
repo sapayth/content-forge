@@ -228,11 +228,10 @@ class Telemetry_Manager {
     }
 
     /**
-     * Custom telemetry admin notice with "Data We Collect" link.
+     * Custom telemetry admin notice with expandable "Data We Collect" section.
      *
-     * This overrides the default wp-telemetry notice to replace the "Privacy Policy"
-     * link with a "Data We Collect" link that points to the policy page.
-     * No popup functionality is included - it's a direct link.
+     * This overrides the default wp-telemetry notice to show an expandable section
+     * that displays what data is collected when "what we collect" is clicked.
      *
      * @return void
      */
@@ -247,19 +246,35 @@ class Telemetry_Manager {
         if ( $notice_dismissed || $tracking_allowed ) {
             return;
         }
-        $policy_url  = apply_filters( 'cforge_telemetry_policy_url', 'https://feedio.sapayth.com/policy' );
         $opt_in_url  = wp_nonce_url( add_query_arg( TelemetryConfig::getPrefix() . 'tracking_opt_in', 'true' ), '_wpnonce' );
         $opt_out_url = wp_nonce_url( add_query_arg( TelemetryConfig::getPrefix() . 'tracking_opt_out', 'true' ), '_wpnonce' );
         $plugin_name = TelemetryConfig::getTitle();
+        
+        // Define what data we collect (comma-separated list)
+        $collected_data = [
+            __( 'WordPress version', 'content-forge' ),
+            __( 'PHP version', 'content-forge' ),
+            __( 'Plugin version', 'content-forge' ),
+            __( 'Active plugins list', 'content-forge' ),
+            __( 'Inactive plugins list', 'content-forge' ),
+            __( 'Active theme name', 'content-forge' ),
+            __( 'Site URL', 'content-forge' ),
+            __( 'Plugin name', 'content-forge' ),
+        ];
+        $collected_data_string = implode( ', ', $collected_data );
+        
         $notice_text = sprintf(
-            // Translators: %1$s is the plugin name, %2$s is the "what we collect" link.
+            // Translators: %1$s is the plugin name, %2$s is the "what we collect" clickable text.
             __( 'Want to help make %1$s even more awesome? Allow %1$s to collect diagnostic data and usage information. (%2$s)', 'content-forge' ),
             '<strong>' . esc_html( $plugin_name ) . '</strong>',
-            ! empty( $policy_url ) ? '<a href="' . esc_url( $policy_url ) . '" target="_blank">' . esc_html__( 'what we collect', 'content-forge' ) . '</a>' : esc_html__( 'what we collect', 'content-forge' )
+            '<a href="#" class="cforge-what-we-collect-toggle" style="cursor: pointer; text-decoration: underline;">' . esc_html__( 'what we collect', 'content-forge' ) . '</a>'
         );
         ?>
-        <div class="updated">
+        <div class="updated cforge-telemetry-notice">
             <p><?php echo wp_kses_post( $notice_text ); ?></p>
+            <div class="cforge-collected-data" style="display: none;">
+                <p style="margin: 5px 0 0 0;"><?php echo esc_html( $collected_data_string ); ?></p>
+            </div>
             <p class="submit">
                 &nbsp;<a href="<?php echo esc_url( $opt_in_url ); ?>"
                     class="button-primary button-large"><?php esc_html_e( 'Allow', 'content-forge' ); ?></a>&nbsp;
@@ -267,6 +282,25 @@ class Telemetry_Manager {
                     class="button-secondary button-large"><?php esc_html_e( 'No thanks', 'content-forge' ); ?></a>
             </p>
         </div>
+        <script>
+        (function() {
+            document.addEventListener('DOMContentLoaded', function() {
+                var toggle = document.querySelector('.cforge-what-we-collect-toggle');
+                var dataSection = document.querySelector('.cforge-collected-data');
+                
+                if (toggle && dataSection) {
+                    toggle.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        if (dataSection.style.display === 'none') {
+                            dataSection.style.display = 'block';
+                        } else {
+                            dataSection.style.display = 'none';
+                        }
+                    });
+                }
+            });
+        })();
+        </script>
         <?php
     }
 }

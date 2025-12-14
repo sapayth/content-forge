@@ -94,6 +94,13 @@ For developers looking to extend Content Forge:
 * Clean separation of concerns with dedicated generator classes
 * Comprehensive error handling and validation
 
+== Privacy Policy ==
+
+Content Forge uses Feedio to collect some telemetry data upon user’s confirmation. This helps us to troubleshoot problems faster & make product improvements.
+Feedio does not gather any data by default. Feedio only starts gathering basic telemetry data when a user allows it via the admin notice. We collect the data to ensure great user experience for all our users.
+
+Integrating Feedio DOES NOT IMMEDIATELY start gathering data, without confirmation from users in any case.
+
 == Support ==
 
 For support, feature requests, or bug reports, please visit the plugin's support forum or contact the developer.
