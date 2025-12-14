@@ -3,7 +3,7 @@
         'name' => 'sapayth/content-forge',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => 'd81e8e98c8fc379f28e985881d2975907a8238b0',
+        'reference' => '809571354adb1a98901d03a7065f9dff4c59de49',
         'type' => 'wordpress-plugin',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -76,7 +76,7 @@
         'sapayth/content-forge' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => 'd81e8e98c8fc379f28e985881d2975907a8238b0',
+            'reference' => '809571354adb1a98901d03a7065f9dff4c59de49',
             'type' => 'wordpress-plugin',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

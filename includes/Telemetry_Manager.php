@@ -69,6 +69,12 @@ class Telemetry_Manager {
         add_filter( 'cforge_telemetry_data', [ __CLASS__, 'add_plugin_name_to_data' ], 10, 1 );
         // Add inactive plugins list to telemetry data.
         add_filter( 'cforge_telemetry_data', [ __CLASS__, 'add_inactive_plugins_to_data' ], 10, 1 );
+        // Remove plugin counts (redundant since we send full lists).
+        add_filter( 'cforge_telemetry_data', [ __CLASS__, 'remove_plugin_counts' ], 10, 1 );
+        // Add additional system data (MySQL, language, themes).
+        add_filter( 'cforge_telemetry_data', [ __CLASS__, 'add_additional_system_data' ], 10, 1 );
+        // Log telemetry data before sending to Feedio server.
+        add_filter( 'cforge_telemetry_data', [ __CLASS__, 'log_telemetry_data_before_send' ], 999, 1 );
         // Add logging hook to track when telemetry data is being sent
         add_action( 'cforge_tracking_opt_in', [ __CLASS__, 'log_telemetry_send' ], 10, 0 );
         // Initialize telemetry tracking.
@@ -131,6 +137,90 @@ class Telemetry_Manager {
         // Add inactive plugins list to data
         if ( ! empty( $inactive_plugins ) ) {
             $data['inactive_plugins_list'] = $inactive_plugins;
+        }
+        return $data;
+    }
+
+    /**
+     * Remove plugin counts from telemetry data.
+     *
+     * Since we're sending full active plugins list and inactive_plugins_list,
+     * counts are redundant and can be calculated from the lists.
+     *
+     * @param array $data The telemetry data array.
+     * @return array Modified data array with plugin counts removed.
+     */
+    public static function remove_plugin_counts( $data ) {
+        // Remove common count fields that wp-telemetry might send
+        unset( $data['active_plugins_count'] );
+        unset( $data['inactive_plugins_count'] );
+        unset( $data['plugins_count'] );
+        unset( $data['total_plugins_count'] );
+        return $data;
+    }
+
+    /**
+     * Add additional system data to telemetry.
+     *
+     * Adds MySQL version, site language, and all themes list.
+     *
+     * @param array $data The telemetry data array.
+     * @return array Modified data array with additional system data.
+     */
+    public static function add_additional_system_data( $data ) {
+        global $wpdb;
+
+        // MySQL/MariaDB version
+        if ( method_exists( $wpdb, 'db_version' ) ) {
+            $data['mysql_version'] = $wpdb->db_version();
+        } else {
+            // Fallback: try to get version from query
+            $mysql_version = $wpdb->get_var( 'SELECT VERSION()' ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+            if ( $mysql_version ) {
+                $data['mysql_version'] = $mysql_version;
+            }
+        }
+
+        // Site language
+        $data['site_language'] = get_locale();
+
+        // All themes list (not just active)
+        if ( ! function_exists( 'wp_get_themes' ) ) {
+            require_once ABSPATH . '/wp-includes/theme.php';
+        }
+        $themes_list = [];
+        if ( function_exists( 'wp_get_themes' ) ) {
+            $all_themes = wp_get_themes();
+            foreach ( $all_themes as $theme_slug => $theme ) {
+                $themes_list[ $theme_slug ] = [
+                    'name'    => $theme->get( 'Name' ),
+                    'version' => $theme->get( 'Version' ),
+                    'author'  => $theme->get( 'Author' ),
+                ];
+            }
+        }
+        if ( ! empty( $themes_list ) ) {
+            $data['themes_list'] = $themes_list;
+        }
+
+        return $data;
+    }
+
+    /**
+     * Log telemetry data before sending to Feedio server.
+     *
+     * This method logs the complete telemetry data array to the WordPress debug log
+     * before it's sent to the Feedio server. Useful for debugging and verification.
+     *
+     * @param array $data The telemetry data array.
+     * @return array Unmodified data array (pass-through).
+     */
+    public static function log_telemetry_data_before_send( $data ) {
+        if ( defined( 'WP_DEBUG' ) && WP_DEBUG && defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
+            // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+            error_log( '[Content Forge Telemetry] Data being sent to Feedio server:' );
+            // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+            error_log( print_r( $data, true ) );
         }
         return $data;
     }
@@ -254,10 +344,13 @@ class Telemetry_Manager {
         $collected_data = [
             __( 'WordPress version', 'content-forge' ),
             __( 'PHP version', 'content-forge' ),
+            __( 'MySQL version', 'content-forge' ),
             __( 'Plugin version', 'content-forge' ),
             __( 'Active plugins list', 'content-forge' ),
             __( 'Inactive plugins list', 'content-forge' ),
             __( 'Active theme name', 'content-forge' ),
+            __( 'Themes list', 'content-forge' ),
+            __( 'Site language', 'content-forge' ),
             __( 'Site URL', 'content-forge' ),
             __( 'Plugin name', 'content-forge' ),
         ];
