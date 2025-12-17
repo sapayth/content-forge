@@ -119,6 +119,10 @@ class Post extends CForge_REST_Controller {
         $image_sources  = isset( $params['image_sources'] ) && is_array( $params['image_sources'] ) ? array_map( 'sanitize_text_field', $params['image_sources'] ) : [];
         // Extract excerpt generation parameter (defaults to true for backward compatibility)
         $generate_excerpt = isset( $params['generate_excerpt'] ) ? (bool) $params['generate_excerpt'] : true;
+        // Extract AI generation parameters
+        $use_ai = isset( $params['use_ai'] ) && $params['use_ai'];
+        $content_type = isset( $params['content_type'] ) ? sanitize_key( $params['content_type'] ) : 'general';
+        $ai_prompt = isset( $params['ai_prompt'] ) ? sanitize_textarea_field( $params['ai_prompt'] ) : '';
         $generator        = new GeneratorPost( get_current_user_id() );
         // Manual mode: expects post_titles (array) and post_contents (array)
         if ( isset( $params['post_titles'] ) && is_array( $params['post_titles'] ) ) {
@@ -146,6 +150,12 @@ class Post extends CForge_REST_Controller {
                 }
                 // Add excerpt generation parameter
                 $args['generate_excerpt'] = $generate_excerpt;
+                // Add AI generation parameters if requested
+                if ( $use_ai ) {
+                    $args['use_ai'] = true;
+                    $args['content_type'] = $content_type;
+                    $args['ai_prompt'] = $ai_prompt;
+                }
                 $ids                      = $generator->generate( 1, $args );
                 if ( empty( $ids ) ) {
                     return new \WP_REST_Response(
@@ -179,6 +189,12 @@ class Post extends CForge_REST_Controller {
             }
             // Add excerpt generation parameter
             $args['generate_excerpt'] = $generate_excerpt;
+            // Add AI generation parameters if requested
+            if ( $use_ai ) {
+                $args['use_ai'] = true;
+                $args['content_type'] = $content_type;
+                $args['ai_prompt'] = $ai_prompt;
+            }
             $ids                      = $generator->generate( $post_number, $args );
             if ( empty( $ids ) ) {
                 return new \WP_REST_Response(

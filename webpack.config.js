@@ -9,6 +9,7 @@ module.exports = (env = {}) => {
     pagesPosts: './src/js/pages-posts.jsx',
     users: './src/js/users.jsx',
     comments: './src/js/comments.jsx',
+    settings: './src/js/settings.jsx',
   }
 
   // Allow custom entry/output via env

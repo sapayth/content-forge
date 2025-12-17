@@ -18,13 +18,15 @@ This document outlines the release schedule for Content Forge, targeting a moder
 - **Fix:** Ensure all current generators respect the active editor (wrap content in blocks if Block Editor is active, plain HTML if Classic). ✅
 
 ### v1.2.0 - The AI & Smart Update (Month 2)
-**Focus:** AI Integration & Smart Context.
+**Focus:** AI Integration & User-Selected Content Types.
 - **Feature:** **AI Content Generation (Beta)**.
   - Integration with OpenAI API (User provides key).
   - Generate realistic titles and body content based on prompts.
   - *Block:* Generate content as Paragraph/Heading blocks.
   - *Classic:* Generate content as HTML.
-- **Feature:** Smart Context (Auto-detect theme/niche for better random data).
+- **Feature:** User-Selected Content Types.
+  - Allow users to select content category (Blog, E-commerce, Portfolio, Business, etc.).
+  - Enhance both AI and regular generation with content-type-specific data.
 - **Feature:** Post Status Variations.
   - Generate Drafts, Pending, Private, Future (Scheduled).
 

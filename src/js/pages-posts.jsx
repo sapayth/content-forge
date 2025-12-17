@@ -5,6 +5,7 @@ import '../css/common.css';
 import Header from './components/Header';
 import apiFetch from '@wordpress/api-fetch';
 import ListView from './components/ListView';
+import AIGenerateTab from './components/AIGenerateTab';
 
 const allowedPostTypes = ['post', 'page'];
 const allowedPostStatuses = ['publish', 'pending', 'draft', 'private'];
@@ -103,6 +104,18 @@ function AddNewView({ onCancel, onSuccess }) {
     }
     if (tab === 'auto') {
       payload.post_number = Number(post.post_number);
+    } else if (tab === 'ai') {
+      // AI generation - use the generated title and content
+      if (post.post_title && post.post_content) {
+        payload.post_titles = [post.post_title];
+        payload.post_contents = [post.post_content];
+      } else {
+        // If no content generated yet, trigger AI generation
+        payload.use_ai = true;
+        payload.content_type = post.content_type || 'general';
+        payload.ai_prompt = post.ai_prompt || '';
+        payload.post_number = 1;
+      }
     } else {
       payload.post_titles = post.post_title.split(',').map(t => t.trim()).filter(Boolean);
       payload.post_contents = payload.post_titles.map(() => post.post_content);
@@ -139,7 +152,7 @@ function AddNewView({ onCancel, onSuccess }) {
         <div className={`cforge-mb-4 cforge-p-3 cforge-rounded cforge-text-white ${notice.status === 'success' ? 'cforge-bg-green-500' : 'cforge-bg-red-500'}`}>{notice.message}</div>
       )}
       <div className="cforge-flex cforge-gap-4">
-        <div className="cforge-w-1/2">
+        <div className="cforge-w-1/3">
           <label
             className={`cforge-transition-all cforge-relative cforge-flex cforge-cursor-pointer cforge-rounded-lg cforge-border cforge-p-4 cforge-shadow-sm focus:cforge-outline-none cforge-bg-white ${tab === 'auto' ? 'cforge-border-primary cforge-border-2' : ''}`}
           >
@@ -161,7 +174,7 @@ function AddNewView({ onCancel, onSuccess }) {
             )}
           </label>
         </div>
-        <div className="cforge-w-1/2">
+        <div className="cforge-w-1/3">
           <label
             className={`cforge-transition-all cforge-relative cforge-flex cforge-cursor-pointer cforge-rounded-lg cforge-border cforge-p-4 cforge-shadow-sm focus:cforge-outline-none cforge-bg-white ${tab === 'manual' ? 'cforge-border-primary cforge-border-2' : ''}`}
           >
@@ -177,6 +190,28 @@ function AddNewView({ onCancel, onSuccess }) {
               <p className="cforge-text-sm cforge-text-gray-500">{__('Manually input post/page name and contents', 'content-forge')}</p>
             </div>
             {tab === 'manual' && (
+              <svg className="cforge-h-5 cforge-w-5 cforge-text-primary" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" data-slot="icon">
+                <path fillRule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clipRule="evenodd" />
+              </svg>
+            )}
+          </label>
+        </div>
+        <div className="cforge-w-1/3">
+          <label
+            className={`cforge-transition-all cforge-relative cforge-flex cforge-cursor-pointer cforge-rounded-lg cforge-border cforge-p-4 cforge-shadow-sm focus:cforge-outline-none cforge-bg-white ${tab === 'ai' ? 'cforge-border-primary cforge-border-2' : ''}`}
+          >
+            <input
+              type="radio"
+              value="ai"
+              className="cforge-sr-only"
+              checked={tab === 'ai'}
+              onChange={() => setTab('ai')}
+            />
+            <div className="cforge-flex-1">
+              <p className="cforge-block cforge-text-sm cforge-font-medium cforge-text-gray-900">{__('AI Generate', 'content-forge')}</p>
+              <p className="cforge-text-sm cforge-text-gray-500">{__('Generate content using AI', 'content-forge')}</p>
+            </div>
+            {tab === 'ai' && (
               <svg className="cforge-h-5 cforge-w-5 cforge-text-primary" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" data-slot="icon">
                 <path fillRule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clipRule="evenodd" />
               </svg>
@@ -305,7 +340,7 @@ function AddNewView({ onCancel, onSuccess }) {
                   />
                 </div>
               </>
-            ) : (
+            ) : tab === 'manual' ? (
               <>
                 <div className="cforge-mb-4">
                   <label className="cforge-block cforge-mb-1 cforge-font-medium">{__('Type', 'content-forge')}</label>
@@ -383,7 +418,15 @@ function AddNewView({ onCancel, onSuccess }) {
                   </div>
                 )}
               </>
-            )}
+            ) : tab === 'ai' ? (
+              <AIGenerateTab
+                post={post}
+                setPost={setPost}
+                onSuccess={() => {
+                  // Content generated, user can now submit the form
+                }}
+              />
+            ) : null}
           </div>
           <div className="cforge-flex cforge-justify-end cforge-mt-6 cforge-gap-2">
             <button
@@ -397,9 +440,9 @@ function AddNewView({ onCancel, onSuccess }) {
             <button
               type="submit"
               className="cforge-bg-primary cforge-text-white cforge-px-4 cforge-py-2 cforge-rounded cforge-font-semibold hover:cforge-bg-primaryHover"
-              disabled={submitting}
+              disabled={submitting || (tab === 'ai' && (!post.post_title || !post.post_content))}
             >
-              {submitting ? __('Generating...', 'content-forge') : __('Generate', 'content-forge')}
+              {submitting ? __('Generating...', 'content-forge') : tab === 'ai' ? __('Save Generated Content', 'content-forge') : __('Generate', 'content-forge')}
             </button>
           </div>
         </form>

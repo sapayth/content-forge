@@ -12,6 +12,7 @@ use ContentForge\Api\Post;
 use ContentForge\Api\Comment;
 use ContentForge\Api\User;
 use ContentForge\Api\Taxonomy;
+use ContentForge\Api\AI;
 use ContentForge\Traits\ContainerTrait;
 
 class Api {
@@ -27,6 +28,7 @@ class Api {
 		$this->container['comment']  = new Comment();
 		$this->container['user']     = new User();
 		$this->container['taxonomy'] = new Taxonomy();
+		$this->container['ai']       = new AI();
 
 		add_action( 'rest_api_init', [ $this, 'init_api' ] );
 	}

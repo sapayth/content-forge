@@ -74,6 +74,14 @@ class Admin {
             'cforge-taxonomies',
             [ __CLASS__, 'render_taxonomies_page' ]
         );
+        add_submenu_page(
+            $parent_slug,
+            __( 'Settings', 'content-forge' ),
+            __( 'Settings', 'content-forge' ),
+            $capability,
+            'cforge-settings',
+            [ __CLASS__, 'render_settings_page' ]
+        );
     }
 
     /**
@@ -102,6 +110,13 @@ class Admin {
      */
     public static function render_taxonomies_page() {
         echo '<div id="cforge-taxonomies-app" style="margin-left: -20px"></div>';
+    }
+
+    /**
+     * Render the Settings React app root div.
+     */
+    public static function render_settings_page() {
+        echo '<div id="cforge-settings-app" style="margin-left: -20px"></div>';
     }
 
     /**
@@ -206,6 +221,19 @@ class Admin {
                             return ! in_array( $taxonomy->name, $excluded, true );
                         }
                     ),
+                ],
+            ],
+            'content-forge_page_cforge-settings'      => [
+                'script_handle' => 'cforge-settings-app',
+                'script_file'   => 'settings.js',
+                'style_handle'  => 'cforge-settings-style',
+                'style_file'    => 'settings.css',
+                'localize_data' => [
+                    'apiUrl'            => esc_url_raw( rest_url( 'cforge/v1/' ) ),
+                    'rest_nonce'        => wp_create_nonce( 'wp_rest' ),
+                    'ajax_url'          => admin_url( 'admin-ajax.php' ),
+                    'ajax_nonce'        => wp_create_nonce( 'cforge_telemetry' ),
+                    'telemetry_enabled' => Telemetry_Manager::is_tracking_allowed(),
                 ],
             ],
         ];
