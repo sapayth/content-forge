@@ -598,10 +598,12 @@ function PagesPostsApp() {
   };
 
   return (
-    <div className="cforge-bg-white cforge-p-8 cforge-min-h-screen">
+    <>
       <Header
-        title={__('Pages/Posts', 'content-forge')}
-      />
+          heading={__('Pages/Posts', 'content-forge')}
+        />
+        <div className="cforge-bg-white cforge-min-h-screen">
+      
 
       {view === 'list' ? (
         <>
@@ -668,6 +670,8 @@ function PagesPostsApp() {
         <AddNewView onCancel={() => setView('list')} onSuccess={handleSuccess} />
       )}
     </div>
+    </>
+    
   );
 }
 

@@ -21,7 +21,7 @@ export default function ListView({
     const getItemId = (item) => item.ID || item.id;
 
     return (
-        <div className="cforge-list-view">
+        <div className="cforge-list-view cforge-p-6">
             <div className="sm:cforge-flex sm:cforge-items-center">
                 <div className="sm:cforge-flex-auto">
                     {title && (

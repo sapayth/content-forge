@@ -10,6 +10,7 @@ module.exports = (env = {}) => {
     users: './src/js/users.jsx',
     comments: './src/js/comments.jsx',
     settings: './src/js/settings.jsx',
+    taxonomy: './src/js/taxonomy.jsx',
   }
 
   // Allow custom entry/output via env

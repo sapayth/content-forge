@@ -284,9 +284,9 @@ function UsersApp() {
     };
 
     return (
-        <div className="cforge-bg-white cforge-p-8 cforge-min-h-screen">
+        <div className="cforge-bg-white cforge-min-h-screen">
             <Header
-                title={__('Users', 'content-forge')}
+                heading={__('Users', 'content-forge')}
             />
             {view === 'list' && (
                 <>

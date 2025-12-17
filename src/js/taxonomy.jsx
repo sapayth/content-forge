@@ -4,7 +4,6 @@ import '../css/common.css';
 import Header from './components/Header';
 import apiFetch from '@wordpress/api-fetch';
 import ListView from './components/ListView';
-import { createRoot } from 'react-dom/client';
 
 
 function AddNewView({ onCancel, onSuccess }) {
@@ -78,7 +77,7 @@ function AddNewView({ onCancel, onSuccess }) {
     return (
         <div className="cforge-w-full cforge-bg-white cforge-rounded cforge-p-6 cforge-relative">
             {notice && (
-                <div className={`cforge-mb-4 cforge-p-3 cforge-rounded cforge-text-white ${notice.status === 'success' ? 'cforge-bg-success' : 'cforge-bg-error'}`}>{notice.message}</div>
+                <div className={`cforge-mb-4 cforge-p-3 cforge-rounded cforge-text-white ${notice.status === 'success' ? 'cforge-bg-green-500' : 'cforge-bg-red-500'}`}>{notice.message}</div>
             )}
             <div className="cforge-flex cforge-gap-4">
                 <form className="cforge-w-2/3" onSubmit={handleSubmit}>
@@ -287,14 +286,15 @@ function TaxonomiesApp() {
     };
 
     return (
-        <div className="cforge-bg-white cforge-p-8 cforge-min-h-screen">
-            <Header
-                title={__('Taxonomies', 'content-forge')}
-            />
+        <>
+        <Header
+            heading={__('Taxonomies', 'content-forge')}
+        />
+        <div className="cforge-bg-white cforge-min-h-screen">
             {view === 'list' && (
                 <>
                     {notice && (
-                        <div className={`cforge-mb-4 cforge-p-3 cforge-rounded cforge-text-white ${notice.status === 'success' ? 'cforge-bg-success' : 'cforge-bg-error'}`}>
+                        <div className={`cforge-mb-4 cforge-p-3 cforge-rounded cforge-text-white ${notice.status === 'success' ? 'cforge-bg-green-500' : 'cforge-bg-red-500'}`}>
                             {notice.message}
                         </div>
                     )}
@@ -326,7 +326,7 @@ function TaxonomiesApp() {
                         <button
                             onClick={() => onDelete(itemId)}
                             disabled={deleting === itemId}
-                            className="cforge-text-indigo-600 hover:cforge-text-indigo-900"
+                            className="cforge-text-red-600 hover:cforge-text-red-800 cforge-p-1 cforge-rounded hover:cforge-bg-red-50"
                             title={__('Delete', 'content-forge')}
                         >
                             {deleting === itemId ? (
@@ -355,6 +355,7 @@ function TaxonomiesApp() {
                 />
             )}
         </div>
+        </>
     );
 }
 

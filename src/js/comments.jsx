@@ -301,10 +301,11 @@ function CommentsApp() {
   };
 
   return (
-    <div className="cforge-bg-white cforge-p-8 cforge-min-h-screen">
-      <Header
-        title={__('Comments', 'content-forge')}
+    <>
+    <Header
+        heading={__('Comments', 'content-forge')}
       />
+      <div className="cforge-bg-white cforge-min-h-screen">
       {view === 'list' && (
         <>
           {notice && (
@@ -386,8 +387,8 @@ function CommentsApp() {
           onDelete={handleDelete}
           onDeleteAll={handleDeleteAll}
           deleting={deleting}
-            title={__('Comments', 'content-forge')}
-            description={__('A list of all the generated comments including their content, author, status and date.', 'content-forge')}
+          title={__('Comments', 'content-forge')}
+          description={__('A list of all the generated comments including their content, author, status and date.', 'content-forge')}
           />
         </>
       )}
@@ -398,6 +399,8 @@ function CommentsApp() {
         />
       )}
     </div>
+    </>
+    
   );
 }
 
@@ -412,4 +415,3 @@ if (container) {
   const root = createRoot(container);
   root.render(<CommentsApp />);
 }
-

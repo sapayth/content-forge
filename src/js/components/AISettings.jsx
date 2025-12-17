@@ -207,8 +207,6 @@ export default function AISettings() {
 
     return (
         <div className="cforge-w-full cforge-bg-white cforge-rounded cforge-p-6">
-            <h2 className="cforge-text-2xl cforge-font-bold cforge-mb-6">{__('AI Settings', 'content-forge')}</h2>
-
             {notice && (
                 <Notice
                     status={notice.status}

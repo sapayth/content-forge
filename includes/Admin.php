@@ -186,6 +186,7 @@ class Admin {
                     'ajax_url'          => admin_url( 'admin-ajax.php' ),
                     'ajax_nonce'        => wp_create_nonce( 'cforge_telemetry' ),
                     'telemetry_enabled' => Telemetry_Manager::is_tracking_allowed(),
+                    'pluginVersion'     => CFORGE_VERSION,
                 ],
             ],
             'content-forge_page_cforge-users'      => [
@@ -200,6 +201,7 @@ class Admin {
                     'ajax_url'          => admin_url( 'admin-ajax.php' ),
                     'ajax_nonce'        => wp_create_nonce( 'cforge_telemetry' ),
                     'telemetry_enabled' => Telemetry_Manager::is_tracking_allowed(),
+                    'pluginVersion'     => CFORGE_VERSION,
                 ],
             ],
             'content-forge_page_cforge-taxonomies' => [
@@ -213,6 +215,7 @@ class Admin {
                     'ajax_url'          => admin_url( 'admin-ajax.php' ),
                     'ajax_nonce'        => wp_create_nonce( 'cforge_telemetry' ),
                     'telemetry_enabled' => Telemetry_Manager::is_tracking_allowed(),
+                    'pluginVersion'     => CFORGE_VERSION,
                     'taxonomies'        => array_filter(
                         get_taxonomies( [ 'public' => true ], 'objects' ),
                         function ( $taxonomy ) {
@@ -234,6 +237,7 @@ class Admin {
                     'ajax_url'          => admin_url( 'admin-ajax.php' ),
                     'ajax_nonce'        => wp_create_nonce( 'cforge_telemetry' ),
                     'telemetry_enabled' => Telemetry_Manager::is_tracking_allowed(),
+                    'pluginVersion'     => CFORGE_VERSION,
                 ],
             ],
         ];
