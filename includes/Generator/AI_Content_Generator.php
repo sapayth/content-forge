@@ -192,6 +192,12 @@ class AI_Content_Generator {
 	public function test_connection() {
 		$result = $this->provider->test_connection();
 
+		// If the provider already returns a proper array format, use it directly
+		if ( is_array( $result ) && isset( $result['success'] ) ) {
+			return $result;
+		}
+
+		// Fallback for providers that still return boolean
 		if ( $result ) {
 			return [
 				'success' => true,

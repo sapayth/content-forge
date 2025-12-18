@@ -60,7 +60,7 @@ abstract class AI_Provider_Base {
 	 *
 	 * @since 1.2.0
 	 *
-	 * @return bool True if connection successful, false otherwise.
+	 * @return array Array with 'success' boolean and 'message' string.
 	 */
 	abstract public function test_connection();
 

@@ -26,7 +26,8 @@ class AI_Provider_Google extends AI_Provider_Base {
 	 * @return string API endpoint URL.
 	 */
 	public function get_api_endpoint() {
-		return 'https://generativelanguage.googleapis.com/v1beta/models/' . $this->model . ':generateContent?key=' . $this->api_key;
+		// Use v1 API instead of v1beta for better model compatibility
+		return 'https://generativelanguage.googleapis.com/v1/models/' . $this->model . ':generateContent?key=' . $this->api_key;
 	}
 
 	/**
@@ -125,6 +126,7 @@ class AI_Provider_Google extends AI_Provider_Base {
 		$endpoint = $this->get_api_endpoint();
 		$headers  = $this->get_request_headers();
 
+		
 		/**
 		 * Filter the request payload before sending to provider API.
 		 *
@@ -208,23 +210,67 @@ class AI_Provider_Google extends AI_Provider_Base {
 	 *
 	 * @since 1.2.0
 	 *
-	 * @return bool True if connection successful, false otherwise.
+	 * @return array Array with 'success' boolean and 'message' string.
 	 */
 	public function test_connection() {
-		$payload = [
-			'contents' => [
-				[
-					'parts' => [
-						[
-							'text' => 'Test',
-						],
-					],
-				],
+		// Use GET request to list models - more reliable than content generation
+		$url = 'https://generativelanguage.googleapis.com/v1/models?key=' . urlencode( $this->api_key );
+
+		$args = [
+			'method'    => 'GET',
+			'timeout'   => 30,
+			'sslverify' => true,
+			'headers'   => [
+				'Content-Type' => 'application/json',
 			],
 		];
 
-		$response = $this->make_request( $payload );
+		$response = wp_remote_request( $url, $args );
 
-		return ! is_wp_error( $response );
+		if ( is_wp_error( $response ) ) {
+			return [
+				'success' => false,
+				'message' => $response->get_error_message(),
+			];
+		}
+
+		$response_code = wp_remote_retrieve_response_code( $response );
+		$response_body = wp_remote_retrieve_body( $response );
+
+		if ( $response_code === 200 ) {
+			// Try to parse the response to verify it's valid
+			$response_data = json_decode( $response_body, true );
+
+			if ( json_last_error() === JSON_ERROR_NONE && isset( $response_data['models'] ) ) {
+				$models_count = count( $response_data['models'] );
+				return [
+					'success' => true,
+					'message' => sprintf(
+						__( 'Connection successful! Found %d available models.', 'content-forge' ),
+						$models_count
+					),
+				];
+			} else {
+				return [
+					'success' => false,
+					'message' => __( 'Connected but received unexpected response format.', 'content-forge' ),
+				];
+			}
+		} else {
+			// Try to extract a meaningful error message
+			$error_data = json_decode( $response_body, true );
+			$error_message = __( 'Connection failed. Please check your API key and try again.', 'content-forge' );
+
+			if ( isset( $error_data['error']['message'] ) && is_string( $error_data['error']['message'] ) ) {
+				$error_message = sanitize_text_field( $error_data['error']['message'] );
+			} elseif ( isset( $error_data['error'] ) && is_string( $error_data['error'] ) ) {
+				$error_message = sanitize_text_field( $error_data['error'] );
+			}
+
+			return [
+				'success' => false,
+				'message' => $error_message,
+			];
+		}
 	}
 }

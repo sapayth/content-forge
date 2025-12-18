@@ -46,7 +46,7 @@ export default function ListView({
                             <button
                                 type="button"
                                 onClick={onAddNew}
-                                className="cforge-block cforge-rounded-md cforge-bg-indigo-600 cforge-px-3 cforge-py-2 cforge-text-center cforge-text-sm cforge-font-semibold cforge-text-white cforge-shadow-sm hover:cforge-bg-indigo-500 focus-visible:cforge-outline focus-visible:cforge-outline-2 focus-visible:cforge-outline-offset-2 focus-visible:cforge-outline-indigo-600"
+                                className="cforge-block cforge-rounded-md cforge-bg-primary cforge-px-3 cforge-py-2 cforge-text-center cforge-text-sm cforge-font-semibold cforge-text-white cforge-shadow-sm hover:cforge-bg-primaryHover focus-visible:cforge-outline focus-visible:cforge-outline-2 focus-visible:cforge-outline-offset-2 focus-visible:cforge-outline-indigo-600"
                             >
                                 {__('Add New', 'content-forge')}
                             </button>

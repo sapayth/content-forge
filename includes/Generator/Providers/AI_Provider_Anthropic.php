@@ -141,17 +141,27 @@ class AI_Provider_Anthropic extends AI_Provider_Base {
 	public function test_connection() {
 		$payload = [
 			'model'     => $this->model,
-			'max_tokens' => 5,
+			'max_tokens' => 10,
 			'messages'  => [
 				[
 					'role'    => 'user',
-					'content' => 'Test',
+					'content' => 'Respond with JSON: {"status": "ok"}',
 				],
 			],
 		];
 
 		$response = $this->make_request( $payload );
 
-		return ! is_wp_error( $response );
+		if ( is_wp_error( $response ) ) {
+			return [
+				'success' => false,
+				'message' => $response->get_error_message(),
+			];
+		}
+
+		return [
+			'success' => true,
+			'message' => __( 'Connection successful', 'content-forge' ),
+		];
 	}
 }

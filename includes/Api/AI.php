@@ -114,7 +114,7 @@ class AI extends CForge_REST_Controller {
 							'sanitize_callback' => 'sanitize_key',
 						],
 						'api_key'  => [
-							'required'          => true,
+							'required'          => false,
 							'sanitize_callback' => 'sanitize_text_field',
 						],
 					],
@@ -131,6 +131,25 @@ class AI extends CForge_REST_Controller {
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => [ $this, 'get_api_key_status' ],
 					'permission_callback' => [ $this, 'permission_check_settings' ],
+					'args'                => [
+						'provider' => [
+							'required'          => true,
+							'sanitize_callback' => 'sanitize_key',
+						],
+					],
+				],
+			]
+		);
+
+		// Get stored model for provider.
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->base . '/stored-model/(?P<provider>[a-z-]+)',
+			[
+				[
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => [ $this, 'get_stored_model' ],
+					'permission_callback' => [ $this, 'permission_check' ],
 					'args'                => [
 						'provider' => [
 							'required'          => true,
@@ -279,12 +298,28 @@ class AI extends CForge_REST_Controller {
 		$model    = isset( $params['model'] ) ? sanitize_key( $params['model'] ) : '';
 		$api_key  = isset( $params['api_key'] ) ? sanitize_text_field( $params['api_key'] ) : '';
 
-		if ( empty( $provider ) || empty( $model ) || empty( $api_key ) ) {
+		// If API key is not provided, try to get it from settings
+		if ( empty( $api_key ) ) {
+			$api_key = AI_Settings_Manager::get_api_key( $provider );
+		}
+
+		if ( empty( $provider ) || empty( $model ) ) {
 			return new \WP_REST_Response(
 				[
 					'success' => false,
 					'message' => __( 'Missing required parameters', 'content-forge' ),
 					'code'    => 'missing_params',
+				],
+				400
+			);
+		}
+
+		if ( empty( $api_key ) ) {
+			return new \WP_REST_Response(
+				[
+					'success' => false,
+					'message' => __( 'No API key found. Please enter and save an API key first.', 'content-forge' ),
+					'code'    => 'no_api_key',
 				],
 				400
 			);
@@ -305,7 +340,23 @@ class AI extends CForge_REST_Controller {
 
 		// Validate model.
 		$models = AI_Settings_Manager::get_models( $provider );
-		if ( ! isset( $models[ $model ] ) ) {
+
+		// More permissive validation for Google models
+		if ( $provider === 'google' ) {
+			// Allow any model that starts with 'gemini-' for Google provider
+			if ( strpos( $model, 'gemini-' ) === 0 ) {
+				// Model is valid, continue
+			} elseif ( ! isset( $models[ $model ] ) ) {
+				return new \WP_REST_Response(
+					[
+						'success' => false,
+						'message' => __( 'Invalid model for provider', 'content-forge' ),
+						'code'    => 'invalid_model',
+					],
+					400
+				);
+			}
+		} elseif ( ! isset( $models[ $model ] ) ) {
 			return new \WP_REST_Response(
 				[
 					'success' => false,
@@ -372,6 +423,26 @@ class AI extends CForge_REST_Controller {
 			[
 				'has_key'   => false !== $masked_key,
 				'masked_key' => $masked_key ?: '',
+			],
+			200
+		);
+	}
+
+	/**
+	 * Get stored model for a provider.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @param \WP_REST_Request $request The REST API request object.
+	 * @return \WP_REST_Response
+	 */
+	public function get_stored_model( $request ) {
+		$provider = $request->get_param( 'provider' );
+		$model = AI_Settings_Manager::get_stored_model( $provider );
+
+		return new \WP_REST_Response(
+			[
+				'model' => $model,
 			],
 			200
 		);

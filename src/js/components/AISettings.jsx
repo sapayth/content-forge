@@ -27,11 +27,11 @@ export default function AISettings() {
     }, []);
 
     useEffect(() => {
-        if (provider) {
+        if (provider && !loading) {
             loadModels(provider);
             loadApiKey(provider);
         }
-    }, [provider]);
+    }, [provider, loading]);
 
     const loadSettings = async () => {
         try {
@@ -41,10 +41,9 @@ export default function AISettings() {
                 method: 'GET',
             });
 
+            
             setProvider(response.provider || 'openai');
-            setModel(response.model || '');
             setProviders(Object.entries(response.providers || {}).map(([value, label]) => ({ value, label })));
-            setModels(Object.entries(response.models || {}).map(([value, label]) => ({ value, label })));
         } catch (error) {
             setNotice({
                 message: error?.message || __('Failed to load settings', 'content-forge'),
@@ -57,18 +56,31 @@ export default function AISettings() {
 
     const loadModels = async (providerName) => {
         try {
-            const response = await apiFetch({
+            // Load available models for the provider
+            const modelsResponse = await apiFetch({
                 path: `ai/models/${providerName}`,
                 method: 'GET',
             });
 
-            const modelOptions = Object.entries(response.models || {}).map(([value, label]) => ({ value, label }));
+            const modelOptions = Object.entries(modelsResponse.models || {}).map(([value, label]) => ({ value, label }));
+
+            // Load the stored model for this provider
+            const storedModelResponse = await apiFetch({
+                path: `ai/stored-model/${providerName}`,
+                method: 'GET',
+            });
+
+            const storedModel = storedModelResponse.model || '';
+
             setModels(modelOptions);
 
-            // Auto-select first model if current model is not available
-            if (modelOptions.length > 0 && (!model || !modelOptions.find(m => m.value === model))) {
-                setModel(modelOptions[0].value);
+            // Use stored model if it exists and is valid, otherwise use first model
+            let selectedModel = storedModel;
+            if (!storedModel || !modelOptions.find(m => m.value === storedModel)) {
+                selectedModel = modelOptions.length > 0 ? modelOptions[0].value : '';
             }
+
+            setModel(selectedModel);
         } catch (error) {
             setNotice({
                 message: error?.message || __('Failed to load models', 'content-forge'),
@@ -86,7 +98,7 @@ export default function AISettings() {
 
             if (response.has_key && response.masked_key) {
                 // Show masked key as placeholder
-                setApiKey('');
+                setApiKey(response.masked_key);
             } else {
                 setApiKey('');
             }
@@ -97,7 +109,27 @@ export default function AISettings() {
     };
 
     const handleTestConnection = async () => {
-        if (!apiKey.trim()) {
+        setTesting(true);
+        setNotice(null);
+
+        // Check if API key is masked (contains asterisks)
+        const isMasked = apiKey.includes('*') && (apiKey.startsWith('*') || apiKey.endsWith('*') || apiKey.length > 4);
+
+        
+        // Prepare request data
+        const requestData = {
+            provider,
+            model,
+        };
+
+        // Only send API key if it's not masked (i.e., user entered a new key)
+        // If masked, backend will use the stored API key from database
+        if (!isMasked && apiKey.trim()) {
+            requestData.api_key = apiKey;
+        } else if (isMasked && apiKey.trim()) {
+            // Using stored API key from database (key is masked)
+        } else {
+            setTesting(false);
             setNotice({
                 message: __('Please enter an API key first', 'content-forge'),
                 status: 'error',
@@ -105,18 +137,11 @@ export default function AISettings() {
             return;
         }
 
-        setTesting(true);
-        setNotice(null);
-
         try {
             const response = await apiFetch({
                 path: 'ai/test-connection',
                 method: 'POST',
-                data: {
-                    provider,
-                    model,
-                    api_key: apiKey,
-                },
+                data: requestData,
             });
 
             if (response.success) {
@@ -131,6 +156,7 @@ export default function AISettings() {
                 });
             }
         } catch (error) {
+
             let message = __('Connection failed', 'content-forge');
             if (error?.message) {
                 message = error.message;
@@ -164,14 +190,23 @@ export default function AISettings() {
         setNotice(null);
 
         try {
+            // Check if API key is masked before sending
+            const isMaskedKey = apiKey.includes('*') && (apiKey.startsWith('*') || apiKey.endsWith('*') || apiKey.length > 4);
+
+            const data = {
+                provider,
+                model,
+            };
+
+            // Only include API key if it's not masked (i.e., user entered a new key)
+            if (!isMaskedKey && apiKey.trim()) {
+                data.api_key = apiKey.trim();
+            }
+
             const response = await apiFetch({
                 path: 'ai/settings',
                 method: 'POST',
-                data: {
-                    provider,
-                    model,
-                    api_key: apiKey.trim(),
-                },
+                data,
             });
 
             if (response.success) {
@@ -181,6 +216,8 @@ export default function AISettings() {
                 });
                 // Clear API key field after saving (it's now stored)
                 setApiKey('');
+                // Refresh models to get the updated stored model
+                loadModels(provider);
             } else {
                 setNotice({
                     message: response.message || __('Failed to save settings', 'content-forge'),
@@ -205,8 +242,22 @@ export default function AISettings() {
         );
     }
 
+    const getApiKeyUrl = () => {
+        switch (provider) {
+            case 'google':
+                return 'https://cloud.google.com/docs/authentication/api-keys';
+            case 'anthropic':
+                return 'https://platform.claude.com/docs/en/api/admin/api_keys/retrieve';
+            case 'openai':
+            default:
+                return 'https://platform.openai.com/api-keys';
+        }
+    };
+
     return (
         <div className="cforge-w-full cforge-bg-white cforge-rounded cforge-p-6">
+            <h2 className="cforge-text-2xl cforge-font-bold cforge-mb-6">{__('AI Settings', 'content-forge')}</h2>
+
             {notice && (
                 <Notice
                     status={notice.status}
@@ -227,7 +278,6 @@ export default function AISettings() {
                         options={providers}
                         onChange={(value) => {
                             setProvider(value);
-                            setModel('');
                             setApiKey('');
                         }}
                         className="cforge-w-full"
@@ -257,16 +307,16 @@ export default function AISettings() {
                         {__('API Key', 'content-forge')}
                     </label>
                     <TextControl
-                        type="password"
+                        type="text"
                         value={apiKey}
-                        onChange={setApiKey}
+                        onChange={(value) => setApiKey(value)}
                         placeholder={__('Enter your API key', 'content-forge')}
                         className="cforge-w-full"
                     />
                     <p className="cforge-text-sm cforge-text-gray-500 cforge-mt-1">
                         {__('Enter your AI service API key. Need help finding your API Key?', 'content-forge')}{' '}
                         <a
-                            href="https://platform.openai.com/api-keys"
+                            href={getApiKeyUrl()}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="cforge-text-blue-600 hover:cforge-underline"
