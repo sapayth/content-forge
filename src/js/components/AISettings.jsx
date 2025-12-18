@@ -269,37 +269,39 @@ export default function AISettings() {
             )}
 
             <div className="cforge-space-y-6">
-                <div>
-                    <label className="cforge-block cforge-text-sm cforge-font-medium cforge-text-gray-700 cforge-mb-2">
-                        {__('AI Provider', 'content-forge')}
-                    </label>
-                    <SelectControl
-                        value={provider}
-                        options={providers}
-                        onChange={(value) => {
-                            setProvider(value);
-                            setApiKey('');
-                        }}
-                        className="cforge-w-full"
-                    />
-                    <p className="cforge-text-sm cforge-text-gray-500 cforge-mt-1">
-                        {__('Select the AI service provider you want to use.', 'content-forge')}
-                    </p>
-                </div>
+                <div className="cforge-grid cforge-grid-cols-1 md:cforge-grid-cols-2 cforge-gap-6">
+                    <div>
+                        <label className="cforge-block cforge-text-sm cforge-font-medium cforge-text-gray-700 cforge-mb-2">
+                            {__('AI Provider', 'content-forge')}
+                        </label>
+                        <SelectControl
+                            value={provider}
+                            options={providers}
+                            onChange={(value) => {
+                                setProvider(value);
+                                setApiKey('');
+                            }}
+                            className="cforge-w-full"
+                        />
+                        <p className="cforge-text-sm cforge-text-gray-500 cforge-mt-1">
+                            {__('Select the AI service provider you want to use.', 'content-forge')}
+                        </p>
+                    </div>
 
-                <div>
-                    <label className="cforge-block cforge-text-sm cforge-font-medium cforge-text-gray-700 cforge-mb-2">
-                        {__('AI Model', 'content-forge')}
-                    </label>
-                    <SelectControl
-                        value={model}
-                        options={models}
-                        onChange={setModel}
-                        className="cforge-w-full"
-                    />
-                    <p className="cforge-text-sm cforge-text-gray-500 cforge-mt-1">
-                        {__('Select the AI model to use for content generation.', 'content-forge')}
-                    </p>
+                    <div>
+                        <label className="cforge-block cforge-text-sm cforge-font-medium cforge-text-gray-700 cforge-mb-2">
+                            {__('AI Model', 'content-forge')}
+                        </label>
+                        <SelectControl
+                            value={model}
+                            options={models}
+                            onChange={setModel}
+                            className="cforge-w-full"
+                        />
+                        <p className="cforge-text-sm cforge-text-gray-500 cforge-mt-1">
+                            {__('Select the AI model to use for content generation.', 'content-forge')}
+                        </p>
+                    </div>
                 </div>
 
                 <div>
