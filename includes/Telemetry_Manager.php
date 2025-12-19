@@ -73,8 +73,6 @@ class Telemetry_Manager {
         add_filter( 'cforge_telemetry_data', [ __CLASS__, 'remove_plugin_counts' ], 10, 1 );
         // Add additional system data (MySQL, language, themes).
         add_filter( 'cforge_telemetry_data', [ __CLASS__, 'add_additional_system_data' ], 10, 1 );
-        // Log telemetry data before sending to Feedio server.
-        add_filter( 'cforge_telemetry_data', [ __CLASS__, 'log_telemetry_data_before_send' ], 999, 1 );
         // Add logging hook to track when telemetry data is being sent
         add_action( 'cforge_tracking_opt_in', [ __CLASS__, 'log_telemetry_send' ], 10, 0 );
         // Initialize telemetry tracking.
@@ -203,25 +201,6 @@ class Telemetry_Manager {
             $data['themes_list'] = $themes_list;
         }
 
-        return $data;
-    }
-
-    /**
-     * Log telemetry data before sending to Feedio server.
-     *
-     * This method logs the complete telemetry data array to the WordPress debug log
-     * before it's sent to the Feedio server. Useful for debugging and verification.
-     *
-     * @param array $data The telemetry data array.
-     * @return array Unmodified data array (pass-through).
-     */
-    public static function log_telemetry_data_before_send( $data ) {
-        if ( defined( 'WP_DEBUG' ) && WP_DEBUG && defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
-            // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-            error_log( '[Content Forge Telemetry] Data being sent to Feedio server:' );
-            // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-            error_log( print_r( $data, true ) );
-        }
         return $data;
     }
 

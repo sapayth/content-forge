@@ -10,6 +10,7 @@ namespace ContentForge\Api;
 
 use WP_REST_Server;
 use ContentForge\Generator\Post as GeneratorPost;
+use ContentForge\Generator\AI_Scheduled_Generator;
 
 class Post extends CForge_REST_Controller {
     /**
@@ -25,6 +26,7 @@ class Post extends CForge_REST_Controller {
      * @since 1.0.0
      */
     public function __construct() {
+        $this->scheduled_generator = new AI_Scheduled_Generator();
         add_action( 'rest_api_init', [ $this, 'register_routes' ] );
     }
 
@@ -104,7 +106,8 @@ class Post extends CForge_REST_Controller {
         $post_status    = isset( $params['post_status'] ) ? sanitize_key( $params['post_status'] ) : 'publish';
         $comment_status = isset( $params['comment_status'] ) ? sanitize_key( $params['comment_status'] ) : 'closed';
         $post_parent    = isset( $params['post_parent'] ) ? intval( $params['post_parent'] ) : 0;
-        $created        = [];
+
+        // Validate parameters
         if ( ! in_array( $post_type, [ 'post', 'page' ], true ) ) {
             return new \WP_REST_Response( [ 'message' => __( 'Invalid post type.', 'content-forge' ) ], 400 );
         }
@@ -114,16 +117,64 @@ class Post extends CForge_REST_Controller {
         if ( ! in_array( $comment_status, [ 'closed', 'open' ], true ) ) {
             return new \WP_REST_Response( [ 'message' => __( 'Invalid comment status.', 'content-forge' ) ], 400 );
         }
-        // Extract image generation parameters
-        $generate_image = isset( $params['generate_image'] ) && $params['generate_image'];
-        $image_sources  = isset( $params['image_sources'] ) && is_array( $params['image_sources'] ) ? array_map( 'sanitize_text_field', $params['image_sources'] ) : [];
-        // Extract excerpt generation parameter (defaults to true for backward compatibility)
-        $generate_excerpt = isset( $params['generate_excerpt'] ) ? (bool) $params['generate_excerpt'] : true;
+
         // Extract AI generation parameters
         $use_ai = isset( $params['use_ai'] ) && $params['use_ai'];
         $content_type = isset( $params['content_type'] ) ? sanitize_key( $params['content_type'] ) : 'general';
         $ai_prompt = isset( $params['ai_prompt'] ) ? sanitize_textarea_field( $params['ai_prompt'] ) : '';
-        $generator        = new GeneratorPost( get_current_user_id() );
+
+        // If AI generation is requested, use scheduled generation
+        if ( $use_ai ) {
+            // Validate AI content type
+            if ( empty( $content_type ) ) {
+                return new \WP_REST_Response(
+                    [ 'message' => __( 'Content type is required for AI generation.', 'content-forge' ) ],
+                    400
+                );
+            }
+
+            // Auto mode: expects post_number (int) - AI generation only supports auto mode
+            $post_number = isset( $params['post_number'] ) ? intval( $params['post_number'] ) : 1;
+            if ( $post_number < 1 ) {
+                return new \WP_REST_Response(
+                    [ 'message' => __( 'Number of posts/pages must be at least 1.', 'content-forge' ) ],
+                    400
+                );
+            }
+
+            // Prepare AI generation args
+            $ai_args = [
+                'post_number'   => $post_number,
+                'post_type'     => $post_type,
+                'post_status'   => $post_status,
+                'content_type'  => $content_type,
+                'ai_prompt'     => $ai_prompt,
+                'editor_type'   => isset( $params['editor_type'] ) ? sanitize_key( $params['editor_type'] ) : 'block',
+            ];
+
+            // Schedule AI generation
+            $result = $this->scheduled_generator->schedule_generation( $ai_args );
+
+            if ( is_wp_error( $result ) ) {
+                return new \WP_REST_Response(
+                    [
+                       	'message' => $result->get_error_message(),
+						'code' => $result->get_error_code()
+                    ],
+                    400
+                );
+            }
+
+            return new \WP_REST_Response( $result, 200 );
+        }
+
+        // Traditional (non-AI) generation continues as before
+        $generate_image = isset( $params['generate_image'] ) && $params['generate_image'];
+        $image_sources  = isset( $params['image_sources'] ) && is_array( $params['image_sources'] ) ? array_map( 'sanitize_text_field', $params['image_sources'] ) : [];
+        $generate_excerpt = isset( $params['generate_excerpt'] ) ? (bool) $params['generate_excerpt'] : true;
+        $created        = [];
+        $generator      = new GeneratorPost( get_current_user_id() );
+
         // Manual mode: expects post_titles (array) and post_contents (array)
         if ( isset( $params['post_titles'] ) && is_array( $params['post_titles'] ) ) {
             $titles   = array_map( 'sanitize_text_field', $params['post_titles'] );
@@ -150,13 +201,7 @@ class Post extends CForge_REST_Controller {
                 }
                 // Add excerpt generation parameter
                 $args['generate_excerpt'] = $generate_excerpt;
-                // Add AI generation parameters if requested
-                if ( $use_ai ) {
-                    $args['use_ai'] = true;
-                    $args['content_type'] = $content_type;
-                    $args['ai_prompt'] = $ai_prompt;
-                }
-                $ids                      = $generator->generate( 1, $args );
+                $ids = $generator->generate( 1, $args );
                 if ( empty( $ids ) ) {
                     return new \WP_REST_Response(
                         [ 'message' => __( 'Failed to generate post.', 'content-forge' ) ],
@@ -189,13 +234,7 @@ class Post extends CForge_REST_Controller {
             }
             // Add excerpt generation parameter
             $args['generate_excerpt'] = $generate_excerpt;
-            // Add AI generation parameters if requested
-            if ( $use_ai ) {
-                $args['use_ai'] = true;
-                $args['content_type'] = $content_type;
-                $args['ai_prompt'] = $ai_prompt;
-            }
-            $ids                      = $generator->generate( $post_number, $args );
+            $ids = $generator->generate( $post_number, $args );
             if ( empty( $ids ) ) {
                 return new \WP_REST_Response(
                     [ 'message' => __( 'Failed to generate posts/pages.', 'content-forge' ) ],

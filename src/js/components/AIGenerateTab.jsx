@@ -14,6 +14,14 @@ export default function AIGenerateTab({ post, setPost, onSuccess }) {
     const [pages, setPages] = useState([]);
     const [numberOfPosts, setNumberOfPosts] = useState(1);
 
+    // Async generation states
+    const [batchId, setBatchId] = useState(null);
+    const [progress, setProgress] = useState(0);
+    const [statusMessage, setStatusMessage] = useState('');
+    const [createdPosts, setCreatedPosts] = useState([]);
+    const [polling, setPolling] = useState(false);
+    const [generationErrors, setGenerationErrors] = useState([]);
+
     useEffect(() => {
         // Configure apiFetch middleware
         if (window.cforge?.rest_nonce) {
@@ -24,7 +32,7 @@ export default function AIGenerateTab({ post, setPost, onSuccess }) {
         }
 
         checkConfiguration();
-        
+
         // Fetch pages for parent dropdown
         if (post.post_type === 'page') {
             fetch(window.cforge?.restUrl + 'wp/v2/pages')
@@ -33,6 +41,15 @@ export default function AIGenerateTab({ post, setPost, onSuccess }) {
                 .catch(() => setPages([]));
         }
     }, []);
+
+    // Clean up polling on unmount
+    useEffect(() => {
+        return () => {
+            if (polling) {
+                setPolling(false);
+            }
+        };
+    }, [polling]);
 
     const checkConfiguration = async () => {
         try {
@@ -72,66 +89,167 @@ export default function AIGenerateTab({ post, setPost, onSuccess }) {
 
         setGenerating(true);
         setNotice(null);
+        setProgress(0);
+        setCreatedPosts([]);
+        setGenerationErrors([]);
+        setStatusMessage(__('Initializing AI generation...', 'content-forge'));
 
         try {
             // Detect editor type
             const editorType = window.cforge?.editor_type || 'block';
 
             const response = await apiFetch({
-                path: 'ai/generate',
+                path: 'posts/bulk',
                 method: 'POST',
                 data: {
+                    post_number: numberOfPosts,
+                    post_type: post.post_type,
+                    post_status: post.post_status,
+                    post_parent: post.post_parent,
                     content_type: contentType,
-                    custom_prompt: customPrompt,
+                    ai_prompt: customPrompt,
                     editor_type: editorType,
-                    number_of_posts: numberOfPosts,
+                    use_ai: true,
                 },
             });
 
-            if (response.success) {
-                // Update post with generated title and content, and store AI params
-                setPost({
-                    ...post,
-                    post_title: response.title || '',
-                    post_content: response.content || '',
-                    content_type: contentType,
-                    ai_prompt: customPrompt,
-                    number_of_posts: numberOfPosts,
-                });
+            if (response.batch_id) {
+                // Start async generation
+                setBatchId(response.batch_id);
+                setStatusMessage(response.message);
+                setPolling(true);
 
-                setNotice({
-                    message: __('Content generated successfully!', 'content-forge'),
-                    status: 'success',
-                });
-
-                if (onSuccess) {
-                    setTimeout(() => {
-                        onSuccess();
-                    }, 1500);
-                }
+                // Start polling for progress
+                pollProgress(response.batch_id);
             } else {
                 setNotice({
-                    message: response.message || __('Failed to generate content', 'content-forge'),
+                    message: response.message || __('Failed to start generation', 'content-forge'),
                     status: 'error',
                 });
+                setGenerating(false);
             }
         } catch (error) {
-            let message = __('An error occurred while generating content', 'content-forge');
+            let message = __('An error occurred while starting generation', 'content-forge');
             if (error?.message) {
                 message = error.message;
-            } else if (error?.code === 'not_configured') {
-                message = __('AI is not configured. Please configure AI settings first.', 'content-forge');
-            } else if (error?.code === 'rate_limit') {
-                message = __('Rate limit exceeded. Please try again later.', 'content-forge');
+            } else if (error?.code) {
+                message = error.message || __('Server error occurred', 'content-forge');
             }
 
             setNotice({
                 message,
                 status: 'error',
             });
-        } finally {
             setGenerating(false);
         }
+    };
+
+    // Poll for generation progress
+    const pollProgress = async (batchId) => {
+        try {
+            const response = await apiFetch({
+                path: `generation/status?batch_id=${batchId}`,
+                method: 'GET',
+            });
+
+            if (response.status === 'processing') {
+                setProgress(response.progress_percentage || 0);
+                setStatusMessage(`Generating post ${response.completed + 1} of ${response.total}...`);
+
+                // Update created posts list
+                if (response.posts_created && response.posts_created.length > 0) {
+                    setCreatedPosts(response.posts_created);
+                }
+
+                // Update errors list
+                if (response.errors && response.errors.length > 0) {
+                    setGenerationErrors(response.errors);
+                    const latestError = response.errors[response.errors.length - 1];
+                    if (latestError && latestError.error) {
+                        setStatusMessage(`Generating post ${response.completed + 1} of ${response.total}... (Error: ${latestError.error})`);
+                    }
+                }
+
+                // Continue polling
+                setTimeout(() => {
+                    if (polling) {
+                        pollProgress(batchId);
+                    }
+                }, 2000); // Poll every 2 seconds
+            } else if (response.status === 'failed') {
+                // Generation failed
+                setPolling(false);
+                setGenerating(false);
+
+                // Get the specific error message
+                let errorMessage = __('AI generation failed. Please check your AI settings configuration.', 'content-forge');
+                if (response.errors && response.errors.length > 0) {
+                    // Use the first error message as they're likely all the same (e.g., quota exceeded)
+                    errorMessage = response.errors[0].error;
+                    setGenerationErrors(response.errors);
+                }
+
+                setNotice({
+                    message: errorMessage,
+                    status: 'error',
+                });
+            } else if (response.status === 'completed') {
+                // Generation complete
+                setProgress(100);
+                setStatusMessage(__('✓ Generation complete!', 'content-forge'));
+                setCreatedPosts(response.posts_created || []);
+                setPolling(false);
+                setGenerating(false);
+
+                setNotice({
+                    message: __('All posts generated successfully!', 'content-forge'),
+                    status: 'success',
+                });
+
+                // Show errors if any
+                if (response.errors && response.errors.length > 0) {
+                    setGenerationErrors(response.errors);
+                    // Display the first specific error message
+                    const firstError = response.errors[0];
+                    let errorDetails = '';
+
+                    // Extract just the error message part (remove the "Error generating post X/Y:" prefix if present)
+                    if (firstError && firstError.error) {
+                        errorDetails = firstError.error;
+                    }
+
+                    setNotice({
+                        message: `${response.errors.length} posts had errors during generation. ${errorDetails ? `Error: ${errorDetails}` : ''}`,
+                        status: 'warning',
+                    });
+                }
+
+                if (onSuccess) {
+                    setTimeout(() => {
+                        onSuccess();
+                    }, 2000);
+                }
+            }
+        } catch (error) {
+            console.error('Error polling progress:', error);
+            setNotice({
+                message: __('Error checking generation status', 'content-forge'),
+                status: 'error',
+            });
+            setPolling(false);
+            setGenerating(false);
+        }
+    };
+
+    // Stop polling
+    const stopGeneration = () => {
+        setPolling(false);
+        setGenerating(false);
+        setBatchId(null);
+        setProgress(0);
+        setStatusMessage('');
+        setCreatedPosts([]);
+        setGenerationErrors([]);
     };
 
     if (loading) {
@@ -271,7 +389,86 @@ export default function AIGenerateTab({ post, setPost, onSuccess }) {
                     </p>
                 </div>
 
-                {post.post_title && post.post_content && (
+                <div className="cforge-mt-6">
+                    <Button
+                        variant="primary"
+                        onClick={handleGenerate}
+                        disabled={generating || !isConfigured}
+                        className="cforge-w-full"
+                    >
+                        {generating ? __('Generating...', 'content-forge') : __('Generate AI Content', 'content-forge')}
+                    </Button>
+                </div>
+
+                {generating && (
+                    <div className="cforge-mt-4 cforge-p-4 cforge-bg-blue-50 cforge-border cforge-border-blue-200 cforge-rounded">
+                        <div className="cforge-flex cforge-justify-between cforge-items-center cforge-mb-2">
+                            <h3 className="cforge-font-semibold cforge-text-blue-900">{__('Generating AI Content', 'content-forge')}</h3>
+                            {polling && (
+                                <Button
+                                    isSmall
+                                    isDestructive
+                                    onClick={stopGeneration}
+                                    className="cforge-text-xs"
+                                >
+                                    {__('Stop', 'content-forge')}
+                                </Button>
+                            )}
+                        </div>
+
+                        <div className="cforge-mb-2">
+                            <div className="cforge-text-sm cforge-text-blue-700 cforge-mb-1">{statusMessage}</div>
+                            <div className="cforge-w-full cforge-bg-gray-200 cforge-rounded-full cforge-h-2">
+                                <div
+                                    className="cforge-bg-blue-600 cforge-h-2 cforge-rounded-full cforge-transition-all cforge-duration-300"
+                                    style={{ width: `${progress}%` }}
+                                ></div>
+                            </div>
+                            <div className="cforge-text-xs cforge-text-gray-600 cforge-mt-1">{progress}% complete</div>
+                        </div>
+
+                        {createdPosts.length > 0 && (
+                            <div className="cforge-mt-3">
+                                <p className="cforge-text-sm cforge-font-medium cforge-text-blue-900 cforge-mb-2">
+                                    {__('Created Posts:', 'content-forge')}
+                                </p>
+                                <div className="cforge-max-h-32 cforge-overflow-y-auto cforge-space-y-1">
+                                    {createdPosts.map((post, index) => (
+                                        <div key={post.post_id} className="cforge-text-xs cforge-text-blue-700 cforge-p-1 cforge-bg-white cforge-rounded">
+                                            <span className="cforge-font-medium">{post.title}</span>
+                                            <a
+                                                href={`/wp-admin/post.php?post=${post.post_id}&action=edit`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="cforge-ml-2 cforge-text-blue-600 hover:cforge-text-blue-800"
+                                            >
+                                                {__('Edit', 'content-forge')}
+                                            </a>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Show error summary if any errors occurred */}
+                        {generationErrors.length > 0 && (
+                            <div className="cforge-mt-3">
+                                <p className="cforge-text-sm cforge-font-medium cforge-text-red-900 cforge-mb-2">
+                                    {__('Errors:', 'content-forge')}
+                                </p>
+                                <div className="cforge-max-h-32 cforge-overflow-y-auto cforge-space-y-1">
+                                    {generationErrors.map((error, index) => (
+                                        <div key={index} className="cforge-text-xs cforge-text-red-700 cforge-p-1 cforge-bg-red-50 cforge-rounded">
+                                            {__('Post', 'content-forge')} {error.index + 1}: {error.error}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {post.post_title && post.post_content && !generating && (
                     <div className="cforge-mt-4 cforge-p-4 cforge-bg-gray-50 cforge-rounded">
                         <h3 className="cforge-font-semibold cforge-mb-2">{__('Generated Content', 'content-forge')}</h3>
                         <p className="cforge-text-sm cforge-text-gray-600 cforge-mb-2">
@@ -283,22 +480,6 @@ export default function AIGenerateTab({ post, setPost, onSuccess }) {
                         </div>
                     </div>
                 )}
-
-                <div className="cforge-flex cforge-gap-3">
-                    <Button
-                        onClick={handleGenerate}
-                        isBusy={generating}
-                        disabled={generating}
-                        variant="primary"
-                    >
-                        {__('Generate Content', 'content-forge')}
-                    </Button>
-                    {post.post_title && post.post_content && (
-                        <div className="cforge-text-sm cforge-text-gray-600 cforge-mt-2">
-                            {__('Content generated! Use the "Save Generated Content" button below to save it.', 'content-forge')}
-                        </div>
-                    )}
-                </div>
             </div>
         </div>
     );

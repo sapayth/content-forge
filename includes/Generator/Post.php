@@ -103,16 +103,6 @@ class Post extends Generator {
             // Log data before saving post for debugging
             $title_sample   = mb_substr( $title, 0, 100 );
             $content_sample = mb_substr( $content, 0, 300 );
-            // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-            error_log(
-                sprintf(
-                    '[Content Forge] Preparing to save post | Post Type: %s | Editor Type: %s | Title (first 100 chars): %s | Content (first 300 chars): %s',
-                    $post_type,
-                    $editor_type,
-                    $title_sample,
-                    $content_sample
-                )
-            );
 
             $post_data = [
                 'post_title'   => $title,
@@ -653,36 +643,13 @@ class Post extends Generator {
             // Log a sample of the formatted content to verify block format
             $sample_length  = min( 300, strlen( $content ) );
             $content_sample = substr( $content, 0, $sample_length );
-            // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-            error_log(
-                sprintf(
-                    '[Content Forge] Content formatted for Block Editor | Sample (first %d chars): %s',
-                    $sample_length,
-                    $content_sample
-                )
-            );
 
             // Verify block format was applied
             $has_block_format = ( strpos( $content, '<!-- wp:' ) !== false );
-            // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-            error_log(
-                sprintf(
-                    '[Content Forge] Block format verification: %s (contains <!-- wp: -->)',
-                    $has_block_format ? 'PASS' : 'FAIL'
-                )
-            );
         } else {
             // Classic Editor: Keep as plain HTML (already in correct format)
             $sample_length  = min( 200, strlen( $content ) );
             $content_sample = substr( $content, 0, $sample_length );
-            // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-            error_log(
-                sprintf(
-                    '[Content Forge] Content formatted for Classic Editor (plain HTML) | Sample (first %d chars): %s',
-                    $sample_length,
-                    $content_sample
-                )
-            );
         }
 
         return $content;

@@ -152,22 +152,15 @@ class AI_Content_Generator {
 		// Log raw AI response for debugging
 		$raw_title   = isset( $response['title'] ) ? mb_substr( $response['title'], 0, 100 ) : '(no title)';
 		$raw_content = isset( $response['content'] ) ? mb_substr( $response['content'], 0, 300 ) : '(no content)';
-		// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-		error_log(
-			sprintf(
-				'[Content Forge] Raw AI response received | Editor Type: %s | Title (first 100 chars): %s | Content (first 300 chars): %s',
-				$this->editor_type,
-				$raw_title,
-				$raw_content
-			)
-		);
 
 		// Format content for editor type.
 		if ( isset( $response['content'] ) ) {
 			$response['content'] = $this->format_content( $response['content'], $this->editor_type );
 		}
 
-        /**
+        $provider_slug = method_exists( $this->provider, 'get_provider_slug' ) ? $this->provider->get_provider_slug() : '';
+
+		/**
          * Fired after AI content generation completes successfully.
          *
          * @since 1.2.0
@@ -176,7 +169,6 @@ class AI_Content_Generator {
          * @param string $content_type Content type slug.
          * @param string $provider     Provider slug.
          */
-        $provider_slug = method_exists( $this->provider, 'get_provider_slug' ) ? $this->provider->get_provider_slug() : '';
         do_action( 'cforge_ai_after_generation', $response, $content_type, $provider_slug );
 
 		return $response;

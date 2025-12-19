@@ -79,6 +79,11 @@ class Loader {
 			require_once CFORGE_INCLUDES_PATH . 'Generator/AI_Content_Generator.php';
 		}
 
+		// Load AI Scheduled Generator
+		if ( file_exists( CFORGE_INCLUDES_PATH . 'Generator/AI_Scheduled_Generator.php' ) ) {
+			require_once CFORGE_INCLUDES_PATH . 'Generator/AI_Scheduled_Generator.php';
+		}
+
 		$this->container['api'] = new Api();
 
 		// Load and initialize telemetry tracking.

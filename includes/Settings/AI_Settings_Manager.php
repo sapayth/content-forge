@@ -334,12 +334,8 @@ class AI_Settings_Manager {
 		if ( $provider === self::PROVIDER_GOOGLE ) {
 			// Allow any model that starts with 'gemini-' for Google provider
 			if ( strpos( $model, 'gemini-' ) !== 0 && ! isset( $models[ $model ] ) ) {
-				error_log( 'ContentForge Save Error: Google provider selected but model "' . $model . '" is not a Google model' );
 				return false;
 			}
-		} elseif ( ! isset( $models[ $model ] ) ) {
-			error_log( 'ContentForge Save Error: Model "' . $model . '" not found for provider "' . $provider . '"' );
-			return false;
 		}
 
 		// Save provider and model.
@@ -364,9 +360,11 @@ class AI_Settings_Manager {
 	 * @return array Settings array.
 	 */
 	public static function get_settings() {
+		$provider = self::get_active_provider();
 		return [
-			'provider'     => self::get_active_provider(),
+			'provider'     => $provider,
 			'model'        => self::get_active_model(),
+			'api_key'      => self::get_api_key( $provider ),
 			'is_configured' => self::is_configured(),
 		];
 	}

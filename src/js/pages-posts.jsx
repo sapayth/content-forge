@@ -77,6 +77,13 @@ function AddNewView({ onCancel, onSuccess }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // For AI tab, generation is handled by the AIGenerateTab component
+    if (tab === 'ai') {
+      // Don't submit form for AI generation - it's handled by the component
+      return;
+    }
+
     const validationErrors = validate();
     setErrors(validationErrors);
     if (Object.keys(validationErrors).length > 0) {
@@ -104,18 +111,6 @@ function AddNewView({ onCancel, onSuccess }) {
     }
     if (tab === 'auto') {
       payload.post_number = Number(post.post_number);
-    } else if (tab === 'ai') {
-      // AI generation - use the generated title and content
-      if (post.post_title && post.post_content) {
-        payload.post_titles = [post.post_title];
-        payload.post_contents = [post.post_content];
-      } else {
-        // If no content generated yet, trigger AI generation
-        payload.use_ai = true;
-        payload.content_type = post.content_type || 'general';
-        payload.ai_prompt = post.ai_prompt || '';
-        payload.post_number = 1;
-      }
     } else {
       payload.post_titles = post.post_title.split(',').map(t => t.trim()).filter(Boolean);
       payload.post_contents = payload.post_titles.map(() => post.post_content);
@@ -444,13 +439,15 @@ function AddNewView({ onCancel, onSuccess }) {
             >
               {__('Cancel', 'content-forge')}
             </button>
-            <button
-              type="submit"
-              className="cforge-bg-primary cforge-text-white cforge-px-4 cforge-py-2 cforge-rounded cforge-font-semibold hover:cforge-bg-primaryHover"
-              disabled={submitting || (tab === 'ai' && (!post.post_title || !post.post_content))}
-            >
-              {submitting ? __('Generating...', 'content-forge') : tab === 'ai' ? __('Save Generated Content', 'content-forge') : __('Generate', 'content-forge')}
-            </button>
+            {tab !== 'ai' && (
+              <button
+                type="submit"
+                className="cforge-bg-primary cforge-text-white cforge-px-4 cforge-py-2 cforge-rounded cforge-font-semibold hover:cforge-bg-primaryHover"
+                disabled={submitting}
+              >
+                {submitting ? __('Generating...', 'content-forge') : __('Generate', 'content-forge')}
+              </button>
+            )}
           </div>
         </form>
       </div>

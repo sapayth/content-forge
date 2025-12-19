@@ -21,12 +21,17 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
+// Load Action Scheduler
+if ( file_exists( __DIR__ . '/Lib/action-scheduler/action-scheduler.php' ) ) {
+    require_once __DIR__ . '/Lib/action-scheduler/action-scheduler.php';
+}
+
 if ( file_exists( __DIR__ . '/vendor/autoload.php' ) ) {
     require_once __DIR__ . '/vendor/autoload.php';
 }
 
 final class ContentForge {
-    const VERSION = '1.1.0';
+    const VERSION = '1.2.0';
 
     /**
      * Class constructor.
