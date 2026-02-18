@@ -152,7 +152,7 @@ class ActionScheduler_HybridStore extends Store {
 			global $wpdb;
 
 			$id = (int) $wpdb->get_var( "SELECT MAX(ID) FROM $wpdb->posts" );
-			$id++;
+			++$id;
 		}
 		update_option( self::DEMARKATION_OPTION, $id );
 

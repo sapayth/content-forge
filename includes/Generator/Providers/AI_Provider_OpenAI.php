@@ -66,8 +66,8 @@ class AI_Provider_OpenAI extends AI_Provider_Base {
 		$prompt = $params['prompt'] ?? '';
 
 		return [
-			'model'          => $this->model,
-			'messages'       => [
+			'model'           => $this->model,
+			'messages'        => [
 				[
 					'role'    => 'system',
 					'content' => 'You are a helpful content writer. Always respond with valid JSON containing "title" and "content" keys. The title should be engaging and SEO-friendly (maximum 60 characters). The content should be comprehensive and well-formatted.',
@@ -77,8 +77,8 @@ class AI_Provider_OpenAI extends AI_Provider_Base {
 					'content' => $prompt,
 				],
 			],
-			'temperature'    => 0.7,
-			'max_tokens'     => 2000,
+			'temperature'     => 0.7,
+			'max_tokens'      => 2000,
 			'response_format' => [ 'type' => 'json_object' ],
 		];
 	}
@@ -93,20 +93,23 @@ class AI_Provider_OpenAI extends AI_Provider_Base {
 	 */
 	public function parse_response( array $response ) {
 		if ( ! isset( $response['choices'][0]['message']['content'] ) ) {
-			return [ 'title' => '', 'content' => '' ];
+			return [
+				'title'   => '',
+				'content' => '',
+			];
 		}
 
 		$content = $response['choices'][0]['message']['content'];
-		
+
 		// Clean markdown code blocks if present
 		$content = $this->clean_json_content( $content );
-		
+
 		$parsed = json_decode( $content, true );
 
 		if ( json_last_error() === JSON_ERROR_NONE && isset( $parsed['title'] ) && isset( $parsed['content'] ) ) {
 			// Convert literal newlines to actual newlines in content
 			$parsed['content'] = $this->convert_literal_newlines( $parsed['content'] );
-			
+
 			return [
 				'title'   => $parsed['title'],
 				'content' => $parsed['content'],
@@ -126,7 +129,7 @@ class AI_Provider_OpenAI extends AI_Provider_Base {
 	 * @return array|WP_Error Array with 'title' and 'content' keys, or WP_Error on failure.
 	 */
 	public function generate( array $params ) {
-		$payload = $this->build_request_payload( $params );
+		$payload  = $this->build_request_payload( $params );
 		$response = $this->make_request( $payload );
 
 		if ( is_wp_error( $response ) ) {
@@ -145,8 +148,8 @@ class AI_Provider_OpenAI extends AI_Provider_Base {
 	 */
 	public function test_connection() {
 		$payload = [
-			'model'    => $this->model,
-			'messages' => [
+			'model'      => $this->model,
+			'messages'   => [
 				[
 					'role'    => 'user',
 					'content' => 'Respond with JSON: {"status": "ok"}',

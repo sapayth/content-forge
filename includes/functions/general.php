@@ -7,6 +7,22 @@
  */
 
 /**
+ * Get post types allowed for Content Forge generation (bulk create, list, delete).
+ *
+ * @return array List of post type slugs.
+ */
+function cforge_get_allowed_post_types() {
+	$default = [ 'post', 'page' ];
+	if ( class_exists( 'WooCommerce', false ) ) {
+		$default[] = 'product';
+	}
+	if ( function_exists( 'wedocs' ) ) {
+		$default[] = 'docs';
+	}
+	return apply_filters( 'cforge_allowed_post_types', $default );
+}
+
+/**
  * Get random post id's from selected post types.
  *
  * @param array $post_types Array of post types to get posts from.

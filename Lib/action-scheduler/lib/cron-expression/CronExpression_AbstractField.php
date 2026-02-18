@@ -5,8 +5,8 @@
  *
  * @author Michael Dowling <mtdowling@gmail.com>
  */
-abstract class CronExpression_AbstractField implements CronExpression_FieldInterface
-{
+abstract class CronExpression_AbstractField implements CronExpression_FieldInterface {
+
     /**
      * Check to see if a field is satisfied by a value
      *
@@ -15,12 +15,12 @@ abstract class CronExpression_AbstractField implements CronExpression_FieldInter
      *
      * @return bool
      */
-    public function isSatisfied($dateValue, $value)
+    public function isSatisfied( $dateValue, $value )
     {
-        if ($this->isIncrementsOfRanges($value)) {
-            return $this->isInIncrementsOfRanges($dateValue, $value);
-        } elseif ($this->isRange($value)) {
-            return $this->isInRange($dateValue, $value);
+        if ( $this->isIncrementsOfRanges( $value ) ) {
+            return $this->isInIncrementsOfRanges( $dateValue, $value );
+        } elseif ( $this->isRange( $value ) ) {
+            return $this->isInRange( $dateValue, $value );
         }
 
         return $value == '*' || $dateValue == $value;
@@ -33,9 +33,9 @@ abstract class CronExpression_AbstractField implements CronExpression_FieldInter
      *
      * @return bool
      */
-    public function isRange($value)
+    public function isRange( $value )
     {
-        return strpos($value, '-') !== false;
+        return strpos( $value, '-' ) !== false;
     }
 
     /**
@@ -45,9 +45,9 @@ abstract class CronExpression_AbstractField implements CronExpression_FieldInter
      *
      * @return bool
      */
-    public function isIncrementsOfRanges($value)
+    public function isIncrementsOfRanges( $value )
     {
-        return strpos($value, '/') !== false;
+        return strpos( $value, '/' ) !== false;
     }
 
     /**
@@ -58,9 +58,9 @@ abstract class CronExpression_AbstractField implements CronExpression_FieldInter
      *
      * @return bool
      */
-    public function isInRange($dateValue, $value)
+    public function isInRange( $dateValue, $value )
     {
-        $parts = array_map('trim', explode('-', $value, 2));
+        $parts = array_map( 'trim', explode( '-', $value, 2 ) );
 
         return $dateValue >= $parts[0] && $dateValue <= $parts[1];
     }
@@ -73,24 +73,24 @@ abstract class CronExpression_AbstractField implements CronExpression_FieldInter
      *
      * @return bool
      */
-    public function isInIncrementsOfRanges($dateValue, $value)
+    public function isInIncrementsOfRanges( $dateValue, $value )
     {
-        $parts = array_map('trim', explode('/', $value, 2));
-        $stepSize = isset($parts[1]) ? $parts[1] : 0;
-        if ($parts[0] == '*' || $parts[0] === '0') {
+        $parts    = array_map( 'trim', explode( '/', $value, 2 ) );
+        $stepSize = isset( $parts[1] ) ? $parts[1] : 0;
+        if ( $parts[0] == '*' || $parts[0] === '0' ) {
             return (int) $dateValue % $stepSize == 0;
         }
 
-        $range = explode('-', $parts[0], 2);
+        $range  = explode( '-', $parts[0], 2 );
         $offset = $range[0];
-        $to = isset($range[1]) ? $range[1] : $dateValue;
+        $to     = isset( $range[1] ) ? $range[1] : $dateValue;
         // Ensure that the date value is within the range
-        if ($dateValue < $offset || $dateValue > $to) {
+        if ( $dateValue < $offset || $dateValue > $to ) {
             return false;
         }
 
-        for ($i = $offset; $i <= $to; $i+= $stepSize) {
-            if ($i == $dateValue) {
+        for ( $i = $offset; $i <= $to; $i += $stepSize ) {
+            if ( $i == $dateValue ) {
                 return true;
             }
         }

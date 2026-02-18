@@ -6,7 +6,7 @@ namespace Action_Scheduler\WP_CLI;
 
 use ActionScheduler_SystemInformation;
 use WP_CLI;
-use function \WP_CLI\Utils\get_flag_value;
+use function WP_CLI\Utils\get_flag_value;
 
 /**
  * System info WP-CLI commands for Action Scheduler.
@@ -278,5 +278,4 @@ class System_Command {
 
 		return $action_date;
 	}
-
 }

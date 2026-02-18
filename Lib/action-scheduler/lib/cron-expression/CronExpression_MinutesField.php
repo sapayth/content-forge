@@ -5,25 +5,25 @@
  *
  * @author Michael Dowling <mtdowling@gmail.com>
  */
-class CronExpression_MinutesField extends CronExpression_AbstractField
-{
+class CronExpression_MinutesField extends CronExpression_AbstractField {
+
     /**
      * {@inheritdoc}
      */
-    public function isSatisfiedBy(DateTime $date, $value)
+    public function isSatisfiedBy( DateTime $date, $value )
     {
-        return $this->isSatisfied($date->format('i'), $value);
+        return $this->isSatisfied( $date->format( 'i' ), $value );
     }
 
     /**
      * {@inheritdoc}
      */
-    public function increment(DateTime $date, $invert = false)
+    public function increment( DateTime $date, $invert = false )
     {
-        if ($invert) {
-            $date->modify('-1 minute');
+        if ( $invert ) {
+            $date->modify( '-1 minute' );
         } else {
-            $date->modify('+1 minute');
+            $date->modify( '+1 minute' );
         }
 
         return $this;
@@ -32,8 +32,8 @@ class CronExpression_MinutesField extends CronExpression_AbstractField
     /**
      * {@inheritdoc}
      */
-    public function validate($value)
+    public function validate( $value )
     {
-        return (bool) preg_match('/[\*,\/\-0-9]+/', $value);
+        return (bool) preg_match( '/[\*,\/\-0-9]+/', $value );
     }
 }

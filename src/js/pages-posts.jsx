@@ -483,7 +483,7 @@ function PagesPostsApp() {
     }
 
     apiFetch({
-      path: `posts/list?page=${page}&per_page=${perPage}`,
+      path: `posts/list?page=${page}&per_page=${perPage}&post_types=post,page`,
       method: 'GET',
     })
       .then((res) => {
@@ -512,7 +512,7 @@ function PagesPostsApp() {
     setError(null);
 
     apiFetch({
-      path: `posts/list?page=${pageToLoad}&per_page=${perPage}`,
+      path: `posts/list?page=${pageToLoad}&per_page=${perPage}&post_types=post,page`,
       method: 'GET',
     })
       .then((res) => {

@@ -1,6 +1,6 @@
 {
   "name": "content-forge",
-  "version": "1.0.0",
+  "version": "1.3.0",
   "description": "Content Forge React admin app for WordPress plugin.",
   "main": "src/pages-posts-app.jsx",
   "scripts": {

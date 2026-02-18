@@ -6,8 +6,8 @@
  * @author Michael Dowling <mtdowling@gmail.com>
  * @link http://en.wikipedia.org/wiki/Cron
  */
-class CronExpression_FieldFactory
-{
+class CronExpression_FieldFactory {
+
     /**
      * @var array Cache of instantiated fields
      */
@@ -21,27 +21,27 @@ class CronExpression_FieldFactory
      * @return CronExpression_FieldInterface
      * @throws InvalidArgumentException if a position is not valid
      */
-    public function getField($position)
+    public function getField( $position )
     {
-        if (!isset($this->fields[$position])) {
-            switch ($position) {
+        if ( ! isset( $this->fields[ $position ] ) ) {
+            switch ( $position ) {
                 case 0:
-                    $this->fields[$position] = new CronExpression_MinutesField();
+                    $this->fields[ $position ] = new CronExpression_MinutesField();
                     break;
                 case 1:
-                    $this->fields[$position] = new CronExpression_HoursField();
+                    $this->fields[ $position ] = new CronExpression_HoursField();
                     break;
                 case 2:
-                    $this->fields[$position] = new CronExpression_DayOfMonthField();
+                    $this->fields[ $position ] = new CronExpression_DayOfMonthField();
                     break;
                 case 3:
-                    $this->fields[$position] = new CronExpression_MonthField();
+                    $this->fields[ $position ] = new CronExpression_MonthField();
                     break;
                 case 4:
-                    $this->fields[$position] = new CronExpression_DayOfWeekField();
+                    $this->fields[ $position ] = new CronExpression_DayOfWeekField();
                     break;
                 case 5:
-                    $this->fields[$position] = new CronExpression_YearField();
+                    $this->fields[ $position ] = new CronExpression_YearField();
                     break;
                 default:
                     throw new InvalidArgumentException(
@@ -50,6 +50,6 @@ class CronExpression_FieldFactory
             }
         }
 
-        return $this->fields[$position];
+        return $this->fields[ $position ];
     }
 }

@@ -19,14 +19,14 @@ class Content_Type_Data {
 	// Content type constants.
 	const TYPE_GENERAL    = 'general';
 	const TYPE_ECOMMERCE  = 'e-commerce';
-	const TYPE_PORTFOLIO = 'portfolio';
-	const TYPE_BUSINESS  = 'business';
-	const TYPE_EDUCATION = 'education';
-	const TYPE_HEALTH    = 'health';
+	const TYPE_PORTFOLIO  = 'portfolio';
+	const TYPE_BUSINESS   = 'business';
+	const TYPE_EDUCATION  = 'education';
+	const TYPE_HEALTH     = 'health';
 	const TYPE_TECHNOLOGY = 'technology';
-	const TYPE_FOOD      = 'food';
-	const TYPE_TRAVEL    = 'travel';
-	const TYPE_FASHION   = 'fashion';
+	const TYPE_FOOD       = 'food';
+	const TYPE_TRAVEL     = 'travel';
+	const TYPE_FASHION    = 'fashion';
 
 	/**
 	 * Get all available content types.
@@ -37,37 +37,37 @@ class Content_Type_Data {
 	 */
 	public static function get_types() {
 		$types = [
-			self::TYPE_GENERAL => [
+			self::TYPE_GENERAL    => [
 				'label'    => 'General/Blog',
 				'context'  => 'General blog posts, articles, and news content',
 				'keywords' => [ 'article', 'blog', 'news', 'post', 'writing', 'content' ],
 				'examples' => [ 'Blog post', 'News article', 'Opinion piece' ],
 			],
-			self::TYPE_ECOMMERCE => [
+			self::TYPE_ECOMMERCE  => [
 				'label'    => 'E-commerce',
 				'context'  => 'Product descriptions, reviews, shopping guides, and e-commerce content',
 				'keywords' => [ 'product', 'review', 'shopping', 'buy', 'purchase', 'customer', 'store' ],
 				'examples' => [ 'Product review', 'Shopping guide', 'Buyer\'s guide' ],
 			],
-			self::TYPE_PORTFOLIO => [
+			self::TYPE_PORTFOLIO  => [
 				'label'    => 'Portfolio',
 				'context'  => 'Project showcases, case studies, and creative work presentations',
 				'keywords' => [ 'project', 'case study', 'portfolio', 'showcase', 'work', 'creative' ],
 				'examples' => [ 'Project showcase', 'Case study', 'Work portfolio' ],
 			],
-			self::TYPE_BUSINESS => [
+			self::TYPE_BUSINESS   => [
 				'label'    => 'Business/Corporate',
 				'context'  => 'Business articles, corporate content, and professional insights',
 				'keywords' => [ 'business', 'corporate', 'professional', 'company', 'industry', 'market' ],
 				'examples' => [ 'Business article', 'Corporate update', 'Industry analysis' ],
 			],
-			self::TYPE_EDUCATION => [
+			self::TYPE_EDUCATION  => [
 				'label'    => 'Education',
 				'context'  => 'Educational content, tutorials, courses, and learning materials',
 				'keywords' => [ 'education', 'tutorial', 'course', 'learning', 'teaching', 'study' ],
 				'examples' => [ 'Tutorial', 'Course content', 'Learning guide' ],
 			],
-			self::TYPE_HEALTH => [
+			self::TYPE_HEALTH     => [
 				'label'    => 'Health/Medical',
 				'context'  => 'Health articles, medical information, and wellness content',
 				'keywords' => [ 'health', 'medical', 'wellness', 'fitness', 'treatment', 'care' ],
@@ -79,19 +79,19 @@ class Content_Type_Data {
 				'keywords' => [ 'technology', 'tech', 'software', 'hardware', 'digital', 'innovation' ],
 				'examples' => [ 'Tech review', 'Software tutorial', 'Technology news' ],
 			],
-			self::TYPE_FOOD => [
+			self::TYPE_FOOD       => [
 				'label'    => 'Food/Recipe',
 				'context'  => 'Recipe content, food articles, cooking guides, and culinary content',
 				'keywords' => [ 'food', 'recipe', 'cooking', 'culinary', 'dish', 'meal' ],
 				'examples' => [ 'Recipe', 'Cooking guide', 'Food review' ],
 			],
-			self::TYPE_TRAVEL => [
+			self::TYPE_TRAVEL     => [
 				'label'    => 'Travel',
 				'context'  => 'Travel guides, destination content, trip planning, and travel experiences',
 				'keywords' => [ 'travel', 'destination', 'trip', 'vacation', 'tour', 'journey' ],
 				'examples' => [ 'Travel guide', 'Destination review', 'Trip planning' ],
 			],
-			self::TYPE_FASHION => [
+			self::TYPE_FASHION    => [
 				'label'    => 'Fashion',
 				'context'  => 'Fashion articles, style guides, trends, and fashion industry content',
 				'keywords' => [ 'fashion', 'style', 'trend', 'clothing', 'apparel', 'design' ],

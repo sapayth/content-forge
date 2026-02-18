@@ -134,7 +134,7 @@ abstract class AI_Provider_Base {
 		$body        = wp_remote_retrieve_body( $response );
 
 		if ( $status_code < 200 || $status_code >= 300 ) {
-			$error_data = json_decode( $body, true );
+			$error_data    = json_decode( $body, true );
 			$error_message = $error_data['error']['message'] ?? __( 'API request failed', 'content-forge' );
 
 			return new WP_Error(
@@ -194,7 +194,7 @@ abstract class AI_Provider_Base {
 		// Remove markdown code block wrappers (```json ... ``` or ``` ... ```)
 		$content = preg_replace( '/^```(?:json)?\s*\n?/m', '', $content );
 		$content = preg_replace( '/\n?```\s*$/m', '', $content );
-		
+
 		return trim( $content );
 	}
 
@@ -209,7 +209,7 @@ abstract class AI_Provider_Base {
 	protected function convert_literal_newlines( string $content ) {
 		// Convert literal \n to actual newlines
 		$content = str_replace( '\\n', "\n", $content );
-		
+
 		return $content;
 	}
 

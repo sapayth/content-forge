@@ -120,15 +120,15 @@ class AI_Content_Generator {
          * @param string $model         Model slug.
          */
         $provider_slug = method_exists( $this->provider, 'get_provider_slug' ) ? $this->provider->get_provider_slug() : '';
-        $model_slug = $this->get_model();
+        $model_slug    = $this->get_model();
         do_action( 'cforge_ai_before_generation', $content_type, $custom_prompt, $provider_slug, $model_slug );
 
 		$prompt = $this->build_prompt( $content_type, $custom_prompt );
 
 		$params = [
-			'prompt'      => $prompt,
+			'prompt'       => $prompt,
 			'content_type' => $content_type,
-			'editor_type' => $this->editor_type,
+			'editor_type'  => $this->editor_type,
 		];
 
 		$response = $this->provider->generate( $params );
@@ -213,8 +213,8 @@ class AI_Content_Generator {
 	 * @return string Generated prompt.
 	 */
 	protected function build_prompt( string $content_type, string $custom_prompt = '' ) {
-		$type_label   = Content_Type_Data::get_type_label( $content_type );
-		$type_context = Content_Type_Data::get_type_context( $content_type );
+		$type_label    = Content_Type_Data::get_type_label( $content_type );
+		$type_context  = Content_Type_Data::get_type_context( $content_type );
 		$type_keywords = Content_Type_Data::get_type_keywords( $content_type );
 
 		$prompt = sprintf(
@@ -242,8 +242,8 @@ class AI_Content_Generator {
 				"- Headings: <!-- wp:heading {\"level\":2} -->\n<h2>Heading text</h2>\n<!-- /wp:heading -->\n" .
 				"- Lists: <!-- wp:list -->\n<ul><li>Item</li></ul>\n<!-- /wp:list -->\n" .
 				"- Blockquotes: <!-- wp:quote -->\n<blockquote><p>Quote text</p></blockquote>\n<!-- /wp:quote -->\n\n" .
-				"Every content element must be wrapped in block comment markers. " .
-				"Separate blocks with blank lines. Use proper block grammar format throughout.";
+				'Every content element must be wrapped in block comment markers. ' .
+				'Separate blocks with blank lines. Use proper block grammar format throughout.';
 		} else {
 			$editor_instruction = "Classic HTML Editor format.\n\n" .
 				"IMPORTANT: Format the content using standard HTML tags without block comment markers.\n" .
@@ -252,12 +252,12 @@ class AI_Content_Generator {
 				"- Headings: <h1>, <h2>, <h3>, etc.\n" .
 				"- Lists: <ul><li>Item</li></ul> or <ol><li>Item</li></ol>\n" .
 				"- Blockquotes: <blockquote><p>Quote text</p></blockquote>\n\n" .
-				"Do NOT use WordPress block comment markers (<!-- wp: -->). " .
-				"Use clean, standard HTML formatting throughout.";
+				'Do NOT use WordPress block comment markers (<!-- wp: -->). ' .
+				'Use clean, standard HTML formatting throughout.';
 		}
 
 		$prompt .= "\n\nFormat the response as JSON with 'title' and 'content' keys.\n" .
-				   "Content Format: {$editor_instruction}";
+					"Content Format: {$editor_instruction}";
 
 		/**
 		 * Filter AI generation prompt.
@@ -305,7 +305,7 @@ class AI_Content_Generator {
 		}
 
 		// Convert HTML to block format.
-		$blocks = [];
+		$blocks     = [];
 		$paragraphs = preg_split( '/\n\s*\n/', trim( $content ) );
 
 		foreach ( $paragraphs as $para ) {
@@ -317,16 +317,16 @@ class AI_Content_Generator {
 
 			// Check if it's a heading.
 			if ( preg_match( '/^<h([1-6])>(.*?)<\/h[1-6]>$/', $para, $matches ) ) {
-				$level = $matches[1];
-				$text  = $matches[2];
+				$level    = $matches[1];
+				$text     = $matches[2];
 				$blocks[] = "<!-- wp:heading {\"level\":{$level}} -->\n<h{$level}>{$text}</h{$level}>\n<!-- /wp:heading -->";
 			} elseif ( preg_match( '/^<h([1-6])>(.*?)<\/h[1-6]>/', $para, $matches ) ) {
-				$level = $matches[1];
-				$text  = strip_tags( $para );
+				$level    = $matches[1];
+				$text     = strip_tags( $para );
 				$blocks[] = "<!-- wp:heading {\"level\":{$level}} -->\n<h{$level}>{$text}</h{$level}>\n<!-- /wp:heading -->";
 			} else {
 				// Regular paragraph.
-				$text = wp_strip_all_tags( $para );
+				$text     = wp_strip_all_tags( $para );
 				$blocks[] = "<!-- wp:paragraph -->\n<p>{$text}</p>\n<!-- /wp:paragraph -->";
 			}
 		}
@@ -351,7 +351,7 @@ class AI_Content_Generator {
 
 		// Ensure proper HTML formatting.
 		$paragraphs = preg_split( '/\n\s*\n/', trim( $content ) );
-		$formatted = [];
+		$formatted  = [];
 
 		foreach ( $paragraphs as $para ) {
 			$para = trim( $para );

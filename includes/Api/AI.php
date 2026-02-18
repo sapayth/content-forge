@@ -342,11 +342,9 @@ class AI extends CForge_REST_Controller {
 		$models = AI_Settings_Manager::get_models( $provider );
 
 		// More permissive validation for Google models
-		if ( $provider === 'google' ) {
+		if ( AI_Settings_Manager::PROVIDER_GOOGLE === $provider ) {
 			// Allow any model that starts with 'gemini-' for Google provider
-			if ( strpos( $model, 'gemini-' ) === 0 ) {
-				// Model is valid, continue
-			} elseif ( ! isset( $models[ $model ] ) ) {
+			if ( ! isset( $models[ $model ] ) ) {
 				return new \WP_REST_Response(
 					[
 						'success' => false,
@@ -382,18 +380,18 @@ class AI extends CForge_REST_Controller {
 		}
 
 		// Determine error code.
-		$error_code = 'connection_failed';
+		$error_code    = 'connection_failed';
 		$error_message = $result['message'];
 
 		// Try to parse error for better messages.
 		if ( strpos( $error_message, 'Invalid' ) !== false || strpos( $error_message, 'authentication' ) !== false ) {
-			$error_code = 'invalid_api_key';
+			$error_code    = 'invalid_api_key';
 			$error_message = __( 'Invalid API key. Please verify your API key and try again.', 'content-forge' );
 		} elseif ( strpos( $error_message, 'rate limit' ) !== false || strpos( $error_message, 'quota' ) !== false ) {
-			$error_code = 'rate_limit';
+			$error_code    = 'rate_limit';
 			$error_message = __( 'Rate limit exceeded. Please try again later.', 'content-forge' );
 		} elseif ( strpos( $error_message, 'network' ) !== false || strpos( $error_message, 'connection' ) !== false ) {
-			$error_code = 'network_error';
+			$error_code    = 'network_error';
 			$error_message = __( 'Connection failed. Please check your internet connection and try again.', 'content-forge' );
 		}
 
@@ -416,13 +414,13 @@ class AI extends CForge_REST_Controller {
 	 * @return \WP_REST_Response
 	 */
 	public function get_api_key_status( $request ) {
-		$provider = $request->get_param( 'provider' );
+		$provider   = $request->get_param( 'provider' );
 		$masked_key = AI_Settings_Manager::get_masked_api_key( $provider );
 
 		return new \WP_REST_Response(
 			[
-				'has_key'   => false !== $masked_key,
-				'masked_key' => $masked_key ?: '',
+				'has_key'    => false !== $masked_key,
+				'masked_key' => ! empty( $masked_key ) ? $masked_key : '',
 			],
 			200
 		);
@@ -438,7 +436,7 @@ class AI extends CForge_REST_Controller {
 	 */
 	public function get_stored_model( $request ) {
 		$provider = $request->get_param( 'provider' );
-		$model = AI_Settings_Manager::get_stored_model( $provider );
+		$model    = AI_Settings_Manager::get_stored_model( $provider );
 
 		return new \WP_REST_Response(
 			[
@@ -494,16 +492,16 @@ class AI extends CForge_REST_Controller {
 		$result    = $generator->generate( $content_type, $custom_prompt );
 
 		if ( is_wp_error( $result ) ) {
-			$error_code = $result->get_error_code();
+			$error_code    = $result->get_error_code();
 			$error_message = $result->get_error_message();
 
 			// Map error codes to user-friendly messages.
 			if ( 'api_error' === $error_code ) {
 				if ( strpos( $error_message, 'rate limit' ) !== false || strpos( $error_message, 'quota' ) !== false ) {
-					$error_code = 'rate_limit';
+					$error_code    = 'rate_limit';
 					$error_message = __( 'Rate limit exceeded. Please try again later.', 'content-forge' );
 				} elseif ( strpos( $error_message, 'Invalid' ) !== false || strpos( $error_message, 'authentication' ) !== false ) {
-					$error_code = 'invalid_api_key';
+					$error_code    = 'invalid_api_key';
 					$error_message = __( 'Invalid API key. Please verify your API key and try again.', 'content-forge' );
 				}
 			}
@@ -520,9 +518,9 @@ class AI extends CForge_REST_Controller {
 
 		return new \WP_REST_Response(
 			[
-				'success' => true,
-				'title'   => $result['title'] ?? '',
-				'content' => $result['content'] ?? '',
+				'success'  => true,
+				'title'    => $result['title'] ?? '',
+				'content'  => $result['content'] ?? '',
 				'provider' => $provider,
 				'model'    => $model,
 			],

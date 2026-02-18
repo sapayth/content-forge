@@ -88,20 +88,23 @@ class AI_Provider_Google extends AI_Provider_Base {
 	 */
 	public function parse_response( array $response ) {
 		if ( ! isset( $response['candidates'][0]['content']['parts'][0]['text'] ) ) {
-			return [ 'title' => '', 'content' => '' ];
+			return [
+				'title'   => '',
+				'content' => '',
+			];
 		}
 
 		$content = $response['candidates'][0]['content']['parts'][0]['text'];
-		
+
 		// Clean markdown code blocks if present
 		$content = $this->clean_json_content( $content );
-		
+
 		$parsed = json_decode( $content, true );
 
 		if ( json_last_error() === JSON_ERROR_NONE && isset( $parsed['title'] ) && isset( $parsed['content'] ) ) {
 			// Convert literal newlines to actual newlines in content
 			$parsed['content'] = $this->convert_literal_newlines( $parsed['content'] );
-			
+
 			return [
 				'title'   => $parsed['title'],
 				'content' => $parsed['content'],
@@ -126,7 +129,6 @@ class AI_Provider_Google extends AI_Provider_Base {
 		$endpoint = $this->get_api_endpoint();
 		$headers  = $this->get_request_headers();
 
-		
 		/**
 		 * Filter the request payload before sending to provider API.
 		 *
@@ -156,7 +158,7 @@ class AI_Provider_Google extends AI_Provider_Base {
 		$body        = wp_remote_retrieve_body( $response );
 
 		if ( $status_code < 200 || $status_code >= 300 ) {
-			$error_data = json_decode( $body, true );
+			$error_data    = json_decode( $body, true );
 			$error_message = $error_data['error']['message'] ?? __( 'API request failed', 'content-forge' );
 
 			return new WP_Error(
@@ -237,7 +239,7 @@ class AI_Provider_Google extends AI_Provider_Base {
 		$response_code = wp_remote_retrieve_response_code( $response );
 		$response_body = wp_remote_retrieve_body( $response );
 
-		if ( $response_code === 200 ) {
+		if ( 200 === $response_code ) {
 			// Try to parse the response to verify it's valid
 			$response_data = json_decode( $response_body, true );
 
@@ -246,6 +248,7 @@ class AI_Provider_Google extends AI_Provider_Base {
 				return [
 					'success' => true,
 					'message' => sprintf(
+						// translators: %d is the number of available models.
 						__( 'Connection successful! Found %d available models.', 'content-forge' ),
 						$models_count
 					),
@@ -258,7 +261,7 @@ class AI_Provider_Google extends AI_Provider_Base {
 			}
 		} else {
 			// Try to extract a meaningful error message
-			$error_data = json_decode( $response_body, true );
+			$error_data    = json_decode( $response_body, true );
 			$error_message = __( 'Connection failed. Please check your API key and try again.', 'content-forge' );
 
 			if ( isset( $error_data['error']['message'] ) && is_string( $error_data['error']['message'] ) ) {

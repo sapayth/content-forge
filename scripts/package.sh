@@ -28,7 +28,10 @@ cp composer.json "$RELEASE_DIR/"
 
 # Plugin directories
 cp -R includes "$RELEASE_DIR/"
+cp -R Lib "$RELEASE_DIR/"
 cp -R assets "$RELEASE_DIR/"
+cp -R vendor "$RELEASE_DIR/"
+cp -R languages "$RELEASE_DIR/"
 cp -R src "$RELEASE_DIR/"
 
 if [ -d "languages" ]; then

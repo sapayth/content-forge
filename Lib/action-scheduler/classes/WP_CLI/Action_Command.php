@@ -349,5 +349,4 @@ class Action_Command extends \WP_CLI_Command {
 		$command = new Action\Run_Command( $args, $assoc_args );
 		$command->execute();
 	}
-
 }

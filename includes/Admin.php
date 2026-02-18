@@ -52,6 +52,14 @@ class Admin {
         );
         add_submenu_page(
             $parent_slug,
+            __( 'Custom Post Types', 'content-forge' ),
+            __( 'Custom Post Types', 'content-forge' ),
+            $capability,
+            'cforge-cpt',
+            [ __CLASS__, 'render_cpt_page' ]
+        );
+        add_submenu_page(
+            $parent_slug,
             __( 'Comments', 'content-forge' ),
             __( 'Comments', 'content-forge' ),
             $capability,
@@ -110,6 +118,13 @@ class Admin {
      */
     public static function render_taxonomies_page() {
         echo '<div id="cforge-taxonomies-app" style="margin-left: -20px"></div>';
+    }
+
+    /**
+     * Render the Custom Post Types React app root div.
+     */
+    public static function render_cpt_page() {
+        echo '<div id="cforge-cpt-app" style="margin-left: -20px"></div>';
     }
 
     /**
@@ -226,7 +241,24 @@ class Admin {
                     ),
                 ],
             ],
-            'content-forge_page_cforge-settings'      => [
+            'content-forge_page_cforge-cpt'        => [
+                'script_handle' => 'cforge-cpt-app',
+                'script_file'   => 'cpt.js',
+                'style_handle'  => 'cforge-cpt-style',
+                'style_file'    => 'cpt.css',
+                'localize_data' => [
+                    'apiUrl'             => esc_url_raw( rest_url( 'cforge/v1/' ) ),
+                    'rest_nonce'         => wp_create_nonce( 'wp_rest' ),
+                    'ajax_url'           => admin_url( 'admin-ajax.php' ),
+                    'ajax_nonce'         => wp_create_nonce( 'cforge_telemetry' ),
+                    'telemetry_enabled'  => Telemetry_Manager::is_tracking_allowed(),
+                    'pluginVersion'      => CFORGE_VERSION,
+                    'post_types'         => self::get_cpt_page_post_types(),
+                    'woocommerce_active' => class_exists( 'WooCommerce', false ),
+                    'wedocs_active'      => function_exists( 'wedocs' ),
+                ],
+            ],
+            'content-forge_page_cforge-settings'   => [
                 'script_handle' => 'cforge-settings-app',
                 'script_file'   => 'settings.js',
                 'style_handle'  => 'cforge-settings-style',
@@ -244,6 +276,34 @@ class Admin {
         if ( isset( $page_configs[ $hook ] ) ) {
             self::enqueue_page_assets( $page_configs[ $hook ] );
         }
+    }
+
+    /**
+     * Get post types available for the Custom Post Types admin page.
+     * Excludes post, page, and attachment so only custom post types appear. Filterable via cforge_cpt_page_post_types.
+     *
+     * @return array Array of arrays with 'name' and 'label' keys.
+     */
+    public static function get_cpt_page_post_types() {
+        $post_types = get_post_types(
+            [
+				'public'  => true,
+				'show_ui' => true,
+			],
+			'objects'
+        );
+        $excluded   = [ 'post', 'page', 'attachment' ];
+        $list       = [];
+        foreach ( $post_types as $name => $obj ) {
+            if ( in_array( $name, $excluded, true ) ) {
+                continue;
+            }
+            $list[] = [
+                'name'  => $obj->name,
+                'label' => $obj->labels->singular_name ? $obj->labels->singular_name : $obj->label,
+            ];
+        }
+        return apply_filters( 'cforge_cpt_page_post_types', $list );
     }
 
     /**

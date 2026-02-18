@@ -183,6 +183,5 @@ if ( ! class_exists( 'WP_Async_Request' ) ) {
 		 * during the async request.
 		 */
 		abstract protected function handle();
-
 	}
 }

@@ -231,7 +231,6 @@ export default function AIGenerateTab({ post, setPost, onSuccess }) {
                 }
             }
         } catch (error) {
-            console.error('Error polling progress:', error);
             setNotice({
                 message: __('Error checking generation status', 'content-forge'),
                 status: 'error',

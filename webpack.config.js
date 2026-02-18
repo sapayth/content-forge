@@ -7,6 +7,7 @@ module.exports = (env = {}) => {
   // let outputFilename = 'admin-app.js';
   const entry = {
     pagesPosts: './src/js/pages-posts.jsx',
+    cpt: './src/js/cpt.jsx',
     users: './src/js/users.jsx',
     comments: './src/js/comments.jsx',
     settings: './src/js/settings.jsx',

@@ -25,11 +25,11 @@ class Api {
 	 */
 	public function __construct()
 	{
-		$this->container['post']     = new Post();
-		$this->container['comment']  = new Comment();
-		$this->container['user']     = new User();
-		$this->container['taxonomy'] = new Taxonomy();
-		$this->container['ai']       = new AI();
+		$this->container['post']              = new Post();
+		$this->container['comment']           = new Comment();
+		$this->container['user']              = new User();
+		$this->container['taxonomy']          = new Taxonomy();
+		$this->container['ai']                = new AI();
 		$this->container['generation_status'] = new Generation_Status();
 
 		add_action( 'rest_api_init', [ $this, 'init_api' ] );

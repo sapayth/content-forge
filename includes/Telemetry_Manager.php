@@ -318,9 +318,9 @@ class Telemetry_Manager {
         $opt_in_url  = wp_nonce_url( add_query_arg( TelemetryConfig::getPrefix() . 'tracking_opt_in', 'true' ), '_wpnonce' );
         $opt_out_url = wp_nonce_url( add_query_arg( TelemetryConfig::getPrefix() . 'tracking_opt_out', 'true' ), '_wpnonce' );
         $plugin_name = TelemetryConfig::getTitle();
-        
+
         // Define what data we collect (comma-separated list)
-        $collected_data = [
+        $collected_data        = [
             __( 'WordPress version', 'content-forge' ),
             __( 'PHP version', 'content-forge' ),
             __( 'MySQL version', 'content-forge' ),
@@ -334,7 +334,7 @@ class Telemetry_Manager {
             __( 'Plugin name', 'content-forge' ),
         ];
         $collected_data_string = implode( ', ', $collected_data );
-        
+
         $notice_text = sprintf(
             // Translators: %1$s is the plugin name, %2$s is the "what we collect" clickable text.
             __( 'Want to help make %1$s even more awesome? Allow %1$s to collect diagnostic data and usage information. (%2$s)', 'content-forge' ),

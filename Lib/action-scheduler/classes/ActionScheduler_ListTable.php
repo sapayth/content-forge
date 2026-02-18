@@ -237,7 +237,7 @@ class ActionScheduler_ListTable extends ActionScheduler_Abstract_ListTable {
 				}
 				$output            .= sprintf( translate_nooped_plural( self::$time_periods[ $time_period_index ]['names'], $periods_in_interval, 'action-scheduler' ), $periods_in_interval );
 				$seconds_remaining -= $periods_in_interval * self::$time_periods[ $time_period_index ]['seconds'];
-				$periods_included++;
+				++$periods_included;
 			}
 		}
 

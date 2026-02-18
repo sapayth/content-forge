@@ -95,5 +95,9 @@ class Loader {
 		if ( is_admin() ) {
 			$this->container['admin'] = new Admin();
 		}
+
+		if ( class_exists( 'WooCommerce', false ) ) {
+			\ContentForge\Integration\WooCommerce_Product_Content::register();
+		}
 	}
 }

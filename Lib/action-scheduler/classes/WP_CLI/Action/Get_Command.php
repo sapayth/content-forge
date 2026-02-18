@@ -71,5 +71,4 @@ class Get_Command extends \ActionScheduler_WPCLI_Command {
 		$formatter = new \WP_CLI\Formatter( $this->assoc_args, $fields );
 		$formatter->display_item( $action_arr );
 	}
-
 }

@@ -954,7 +954,7 @@ AND `group_id` = %d
 
 		if ( ! empty( $hooks ) ) {
 			$placeholders = array_fill( 0, count( $hooks ), '%s' );
-			$where        .= ' AND hook IN (' . join( ', ', $placeholders ) . ')';
+			$where       .= ' AND hook IN (' . join( ', ', $placeholders ) . ')';
 			$where_params = array_merge( $where_params, array_values( $hooks ) );
 		}
 
@@ -1042,8 +1042,8 @@ AND `group_id` = %d
 		$is_mariadb     = ( false !== strpos( $db_server_info, 'MariaDB' ) );
 
 		if ( $is_mariadb &&
-		     '5.5.5' === $db_version &&
-		     PHP_VERSION_ID < 80016 // PHP 8.0.15 or older.
+			'5.5.5' === $db_version &&
+			PHP_VERSION_ID < 80016 // PHP 8.0.15 or older.
 		) {
 			/*
 			 * Account for MariaDB version being prefixed with '5.5.5-' on older PHP versions.

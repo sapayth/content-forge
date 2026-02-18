@@ -124,5 +124,4 @@ class Scheduler {
 
 		return new Runner( $config );
 	}
-
 }

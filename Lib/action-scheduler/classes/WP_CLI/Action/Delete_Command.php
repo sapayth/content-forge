@@ -61,7 +61,7 @@ class Delete_Command extends \ActionScheduler_WPCLI_Command {
 			try {
 				$store->delete_action( $action_id );
 			} catch ( \Exception $e ) {
-				$this->action_counts['failed']++;
+				++$this->action_counts['failed'];
 				\WP_CLI::warning( $e->getMessage() );
 			}
 
@@ -101,8 +101,7 @@ class Delete_Command extends \ActionScheduler_WPCLI_Command {
 			return;
 		}
 
-		$this->action_counts['deleted']++;
+		++$this->action_counts['deleted'];
 		\WP_CLI::debug( sprintf( 'Action %d was deleted.', $action_id ) );
 	}
-
 }

@@ -81,7 +81,7 @@ class Generation_Status extends CForge_REST_Controller {
 							'enum'              => [ 'all', 'processing', 'completed', 'failed' ],
 							'description'       => __( 'Filter batches by status', 'content-forge' ),
 						],
-						'limit' => [
+						'limit'  => [
 							'required'          => false,
 							'sanitize_callback' => 'absint',
 							'default'           => 10,
@@ -133,7 +133,7 @@ class Generation_Status extends CForge_REST_Controller {
 		global $wpdb;
 
 		$status_filter = $request->get_param( 'status' );
-		$limit = min( $request->get_param( 'limit' ), 50 ); // Max 50
+		$limit         = min( $request->get_param( 'limit' ), 50 ); // Max 50
 
 		// Get all batch options
 		$pattern = AI_Scheduled_Generator::BATCH_OPTION_PREFIX . '%';
@@ -160,7 +160,7 @@ class Generation_Status extends CForge_REST_Controller {
 			$batch_id = str_replace( AI_Scheduled_Generator::BATCH_OPTION_PREFIX, '', $option->option_name );
 
 			// Filter by status if specified
-			if ( $status_filter !== 'all' && $batch_data['status'] !== $status_filter ) {
+			if ( 'all' !== $status_filter && $batch_data['status'] !== $status_filter ) {
 				continue;
 			}
 
@@ -171,15 +171,15 @@ class Generation_Status extends CForge_REST_Controller {
 			}
 
 			$batches[] = [
-				'batch_id'          => $batch_id,
-				'total'             => $batch_data['total'] ?? 0,
-				'completed'         => $batch_data['completed'] ?? 0,
-				'pending'           => $batch_data['pending'] ?? 0,
-				'progress_percentage'=> $progress,
-				'status'            => $batch_data['status'] ?? 'unknown',
-				'created_at'        => $batch_data['created_at'] ?? 0,
-				'completed_at'      => $batch_data['completed_at'] ?? null,
-				'error_count'       => isset( $batch_data['errors'] ) ? count( $batch_data['errors'] ) : 0,
+				'batch_id'            => $batch_id,
+				'total'               => $batch_data['total'] ?? 0,
+				'completed'           => $batch_data['completed'] ?? 0,
+				'pending'             => $batch_data['pending'] ?? 0,
+				'progress_percentage' => $progress,
+				'status'              => $batch_data['status'] ?? 'unknown',
+				'created_at'          => $batch_data['created_at'] ?? 0,
+				'completed_at'        => $batch_data['completed_at'] ?? null,
+				'error_count'         => isset( $batch_data['errors'] ) ? count( $batch_data['errors'] ) : 0,
 			];
 		}
 

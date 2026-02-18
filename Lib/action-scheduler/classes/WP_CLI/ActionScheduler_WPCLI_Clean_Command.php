@@ -63,7 +63,7 @@ class ActionScheduler_WPCLI_Clean_Command extends WP_CLI_Command {
 					break;
 				}
 				$actions_deleted += $deleted;
-				$batches_completed++;
+				++$batches_completed;
 				$this->print_success( $deleted );
 			}
 		} catch ( Exception $e ) {

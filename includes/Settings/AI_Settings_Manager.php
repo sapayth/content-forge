@@ -28,10 +28,10 @@ class AI_Settings_Manager {
 	const OPTION_MODEL_SUFFIX = '_model';
 
 	// Default values.
-	const DEFAULT_PROVIDER          = 'openai';
-	const DEFAULT_MODEL_OPENAI      = 'gpt-4';
-	const DEFAULT_MODEL_ANTHROPIC   = 'claude-3-opus-20240229';
-	const DEFAULT_MODEL_GOOGLE      = 'gemini-2.5-flash';
+	const DEFAULT_PROVIDER        = 'openai';
+	const DEFAULT_MODEL_OPENAI    = 'gpt-4';
+	const DEFAULT_MODEL_ANTHROPIC = 'claude-3-opus-20240229';
+	const DEFAULT_MODEL_GOOGLE    = 'gemini-2.5-flash';
 
 	/**
 	 * Get available AI providers.
@@ -73,68 +73,68 @@ class AI_Settings_Manager {
 			case self::PROVIDER_OPENAI:
 				$models = [
 					// Latest models.
-					'gpt-4o'         => 'GPT-4o',
-					'gpt-4o-mini'    => 'GPT-4o Mini',
-					'gpt-4-turbo'    => 'GPT-4 Turbo',
-					'gpt-4'          => 'GPT-4',
-					'gpt-3.5-turbo'  => 'GPT-3.5 Turbo',
+					'gpt-4o'        => 'GPT-4o',
+					'gpt-4o-mini'   => 'GPT-4o Mini',
+					'gpt-4-turbo'   => 'GPT-4 Turbo',
+					'gpt-4'         => 'GPT-4',
+					'gpt-3.5-turbo' => 'GPT-3.5 Turbo',
 				];
 				break;
 
 			case self::PROVIDER_ANTHROPIC:
 				$models = [
 					// Latest models.
-					'claude-opus-4-5-20251101'      => 'Claude Opus 4.5',
-					'claude-sonnet-4-5-20250929'    => 'Claude Sonnet 4.5',
-					'claude-haiku-4-5-20251001'     => 'Claude Haiku 4.5',
+					'claude-opus-4-5-20251101'   => 'Claude Opus 4.5',
+					'claude-sonnet-4-5-20250929' => 'Claude Sonnet 4.5',
+					'claude-haiku-4-5-20251001'  => 'Claude Haiku 4.5',
 					// Legacy models.
-					'claude-opus-4-1-20250805'      => 'Claude Opus 4.1',
-					'claude-sonnet-4-20250514'      => 'Claude Sonnet 4',
-					'claude-opus-4-20250514'        => 'Claude Opus 4',
-					'claude-3-7-sonnet-20250219'    => 'Claude Sonnet 3.7',
-					'claude-3-5-haiku-20241022'     => 'Claude Haiku 3.5',
-					'claude-3-opus-20240229'       => 'Claude 3 Opus',
-					'claude-3-sonnet-20240229'     => 'Claude 3 Sonnet',
-					'claude-3-haiku-20240307'      => 'Claude 3 Haiku',
+					'claude-opus-4-1-20250805'   => 'Claude Opus 4.1',
+					'claude-sonnet-4-20250514'   => 'Claude Sonnet 4',
+					'claude-opus-4-20250514'     => 'Claude Opus 4',
+					'claude-3-7-sonnet-20250219' => 'Claude Sonnet 3.7',
+					'claude-3-5-haiku-20241022'  => 'Claude Haiku 3.5',
+					'claude-3-opus-20240229'     => 'Claude 3 Opus',
+					'claude-3-sonnet-20240229'   => 'Claude 3 Sonnet',
+					'claude-3-haiku-20240307'    => 'Claude 3 Haiku',
 				];
 				break;
 
 			case self::PROVIDER_GOOGLE:
 				$models = [
 					// Gemini 3 models (latest)
-					'gemini-3-pro-preview'         => 'Gemini 3 Pro Preview',
-					'gemini-3-flash-preview'       => 'Gemini 3 Flash Preview',
+					'gemini-3-pro-preview'                => 'Gemini 3 Pro Preview',
+					'gemini-3-flash-preview'              => 'Gemini 3 Flash Preview',
 
 					// Gemini 2.5 models
-					'gemini-2.5-pro'               => 'Gemini 2.5 Pro',
-					'gemini-2.5-flash'             => 'Gemini 2.5 Flash',
-					'gemini-2.5-flash-lite'        => 'Gemini 2.5 Flash-Lite',
-					'gemini-2.5-flash-preview-09-2025' => 'Gemini 2.5 Flash Preview Sep 2025',
+					'gemini-2.5-pro'                      => 'Gemini 2.5 Pro',
+					'gemini-2.5-flash'                    => 'Gemini 2.5 Flash',
+					'gemini-2.5-flash-lite'               => 'Gemini 2.5 Flash-Lite',
+					'gemini-2.5-flash-preview-09-2025'    => 'Gemini 2.5 Flash Preview Sep 2025',
 					'gemini-2.5-flash-lite-preview-09-2025' => 'Gemini 2.5 Flash-Lite Preview Sep 2025',
 
 					// Gemini 2.0 models
-					'gemini-2.0-flash-exp'         => 'Gemini 2.0 Flash Experimental',
-					'gemini-2.0-flash'             => 'Gemini 2.0 Flash',
-					'gemini-2.0-flash-001'         => 'Gemini 2.0 Flash 001',
-					'gemini-2.0-flash-lite-001'    => 'Gemini 2.0 Flash-Lite 001',
-					'gemini-2.0-flash-lite'        => 'Gemini 2.0 Flash-Lite',
+					'gemini-2.0-flash-exp'                => 'Gemini 2.0 Flash Experimental',
+					'gemini-2.0-flash'                    => 'Gemini 2.0 Flash',
+					'gemini-2.0-flash-001'                => 'Gemini 2.0 Flash 001',
+					'gemini-2.0-flash-lite-001'           => 'Gemini 2.0 Flash-Lite 001',
+					'gemini-2.0-flash-lite'               => 'Gemini 2.0 Flash-Lite',
 					'gemini-2.0-flash-lite-preview-02-05' => 'Gemini 2.0 Flash-Lite Preview 02-05',
-					'gemini-2.0-flash-lite-preview' => 'Gemini 2.0 Flash-Lite Preview',
+					'gemini-2.0-flash-lite-preview'       => 'Gemini 2.0 Flash-Lite Preview',
 
 					// Gemini Experimental models
-					'gemini-exp-1206'              => 'Gemini Experimental 1206',
+					'gemini-exp-1206'                     => 'Gemini Experimental 1206',
 
 					// Latest stable models
-					'gemini-flash-latest'          => 'Gemini Flash Latest',
-					'gemini-flash-lite-latest'     => 'Gemini Flash-Lite Latest',
-					'gemini-pro-latest'            => 'Gemini Pro Latest',
+					'gemini-flash-latest'                 => 'Gemini Flash Latest',
+					'gemini-flash-lite-latest'            => 'Gemini Flash-Lite Latest',
+					'gemini-pro-latest'                   => 'Gemini Pro Latest',
 
 					// Legacy models (for compatibility)
-					'gemini-1.5-pro'               => 'Gemini 1.5 Pro',
-					'gemini-1.5-flash'             => 'Gemini 1.5 Flash',
-					'gemini-1.5-flash-8b'          => 'Gemini 1.5 Flash (8B)',
-					'gemini-1.0-pro'               => 'Gemini 1.0 Pro',
-					'gemini-pro'                   => 'Gemini Pro (Legacy)',
+					'gemini-1.5-pro'                      => 'Gemini 1.5 Pro',
+					'gemini-1.5-flash'                    => 'Gemini 1.5 Flash',
+					'gemini-1.5-flash-8b'                 => 'Gemini 1.5 Flash (8B)',
+					'gemini-1.0-pro'                      => 'Gemini 1.0 Pro',
+					'gemini-pro'                          => 'Gemini Pro (Legacy)',
 				];
 				break;
 		}
@@ -159,7 +159,7 @@ class AI_Settings_Manager {
 	 * @return string Provider slug.
 	 */
 	public static function get_active_provider() {
-		$provider = get_option( self::OPTION_PROVIDER, self::DEFAULT_PROVIDER );
+		$provider  = get_option( self::OPTION_PROVIDER, self::DEFAULT_PROVIDER );
 		$providers = self::get_providers();
 
 		// Validate provider exists.
@@ -180,7 +180,7 @@ class AI_Settings_Manager {
 	 */
 	public static function get_stored_model( string $provider ) {
 		$option_name = self::OPTION_KEY_PREFIX . $provider . self::OPTION_MODEL_SUFFIX;
-		$model = get_option( $option_name );
+		$model       = get_option( $option_name );
 
 		// If no model stored, use default for provider.
 		if ( ! $model ) {
@@ -199,13 +199,14 @@ class AI_Settings_Manager {
 
 		if ( ! isset( $models[ $model ] ) ) {
 			// Special handling for Google provider - try to fix common typos
-			if ( $provider === self::PROVIDER_GOOGLE ) {
+			if ( self::PROVIDER_GOOGLE === $provider ) {
 				$fixed_model = $model;
 
 				// Fix missing '2.0' prefix for Gemini 2.0 models
 				if ( strpos( $model, 'gemini-20-' ) === 0 ) {
 					$fixed_model = str_replace( 'gemini-20-', 'gemini-2.0-', $model );
 				}
+				
 				// Fix other common typos if needed
 				elseif ( strpos( $model, 'gemini-25-' ) === 0 ) {
 					$fixed_model = str_replace( 'gemini-25-', 'gemini-2.5-', $model );
@@ -247,7 +248,7 @@ class AI_Settings_Manager {
 
 		// Validate model.
 		$models = self::get_models( $provider );
-		if ( $provider === self::PROVIDER_GOOGLE ) {
+		if ( self::PROVIDER_GOOGLE === $provider ) {
 			// Allow any model that starts with 'gemini-' for Google provider
 			if ( strpos( $model, 'gemini-' ) !== 0 && ! isset( $models[ $model ] ) ) {
 				return false;
@@ -282,7 +283,7 @@ class AI_Settings_Manager {
 	 * @return string|false Decrypted API key or false if not found.
 	 */
 	public static function get_api_key( string $provider ) {
-		$option_name = self::OPTION_KEY_PREFIX . $provider . self::OPTION_KEY_SUFFIX;
+		$option_name   = self::OPTION_KEY_PREFIX . $provider . self::OPTION_KEY_SUFFIX;
 		$encrypted_key = get_option( $option_name );
 
 		if ( ! $encrypted_key ) {
@@ -302,7 +303,7 @@ class AI_Settings_Manager {
 	 * @return bool True on success, false on failure.
 	 */
 	public static function save_api_key( string $provider, string $key ) {
-		$option_name = self::OPTION_KEY_PREFIX . $provider . self::OPTION_KEY_SUFFIX;
+		$option_name   = self::OPTION_KEY_PREFIX . $provider . self::OPTION_KEY_SUFFIX;
 		$encrypted_key = self::encrypt_key( $key );
 
 		return update_option( $option_name, $encrypted_key );
@@ -331,7 +332,7 @@ class AI_Settings_Manager {
 		$models = self::get_models( $provider );
 
 		// More permissive validation for Google models
-		if ( $provider === self::PROVIDER_GOOGLE ) {
+		if ( self::PROVIDER_GOOGLE === $provider ) {
 			// Allow any model that starts with 'gemini-' for Google provider
 			if ( strpos( $model, 'gemini-' ) !== 0 && ! isset( $models[ $model ] ) ) {
 				return false;
@@ -362,9 +363,9 @@ class AI_Settings_Manager {
 	public static function get_settings() {
 		$provider = self::get_active_provider();
 		return [
-			'provider'     => $provider,
-			'model'        => self::get_active_model(),
-			'api_key'      => self::get_api_key( $provider ),
+			'provider'      => $provider,
+			'model'         => self::get_active_model(),
+			'api_key'       => self::get_api_key( $provider ),
 			'is_configured' => self::is_configured(),
 		];
 	}
@@ -396,22 +397,22 @@ class AI_Settings_Manager {
 			return '';
 		}
 
-		$key = wp_salt( 'auth' );
-		$method = 'AES-256-CBC';
+		$key       = wp_salt( 'auth' );
+		$method    = 'AES-256-CBC';
 		$iv_length = openssl_cipher_iv_length( $method );
 
-		if ( $iv_length === false ) {
+		if ( false === $iv_length ) {
 			return '';
 		}
 
 		$iv = openssl_random_pseudo_bytes( $iv_length );
-		if ( $iv === false ) {
+		if ( false === $iv ) {
 			return '';
 		}
 
 		$encrypted = openssl_encrypt( $api_key, $method, $key, 0, $iv );
 
-		if ( $encrypted === false ) {
+		if ( false === $encrypted ) {
 			return '';
 		}
 
@@ -431,11 +432,11 @@ class AI_Settings_Manager {
 			return false;
 		}
 
-		$key = wp_salt( 'auth' );
+		$key    = wp_salt( 'auth' );
 		$method = 'AES-256-CBC';
 
 		$data = base64_decode( $encrypted_key );
-		if ( $data === false ) {
+		if ( false === $data ) {
 			return false;
 		}
 
@@ -448,7 +449,7 @@ class AI_Settings_Manager {
 
 		$decrypted = openssl_decrypt( $encrypted, $method, $key, 0, $iv );
 
-		if ( $decrypted === false ) {
+		if ( false === $decrypted ) {
 			return false;
 		}
 
@@ -486,8 +487,8 @@ class AI_Settings_Manager {
 			return str_repeat( '*', $total_display_length );
 		}
 
-		$first_chars = substr( $key, 0, 2 );
-		$last_chars = substr( $key, -2 );
+		$first_chars      = substr( $key, 0, 2 );
+		$last_chars       = substr( $key, -2 );
 		$middle_asterisks = str_repeat( '*', $total_display_length - 4 );
 
 		return $first_chars . $middle_asterisks . $last_chars;

@@ -63,7 +63,6 @@ class Config {
 	 * Config constructor.
 	 */
 	public function __construct() {
-
 	}
 
 	/**

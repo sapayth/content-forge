@@ -6,7 +6,6 @@ $vendorDir = dirname(__DIR__);
 $baseDir = dirname($vendorDir);
 
 return array(
-    'PHPCSStandards\\Composer\\Plugin\\Installers\\PHPCodeSniffer\\' => array($vendorDir . '/dealerdirect/phpcodesniffer-composer-installer/src'),
     'ContentForge\\' => array($baseDir . '/includes'),
     'BitApps\\WPTelemetry\\' => array($vendorDir . '/bitapps/wp-telemetry/src'),
 );

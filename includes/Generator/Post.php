@@ -42,9 +42,9 @@ class Post extends Generator {
             $editor_type = cforge_detect_editor_type( $post_type );
 
             // Check if AI generation is requested
-            $use_ai = isset( $args['use_ai'] ) && $args['use_ai'];
+            $use_ai       = isset( $args['use_ai'] ) && $args['use_ai'];
             $content_type = isset( $args['content_type'] ) ? sanitize_key( $args['content_type'] ) : 'general';
-            $ai_prompt = isset( $args['ai_prompt'] ) ? sanitize_textarea_field( $args['ai_prompt'] ) : '';
+            $ai_prompt    = isset( $args['ai_prompt'] ) ? sanitize_textarea_field( $args['ai_prompt'] ) : '';
 
             // Generate title and content
             if ( $use_ai && AI_Settings_Manager::is_configured() ) {
@@ -87,16 +87,26 @@ class Post extends Generator {
                     $content = $this->randomize_content( $post_type );
                 }
             } else {
-                // Regular generation
-                $title = isset( $args['post_title'] ) ? $args['post_title'] : $this->randomize_title();
+                // Regular generation (non-AI): allow filters to provide title, content, excerpt.
+                if ( isset( $args['post_title'] ) ) {
+                    $title = $args['post_title'];
+                } else {
+                    $filtered_title = apply_filters( 'cforge_generate_post_title', '', $post_type, $args );
+                    $title          = ( '' !== $filtered_title ) ? $filtered_title : $this->randomize_title();
+                }
 
-            // Generate or get content
-            if ( isset( $args['post_content'] ) ) {
-                // User provided content - format it based on editor type
-                $content = $this->format_content_for_editor( $args['post_content'], $editor_type );
-            } else {
-                // Generate content (will be formatted inside randomize_content)
-                $content = $this->randomize_content( $post_type );
+                if ( isset( $args['post_content'] ) ) {
+                    $content = $this->format_content_for_editor( $args['post_content'], $editor_type );
+                } else {
+                    $filtered_content = apply_filters( 'cforge_generate_post_content', '', $post_type, $args );
+                    if ( '' !== $filtered_content ) {
+                        $content = $this->format_content_for_editor(
+                            $filtered_content . "\n\n" . $this->get_attribution_text(),
+                            $editor_type
+                        );
+                    } else {
+                        $content = $this->randomize_content( $post_type );
+                    }
                 }
             }
 
@@ -124,7 +134,8 @@ class Post extends Generator {
             unset( $post_data['generate_excerpt'] );
 
             if ( $should_generate_excerpt && ( ! isset( $post_data['post_excerpt'] ) || empty( $post_data['post_excerpt'] ) ) ) {
-                $post_data['post_excerpt'] = $this->generate_excerpt( $post_data['post_content'] );
+                $filtered_excerpt          = apply_filters( 'cforge_generate_post_excerpt', '', $post_type, $args );
+                $post_data['post_excerpt'] = ( '' !== $filtered_excerpt ) ? $filtered_excerpt : $this->generate_excerpt( $post_data['post_content'] );
             } elseif ( ! $should_generate_excerpt ) {
                 // Explicitly set empty excerpt if generation is disabled
                 $post_data['post_excerpt'] = '';
@@ -134,7 +145,11 @@ class Post extends Generator {
 
             if ( ! is_wp_error( $post_id ) && $post_id ) {
                 $ids[] = $post_id;
-                $this->track_generated( $post_id, 'post' );
+                $this->track_generated( $post_id, $post_type );
+
+                if ( 'product' === $post_type && ! empty( $args['product_options'] ) && is_array( $args['product_options'] ) ) {
+                    \ContentForge\Integration\WooCommerce_Product::apply_product_options( $post_id, $args['product_options'] );
+                }
 
                 // Generate Featured Image if requested
                 if ( isset( $args['generate_image'] ) && $args['generate_image'] ) {
@@ -857,8 +872,8 @@ class Post extends Generator {
         $content .= "\n\n";
 
         // List items
-        $list_type  = wp_rand( 1, 2 ) === 1 ? 'ol' : 'ul';
-        $content   .= "<{$list_type}>\n";
+        $list_type = wp_rand( 1, 2 ) === 1 ? 'ol' : 'ul';
+        $content  .= "<{$list_type}>\n";
 
         for ( $i = 0; $i < $item_count; $i++ ) {
             $content .= '<li><strong>' . $this->get_list_item_title() . '</strong> - ';
@@ -1116,9 +1131,11 @@ class Post extends Generator {
     public function delete( array $object_ids ) {
         $deleted = 0;
         foreach ( $object_ids as $post_id ) {
+            $post      = get_post( $post_id );
+            $data_type = ( $post && isset( $post->post_type ) ) ? $post->post_type : 'post';
             if ( wp_delete_post( $post_id, true ) ) {
                 ++$deleted;
-                $this->untrack_generated( $post_id, 'post' );
+                $this->untrack_generated( $post_id, $data_type );
             }
         }
 

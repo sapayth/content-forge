@@ -78,30 +78,33 @@ class AI_Scheduled_Generator {
 
 		// Initialize batch tracking
 		$batch_data = [
-			'total'       => $total_jobs,
-			'completed'   => 0,
-			'pending'     => $total_jobs,
+			'total'         => $total_jobs,
+			'completed'     => 0,
+			'pending'       => $total_jobs,
 			'posts_created' => [],
-			'errors'      => [],
-			'status'      => 'processing',
-			'created_at'  => time(),
-			'user_id'     => get_current_user_id(),
+			'errors'        => [],
+			'status'        => 'processing',
+			'created_at'    => time(),
+			'user_id'       => get_current_user_id(),
 		];
 
 		update_option( self::BATCH_OPTION_PREFIX . $batch_id, $batch_data );
 
 		// Prepare arguments array
 		$action_args = [
-			'batch_id'     => $batch_id,
-			'current_index'=> 0,
-			'total_count'  => $total_jobs,
-			'post_type'    => $args['post_type'] ?? 'post',
-			'post_status'  => $args['post_status'] ?? 'draft',
-			'content_type' => $args['content_type'],
-			'ai_prompt'    => $args['ai_prompt'] ?? '',
-			'editor_type'  => $args['editor_type'] ?? 'block',
-			'user_id'      => get_current_user_id(),
+			'batch_id'      => $batch_id,
+			'current_index' => 0,
+			'total_count'   => $total_jobs,
+			'post_type'     => $args['post_type'] ?? 'post',
+			'post_status'   => $args['post_status'] ?? 'draft',
+			'content_type'  => $args['content_type'],
+			'ai_prompt'     => $args['ai_prompt'] ?? '',
+			'editor_type'   => $args['editor_type'] ?? 'block',
+			'user_id'       => get_current_user_id(),
 		];
+		if ( ! empty( $args['product_options'] ) && is_array( $args['product_options'] ) ) {
+			$action_args['product_options'] = $args['product_options'];
+		}
 
 		// Schedule ONLY the first action
 		$action_id = \as_schedule_single_action(
@@ -122,10 +125,11 @@ class AI_Scheduled_Generator {
 		}
 
 		return [
-			'batch_id'       => $batch_id,
-			'total_jobs'     => $total_jobs,
+			'batch_id'        => $batch_id,
+			'total_jobs'      => $total_jobs,
 			'first_action_id' => $action_id,
-			'message'        => sprintf(
+			'message'         => sprintf(
+				// translators: %d is the number of AI posts to generate.
 				__( 'Started generating %d AI posts...', 'content-forge' ),
 				$total_jobs
 			),
@@ -152,25 +156,26 @@ class AI_Scheduled_Generator {
 		}
 
 		// Check if all required keys exist
-		$required_keys = ['batch_id', 'current_index', 'total_count', 'post_type', 'post_status', 'content_type', 'ai_prompt', 'editor_type', 'user_id'];
+		$required_keys = [ 'batch_id', 'current_index', 'total_count', 'post_type', 'post_status', 'content_type', 'ai_prompt', 'editor_type', 'user_id' ];
 		foreach ( $required_keys as $key ) {
-			if ( ! isset( $actual_args[$key] ) ) {
+			if ( ! isset( $actual_args[ $key ] ) ) {
 				return;
 			}
 		}
 
 		// Extract arguments from the array passed by Action Scheduler
-		$batch_id      = $actual_args['batch_id'];
-		$current_index = $actual_args['current_index'];
-		$total_count   = $actual_args['total_count'];
-		$post_type     = $actual_args['post_type'];
-		$post_status   = $actual_args['post_status'];
-		$content_type  = $actual_args['content_type'];
-		$ai_prompt     = $actual_args['ai_prompt'];
-		$editor_type   = $actual_args['editor_type'];
-		$user_id       = $actual_args['user_id'];
+		$batch_id        = $actual_args['batch_id'];
+		$current_index   = $actual_args['current_index'];
+		$total_count     = $actual_args['total_count'];
+		$post_type       = $actual_args['post_type'];
+		$post_status     = $actual_args['post_status'];
+		$content_type    = $actual_args['content_type'];
+		$ai_prompt       = $actual_args['ai_prompt'];
+		$editor_type     = $actual_args['editor_type'];
+		$user_id         = $actual_args['user_id'];
+		$product_options = ! empty( $actual_args['product_options'] ) && is_array( $actual_args['product_options'] ) ? $actual_args['product_options'] : [];
 
-		return $this->handle_sequential_generation( $batch_id, $current_index, $total_count, $post_type, $post_status, $content_type, $ai_prompt, $editor_type, $user_id );
+		return $this->handle_sequential_generation( $batch_id, $current_index, $total_count, $post_type, $post_status, $content_type, $ai_prompt, $editor_type, $user_id, $product_options );
 	}
 
 	/**
@@ -185,10 +190,12 @@ class AI_Scheduled_Generator {
 	 * @param string $post_status  Post status.
 	 * @param string $content_type Content type.
 	 * @param string $ai_prompt    AI prompt.
-	 * @param string $editor_type  Editor type.
-	 * @param int    $user_id      User ID.
+	 * @param string $editor_type   Editor type.
+	 * @param int    $user_id       User ID.
+	 * @param array  $product_options Optional product options for WooCommerce products.
+	 * @throws Exception If AI generation fails.
 	 */
-	public function handle_sequential_generation( $batch_id, $current_index, $total_count, $post_type, $post_status, $content_type, $ai_prompt, $editor_type, $user_id ) {
+	public function handle_sequential_generation( $batch_id, $current_index, $total_count, $post_type, $post_status, $content_type, $ai_prompt, $editor_type, $user_id, $product_options = [] ) {
 
 		// Get batch tracking
 		$batch_data = get_option( self::BATCH_OPTION_PREFIX . $batch_id );
@@ -217,7 +224,7 @@ class AI_Scheduled_Generator {
 					$batch_data = maybe_unserialize( $batch_data );
 				}
 				if ( is_array( $batch_data ) ) {
-					$batch_data['status'] = 'failed';
+					$batch_data['status']    = 'failed';
 					$batch_data['failed_at'] = time();
 					update_option( self::BATCH_OPTION_PREFIX . $batch_id, $batch_data );
 				}
@@ -248,12 +255,15 @@ class AI_Scheduled_Generator {
 
 			// Create the post
 			$post_generator = new PostGenerator( $user_id );
-			$post_args = [
+			$post_args      = [
 				'post_type'    => $post_type,
 				'post_status'  => $post_status,
 				'post_title'   => $result['title'],
 				'post_content' => $result['content'],
 			];
+			if ( ! empty( $product_options ) ) {
+				$post_args['product_options'] = $product_options;
+			}
 
 			$post_ids = $post_generator->generate( 1, $post_args );
 
@@ -262,12 +272,12 @@ class AI_Scheduled_Generator {
 			}
 
 			// Update tracking with success
-			$batch_data['completed']++;
-			$batch_data['pending']--;
+			++$batch_data['completed'];
+			--$batch_data['pending'];
 			$batch_data['posts_created'][] = [
-				'index'   => $current_index,
-				'post_id' => $post_ids[0],
-				'title'   => $result['title'],
+				'index'      => $current_index,
+				'post_id'    => $post_ids[0],
+				'title'      => $result['title'],
 				'created_at' => time(),
 			];
 
@@ -280,7 +290,7 @@ class AI_Scheduled_Generator {
 		update_option( self::BATCH_OPTION_PREFIX . $batch_id, $batch_data );
 
 		// Schedule next action or mark as complete
-		$this->schedule_next_or_complete( $batch_id, $current_index, $total_count, $post_type, $post_status, $content_type, $ai_prompt, $editor_type, $user_id );
+		$this->schedule_next_or_complete( $batch_id, $current_index, $total_count, $post_type, $post_status, $content_type, $ai_prompt, $editor_type, $user_id, $product_options );
 	}
 
 	/**
@@ -288,32 +298,36 @@ class AI_Scheduled_Generator {
 	 *
 	 * @since 1.2.0
 	 *
-	 * @param string $batch_id      Batch ID.
-	 * @param int    $current_index Current item index.
-	 * @param int    $total_count   Total number of items.
-	 * @param string $post_type    Post type.
-	 * @param string $post_status  Post status.
-	 * @param string $content_type Content type.
-	 * @param string $ai_prompt    AI prompt.
-	 * @param string $editor_type  Editor type.
-	 * @param int    $user_id      User ID.
+	 * @param string $batch_id         Batch ID.
+	 * @param int    $current_index    Current item index.
+	 * @param int    $total_count      Total number of items.
+	 * @param string $post_type        Post type.
+	 * @param string $post_status      Post status.
+	 * @param string $content_type     Content type.
+	 * @param string $ai_prompt        AI prompt.
+	 * @param string $editor_type      Editor type.
+	 * @param int    $user_id          User ID.
+	 * @param array  $product_options  Optional product options for WooCommerce.
 	 */
-	protected function schedule_next_or_complete( $batch_id, $current_index, $total_count, $post_type, $post_status, $content_type, $ai_prompt, $editor_type, $user_id ) {
+	protected function schedule_next_or_complete( $batch_id, $current_index, $total_count, $post_type, $post_status, $content_type, $ai_prompt, $editor_type, $user_id, $product_options = [] ) {
 		$next_index = $current_index + 1;
 
 		if ( $next_index < $total_count ) {
 			// Prepare arguments for the next action
 			$action_args = [
-				'batch_id'     => $batch_id,
-				'current_index'=> $next_index,
-				'total_count'  => $total_count,
-				'post_type'    => $post_type,
-				'post_status'  => $post_status,
-				'content_type' => $content_type,
-				'ai_prompt'    => $ai_prompt,
-				'editor_type'  => $editor_type,
-				'user_id'      => $user_id,
+				'batch_id'      => $batch_id,
+				'current_index' => $next_index,
+				'total_count'   => $total_count,
+				'post_type'     => $post_type,
+				'post_status'   => $post_status,
+				'content_type'  => $content_type,
+				'ai_prompt'     => $ai_prompt,
+				'editor_type'   => $editor_type,
+				'user_id'       => $user_id,
 			];
+			if ( ! empty( $product_options ) ) {
+				$action_args['product_options'] = $product_options;
+			}
 
 			// Schedule the next action
 			\as_schedule_single_action(
@@ -363,8 +377,8 @@ class AI_Scheduled_Generator {
 			}
 			if ( is_array( $batch_data ) ) {
 				$batch_data['errors'][] = [
-					'index' => $index,
-					'error' => $error,
+					'index'     => $index,
+					'error'     => $error,
 					'timestamp' => time(),
 				];
 				update_option( self::BATCH_OPTION_PREFIX . $batch_id, $batch_data );
@@ -410,15 +424,15 @@ class AI_Scheduled_Generator {
 		}
 
 		return [
-			'batch_id'          => $batch_id,
-			'total'             => $batch_data['total'],
-			'completed'         => $batch_data['completed'],
-			'pending'           => $batch_data['pending'],
-			'progress_percentage'=> $progress,
-			'status'            => $batch_data['status'],
-			'posts_created'     => $batch_data['posts_created'],
-			'errors'            => $batch_data['errors'],
-			'created_at'        => $batch_data['created_at'],
+			'batch_id'            => $batch_id,
+			'total'               => $batch_data['total'],
+			'completed'           => $batch_data['completed'],
+			'pending'             => $batch_data['pending'],
+			'progress_percentage' => $progress,
+			'status'              => $batch_data['status'],
+			'posts_created'       => $batch_data['posts_created'],
+			'errors'              => $batch_data['errors'],
+			'created_at'          => $batch_data['created_at'],
 		];
 	}
 
