@@ -20,6 +20,17 @@ const WEDOCS_LEVEL_NAMES = [
 	{ key: 'deeper_nesting', label: __('Deeper Nesting', 'content-forge') },
 ];
 
+if (typeof window !== 'undefined') {
+	const _cptPostTypes = window.cforge?.post_types || [];
+	console.log('[ContentForge Custom Post Types]', {
+		page: 'Custom Post Types',
+		postTypes: _cptPostTypes,
+		postTypesCount: _cptPostTypes.length,
+		postTypeNames: _cptPostTypes.map((p) => p.name),
+		cforgeKeys: window.cforge ? Object.keys(window.cforge) : [],
+	});
+}
+
 function AddNewView({ onCancel, onSuccess }) {
 	const postTypes = window.cforge?.post_types || [];
 	const woocommerceActive = window.cforge?.woocommerce_active || false;
@@ -560,18 +571,18 @@ function CptApp() {
 		setLoading(true);
 		setError(null);
 
-		apiFetch({
-			path: `posts/list?page=${page}&per_page=${perPage}&exclude_post_types=post,page`,
-			method: 'GET',
-		})
+		const path = `posts/list?page=${page}&per_page=${perPage}&exclude_post_types=post,page`;
+		apiFetch({ path, method: 'GET' })
 			.then((res) => {
 				if (!isMounted) return;
+				console.log('[ContentForge CPT list]', { path, response: res, itemsCount: res?.items?.length, total: res?.total });
 				setItems(res.items || []);
 				setTotal(res.total || 0);
 				setLoading(false);
 			})
 			.catch((err) => {
 				if (!isMounted) return;
+				console.error('[ContentForge CPT list]', { path, error: err });
 				setError(err.message || __('Failed to load data', 'content-forge'));
 				setLoading(false);
 			});
@@ -589,11 +600,10 @@ function CptApp() {
 		setLoading(true);
 		setError(null);
 
-		apiFetch({
-			path: `posts/list?page=${pageToLoad}&per_page=${perPage}&exclude_post_types=post,page`,
-			method: 'GET',
-		})
+		const refreshPath = `posts/list?page=${pageToLoad}&per_page=${perPage}&exclude_post_types=post,page`;
+		apiFetch({ path: refreshPath, method: 'GET' })
 			.then((res) => {
+				console.log('[ContentForge CPT list refresh]', { path: refreshPath, response: res, itemsCount: res?.items?.length, total: res?.total });
 				setItems(res.items || []);
 				setTotal(res.total || 0);
 				if (targetPage !== null) {
@@ -602,6 +612,7 @@ function CptApp() {
 				setLoading(false);
 			})
 			.catch((err) => {
+				console.error('[ContentForge CPT list refresh]', { path: refreshPath, error: err });
 				setError(err.message || __('Failed to load data', 'content-forge'));
 				setLoading(false);
 			});

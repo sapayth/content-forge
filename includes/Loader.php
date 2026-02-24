@@ -99,5 +99,25 @@ class Loader {
 		if ( class_exists( 'WooCommerce', false ) ) {
 			\ContentForge\Integration\WooCommerce_Product_Content::register();
 		}
+
+		if ( post_type_exists( 'download' ) ) {
+			\ContentForge\Integration\EDD_Download_Content::register();
+		}
+
+		if ( post_type_exists( 'tribe_events' ) ) {
+			\ContentForge\Integration\TEC_Event_Content::register();
+		}
+
+		add_action( 'init', [ __CLASS__, 'register_wpuf_subscription_integration' ], 20 );
+	}
+
+	/**
+	 * Register WPUF subscription content filters on a late init so wpuf_subscription post type exists.
+	 */
+	public static function register_wpuf_subscription_integration() {
+		if ( ! post_type_exists( 'wpuf_subscription' ) ) {
+			return;
+		}
+		\ContentForge\Integration\WPUF_Subscription_Content::register();
 	}
 }

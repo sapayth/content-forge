@@ -110,10 +110,6 @@ class Post extends Generator {
                 }
             }
 
-            // Log data before saving post for debugging
-            $title_sample   = mb_substr( $title, 0, 100 );
-            $content_sample = mb_substr( $content, 0, 300 );
-
             $post_data = [
                 'post_title'   => $title,
                 'post_content' => $content,
@@ -149,6 +145,21 @@ class Post extends Generator {
 
                 if ( 'product' === $post_type && ! empty( $args['product_options'] ) && is_array( $args['product_options'] ) ) {
                     \ContentForge\Integration\WooCommerce_Product::apply_product_options( $post_id, $args['product_options'] );
+                }
+
+                if ( 'download' === $post_type ) {
+                    $download_options = isset( $args['download_options'] ) && is_array( $args['download_options'] ) ? $args['download_options'] : [];
+                    \ContentForge\Integration\EDD_Download::apply_download_defaults( $post_id, $download_options );
+                }
+
+                if ( 'tribe_events' === $post_type ) {
+                    $event_options = isset( $args['event_options'] ) && is_array( $args['event_options'] ) ? $args['event_options'] : [];
+                    \ContentForge\Integration\TEC_Event::apply_event_defaults( $post_id, $event_options );
+                }
+
+                if ( 'wpuf_subscription' === $post_type ) {
+                    $subscription_options = isset( $args['subscription_options'] ) && is_array( $args['subscription_options'] ) ? $args['subscription_options'] : [];
+                    \ContentForge\Integration\WPUF_Subscription::apply_subscription_defaults( $post_id, $subscription_options );
                 }
 
                 // Generate Featured Image if requested

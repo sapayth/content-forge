@@ -8,16 +8,27 @@
 
 /**
  * Get post types allowed for Content Forge generation (bulk create, list, delete).
+ * Supported: WeDocs (docs), WooCommerce (product), EDD (download),
+ * WP User Frontend (wpuf_subscription), The Events Calendar (tribe_events).
  *
  * @return array List of post type slugs.
  */
 function cforge_get_allowed_post_types() {
-	$default = [ 'post', 'page' ];
+	$default = [];
+	if ( function_exists( 'wedocs' ) ) {
+		$default[] = 'docs';
+	}
 	if ( class_exists( 'WooCommerce', false ) ) {
 		$default[] = 'product';
 	}
-	if ( function_exists( 'wedocs' ) ) {
-		$default[] = 'docs';
+	if ( post_type_exists( 'download' ) ) {
+		$default[] = 'download';
+	}
+	if ( post_type_exists( 'wpuf_subscription' ) ) {
+		$default[] = 'wpuf_subscription';
+	}
+	if ( post_type_exists( 'tribe_events' ) ) {
+		$default[] = 'tribe_events';
 	}
 	return apply_filters( 'cforge_allowed_post_types', $default );
 }

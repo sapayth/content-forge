@@ -274,28 +274,40 @@ class Admin {
             ],
         ];
         if ( isset( $page_configs[ $hook ] ) ) {
-            self::enqueue_page_assets( $page_configs[ $hook ] );
+            $config = $page_configs[ $hook ];
+            if ( defined( 'WP_DEBUG' ) && WP_DEBUG && defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
+                $log_context = [ 'hook' => $hook ];
+                if ( isset( $config['localize_data']['post_types'] ) ) {
+                    $log_context['post_types'] = $config['localize_data']['post_types'];
+                    $log_context['post_types_count'] = is_array( $config['localize_data']['post_types'] ) ? count( $config['localize_data']['post_types'] ) : 'n/a';
+                } else {
+                    $log_context['post_types'] = 'not set (page uses its own list)';
+                }
+                error_log( '[ContentForge Admin] enqueue_assets: ' . wp_json_encode( $log_context ) );
+            }
+            self::enqueue_page_assets( $config );
         }
     }
 
     /**
      * Get post types available for the Custom Post Types admin page.
-     * Excludes post, page, and attachment so only custom post types appear. Filterable via cforge_cpt_page_post_types.
+     * Only includes post types allowed for content generation (docs, product, download, wpuf_subscription, tribe_events).
+     * Filterable via cforge_cpt_page_post_types.
      *
      * @return array Array of arrays with 'name' and 'label' keys.
      */
     public static function get_cpt_page_post_types() {
+        $allowed    = \cforge_get_allowed_post_types();
         $post_types = get_post_types(
             [
-				'public'  => true,
-				'show_ui' => true,
-			],
-			'objects'
+                'public'  => true,
+                'show_ui' => true,
+            ],
+            'objects'
         );
-        $excluded   = [ 'post', 'page', 'attachment' ];
-        $list       = [];
+        $list = [];
         foreach ( $post_types as $name => $obj ) {
-            if ( in_array( $name, $excluded, true ) ) {
+            if ( ! in_array( $name, $allowed, true ) ) {
                 continue;
             }
             $list[] = [

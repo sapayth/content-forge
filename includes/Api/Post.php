@@ -495,7 +495,21 @@ class Post extends CForge_REST_Controller {
         if ( is_wp_error( $formatted_items ) ) {
             return $formatted_items;
         }
-        return $this->prepare_list_response( $total_count, $formatted_items );
+        $response = $this->prepare_list_response( $total_count, $formatted_items );
+        if ( defined( 'WP_DEBUG' ) && WP_DEBUG && defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
+            $req_post_types = $request->get_param( 'post_types' );
+            $req_exclude    = $request->get_param( 'exclude_post_types' );
+            error_log(
+                '[ContentForge API posts/list] ' . wp_json_encode( [
+                    'request_post_types'   => $req_post_types,
+                    'request_exclude_post_types' => $req_exclude,
+                    'post_types_resolved'  => $pagination_params['post_types_resolved'],
+                    'total_count'          => $total_count,
+                    'items_count'          => is_array( $formatted_items ) ? count( $formatted_items ) : 0,
+                ] )
+            );
+        }
+        return $response;
     }
 
     /**
@@ -521,12 +535,13 @@ class Post extends CForge_REST_Controller {
         $offset = ( $page - 1 ) * $per_page;
 
         $allowed             = \cforge_get_allowed_post_types();
+        $list_allowed        = array_values( array_unique( array_merge( [ 'post', 'page' ], $allowed ) ) );
         $post_types_str      = is_string( $request->get_param( 'post_types' ) ) ? $request->get_param( 'post_types' ) : '';
         $exclude_str         = is_string( $request->get_param( 'exclude_post_types' ) ) ? $request->get_param( 'exclude_post_types' ) : '';
         $include_list        = array_filter( array_map( 'sanitize_key', explode( ',', $post_types_str ) ) );
         $exclude_list        = array_filter( array_map( 'sanitize_key', explode( ',', $exclude_str ) ) );
-        $include_list        = array_values( array_intersect( $include_list, $allowed ) );
-        $exclude_list        = array_values( array_intersect( $exclude_list, $allowed ) );
+        $include_list        = array_values( array_intersect( $include_list, $list_allowed ) );
+        $exclude_list        = array_values( array_intersect( $exclude_list, $list_allowed ) );
         $base                = ! empty( $include_list ) ? $include_list : $allowed;
         $post_types_resolved = array_values( array_diff( $base, $exclude_list ) );
 

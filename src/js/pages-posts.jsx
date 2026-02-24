@@ -11,6 +11,15 @@ const allowedPostTypes = ['post', 'page'];
 const allowedPostStatuses = ['publish', 'pending', 'draft', 'private'];
 const allowedCommentStatuses = ['closed', 'open'];
 
+if (typeof window !== 'undefined') {
+	console.log('[ContentForge Pages/Posts]', {
+		page: 'Pages/Posts',
+		allowedPostTypes,
+		cforgeKeys: window.cforge ? Object.keys(window.cforge) : [],
+		post_typesFromPHP: window.cforge?.post_types ?? 'not set',
+	});
+}
+
 function AddNewView({ onCancel, onSuccess }) {
   const [tab, setTab] = useState('auto');
   const [post, setPost] = useState({
@@ -482,18 +491,18 @@ function PagesPostsApp() {
       apiFetch.use(apiFetch.createRootURLMiddleware(window.cforge.apiUrl));
     }
 
-    apiFetch({
-      path: `posts/list?page=${page}&per_page=${perPage}&post_types=post,page`,
-      method: 'GET',
-    })
+    const path = `posts/list?page=${page}&per_page=${perPage}&post_types=post,page`;
+    apiFetch({ path, method: 'GET' })
       .then((res) => {
         if (!isMounted) return;
+        console.log('[ContentForge Pages/Posts list]', { path, response: res, itemsCount: res?.items?.length, total: res?.total });
         setItems(res.items || []);
         setTotal(res.total || 0);
         setLoading(false);
       })
       .catch((err) => {
         if (!isMounted) return;
+        console.error('[ContentForge Pages/Posts list]', { path, error: err });
         setError(err.message || __('Failed to load data', 'content-forge'));
         setLoading(false);
       });
@@ -511,11 +520,10 @@ function PagesPostsApp() {
     setLoading(true);
     setError(null);
 
-    apiFetch({
-      path: `posts/list?page=${pageToLoad}&per_page=${perPage}&post_types=post,page`,
-      method: 'GET',
-    })
+    const refreshPath = `posts/list?page=${pageToLoad}&per_page=${perPage}&post_types=post,page`;
+    apiFetch({ path: refreshPath, method: 'GET' })
       .then((res) => {
+        console.log('[ContentForge Pages/Posts list refresh]', { path: refreshPath, response: res, itemsCount: res?.items?.length, total: res?.total });
         setItems(res.items || []);
         setTotal(res.total || 0);
         if (targetPage !== null) {
@@ -524,6 +532,7 @@ function PagesPostsApp() {
         setLoading(false);
       })
       .catch((err) => {
+        console.error('[ContentForge Pages/Posts list refresh]', { path: refreshPath, error: err });
         setError(err.message || __('Failed to load data', 'content-forge'));
         setLoading(false);
       });
