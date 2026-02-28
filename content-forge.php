@@ -39,6 +39,7 @@ final class ContentForge {
     private function __construct() {
         $this->define_constants();
         register_activation_hook( __FILE__, [ 'ContentForge\\Activator', 'activate' ] );
+        register_deactivation_hook( __FILE__, [ 'ContentForge\\Deactivator', 'deactivate' ] );
         $loader = new Loader();
         add_action( 'init', [ $loader, 'load' ] );
         // load the general functions
