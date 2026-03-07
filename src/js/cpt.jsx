@@ -22,17 +22,6 @@ const WEDOCS_LEVEL_NAMES = [
 	{ key: 'deeper_nesting', label: __('Deeper Nesting', 'content-forge') },
 ];
 
-if (typeof window !== 'undefined') {
-	const _cptPostTypes = window.cforge?.post_types || [];
-	console.log('[ContentForge Custom Post Types]', {
-		page: 'Custom Post Types',
-		postTypes: _cptPostTypes,
-		postTypesCount: _cptPostTypes.length,
-		postTypeNames: _cptPostTypes.map((p) => p.name),
-		cforgeKeys: window.cforge ? Object.keys(window.cforge) : [],
-	});
-}
-
 function AddNewView({ onCancel, onSuccess }) {
 	const postTypes = window.cforge?.post_types || [];
 	const woocommerceActive = window.cforge?.woocommerce_active || false;
@@ -215,6 +204,28 @@ function AddNewView({ onCancel, onSuccess }) {
 
 	const errorClass = (field) => (errors[field] ? 'cforge-border-red-500 cforge-outline-red-500' : '');
 	const isProduct = form.post_type === 'product' && woocommerceActive;
+
+	if (!postTypes.length) {
+		return (
+			<div className="cforge-w-full cforge-bg-white cforge-rounded cforge-p-6 cforge-relative cforge-max-w-2xl">
+				<div className="cforge-text-center cforge-py-8">
+					<p className="cforge-text-gray-500 cforge-text-lg cforge-mb-2">
+						{__('No custom post types available', 'content-forge')}
+					</p>
+					<p className="cforge-text-gray-400 cforge-text-sm cforge-mb-4">
+						{__('Install and activate a supported plugin to generate custom post type content. Supported plugins: WooCommerce, weDocs, Easy Digital Downloads, WP User Frontend, The Events Calendar.', 'content-forge')}
+					</p>
+					<button
+						type="button"
+						className="cforge-bg-gray-200 cforge-text-gray-700 cforge-px-4 cforge-py-2 cforge-rounded cforge-font-semibold hover:cforge-bg-gray-300"
+						onClick={onCancel}
+					>
+						{__('Go Back', 'content-forge')}
+					</button>
+				</div>
+			</div>
+		);
+	}
 
 	return (
 		<div className="cforge-w-full cforge-bg-white cforge-rounded cforge-p-6 cforge-relative cforge-max-w-2xl">
@@ -605,14 +616,12 @@ function CptApp() {
 		apiFetch({ path, method: 'GET' })
 			.then((res) => {
 				if (!isMounted) return;
-				console.log('[ContentForge CPT list]', { path, response: res, itemsCount: res?.items?.length, total: res?.total });
 				setItems(res.items || []);
 				setTotal(res.total || 0);
 				setLoading(false);
 			})
 			.catch((err) => {
 				if (!isMounted) return;
-				console.error('[ContentForge CPT list]', { path, error: err });
 				setError(err.message || __('Failed to load data', 'content-forge'));
 				setLoading(false);
 			});
@@ -633,7 +642,6 @@ function CptApp() {
 		const refreshPath = `posts/list?page=${pageToLoad}&per_page=${perPage}&exclude_post_types=post,page`;
 		apiFetch({ path: refreshPath, method: 'GET' })
 			.then((res) => {
-				console.log('[ContentForge CPT list refresh]', { path: refreshPath, response: res, itemsCount: res?.items?.length, total: res?.total });
 				setItems(res.items || []);
 				setTotal(res.total || 0);
 				if (targetPage !== null) {
@@ -642,7 +650,6 @@ function CptApp() {
 				setLoading(false);
 			})
 			.catch((err) => {
-				console.error('[ContentForge CPT list refresh]', { path: refreshPath, error: err });
 				setError(err.message || __('Failed to load data', 'content-forge'));
 				setLoading(false);
 			});

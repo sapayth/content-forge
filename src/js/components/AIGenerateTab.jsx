@@ -16,8 +16,9 @@ export default function AIGenerateTab({ post, setPost, onSuccess }) {
     const [numberOfPosts, setNumberOfPosts] = useState(1);
 
     const [randomizeDates, setRandomizeDates] = useState(false);
-    const [dateFrom, setDateFrom] = useState('');
-    const [dateTo, setDateTo] = useState('');
+    const todayStr = new Date().toISOString().split('T')[0];
+    const [dateFrom, setDateFrom] = useState(todayStr);
+    const [dateTo, setDateTo] = useState(todayStr);
 
     // Async generation states
     const [batchId, setBatchId] = useState(null);
@@ -103,20 +104,22 @@ export default function AIGenerateTab({ post, setPost, onSuccess }) {
             // Detect editor type
             const editorType = window.cforge?.editor_type || 'block';
 
+            const payload = {
+                post_number: numberOfPosts,
+                post_type: post.post_type,
+                post_status: post.post_status,
+                post_parent: post.post_parent,
+                content_type: contentType,
+                ai_prompt: customPrompt,
+                editor_type: editorType,
+                use_ai: true,
+                ...(randomizeDates && dateFrom && dateTo ? { date_from: dateFrom, date_to: dateTo } : {}),
+            };
+
             const response = await apiFetch({
                 path: 'posts/bulk',
                 method: 'POST',
-                data: {
-                    post_number: numberOfPosts,
-                    post_type: post.post_type,
-                    post_status: post.post_status,
-                    post_parent: post.post_parent,
-                    content_type: contentType,
-                    ai_prompt: customPrompt,
-                    editor_type: editorType,
-                    use_ai: true,
-                    ...(randomizeDates && dateFrom && dateTo ? { date_from: dateFrom, date_to: dateTo } : {}),
-                },
+                data: payload,
             });
 
             if (response.batch_id) {
@@ -294,8 +297,8 @@ export default function AIGenerateTab({ post, setPost, onSuccess }) {
             )}
 
             <div className="cforge-space-y-6">
-                <div className="cforge-grid cforge-grid-cols-2 cforge-gap-4">
-                    <div>
+                <div className="cforge-flex cforge-gap-4">
+                    <div className="cforge-flex-1">
                         <label className="cforge-block cforge-text-sm cforge-font-medium cforge-text-gray-700 cforge-mb-2">
                             {__('Type', 'content-forge')}
                         </label>
@@ -308,7 +311,40 @@ export default function AIGenerateTab({ post, setPost, onSuccess }) {
                             <option value="page">{__('Page', 'content-forge')}</option>
                         </select>
                     </div>
-                    <div>
+                    <div className="cforge-flex-1">
+                        <label className="cforge-block cforge-text-sm cforge-font-medium cforge-text-gray-700 cforge-mb-2">
+                            {__('Number of Pages/Posts', 'content-forge')}
+                        </label>
+                        <input
+                            type="number"
+                            min="1"
+                            max="50"
+                            value={numberOfPosts}
+                            onChange={(e) => {
+                                const value = parseInt(e.target.value) || 1;
+                                setNumberOfPosts(Math.min(50, Math.max(1, value)));
+                            }}
+                            className="cforge-input cforge-w-full"
+                        />
+                        <p className="cforge-text-sm cforge-text-gray-500 cforge-mt-1">
+                            {__('Maximum 50', 'content-forge')}
+                        </p>
+                    </div>
+                    <div className="cforge-flex-1">
+                        <label className="cforge-block cforge-text-sm cforge-font-medium cforge-text-gray-700 cforge-mb-2">
+                            {__('Content Type', 'content-forge')}
+                        </label>
+                        <SelectControl
+                            value={contentType}
+                            options={contentTypes}
+                            onChange={setContentType}
+                            className="cforge-w-full"
+                        />
+                    </div>
+                </div>
+
+                <div className="cforge-flex cforge-gap-4">
+                    <div className="cforge-flex-1">
                         <label className="cforge-block cforge-text-sm cforge-font-medium cforge-text-gray-700 cforge-mb-2">
                             {__('Status', 'content-forge')}
                         </label>
@@ -323,59 +359,23 @@ export default function AIGenerateTab({ post, setPost, onSuccess }) {
                             <option value="private">{__('Private', 'content-forge')}</option>
                         </select>
                     </div>
-                </div>
-
-                {post.post_type === 'page' && (
-                    <div>
-                        <label className="cforge-block cforge-text-sm cforge-font-medium cforge-text-gray-700 cforge-mb-2">
-                            {__('Parent Page', 'content-forge')}
-                        </label>
-                        <select
-                            className="cforge-input cforge-w-full"
-                            value={post.post_parent}
-                            onChange={e => setPost({ ...post, post_parent: e.target.value })}
-                        >
-                            <option value="0">{__('No Parent', 'content-forge')}</option>
-                            {pages.map((page) => (
-                                <option key={page.id} value={page.id}>{page.title.rendered}</option>
-                            ))}
-                        </select>
-                    </div>
-                )}
-
-                <div>
-                    <label className="cforge-block cforge-text-sm cforge-font-medium cforge-text-gray-700 cforge-mb-2">
-                        {__('Content Type', 'content-forge')}
-                    </label>
-                    <SelectControl
-                        value={contentType}
-                        options={contentTypes}
-                        onChange={setContentType}
-                        className="cforge-w-full"
-                    />
-                    <p className="cforge-text-sm cforge-text-gray-500 cforge-mt-1">
-                        {__('Select the type of content you want to generate.', 'content-forge')}
-                    </p>
-                </div>
-
-                <div>
-                    <label className="cforge-block cforge-text-sm cforge-font-medium cforge-text-gray-700 cforge-mb-2">
-                        {__('Number of Pages/Posts', 'content-forge')}
-                    </label>
-                    <input
-                        type="number"
-                        min="1"
-                        max="50"
-                        value={numberOfPosts}
-                        onChange={(e) => {
-                            const value = parseInt(e.target.value) || 1;
-                            setNumberOfPosts(Math.min(50, Math.max(1, value)));
-                        }}
-                        className="cforge-input cforge-w-full"
-                    />
-                    <p className="cforge-text-sm cforge-text-gray-500 cforge-mt-1">
-                        {__('Enter the number of posts/pages to generate (maximum 50).', 'content-forge')}
-                    </p>
+                    {post.post_type === 'page' && (
+                        <div className="cforge-flex-1">
+                            <label className="cforge-block cforge-text-sm cforge-font-medium cforge-text-gray-700 cforge-mb-2">
+                                {__('Parent Page', 'content-forge')}
+                            </label>
+                            <select
+                                className="cforge-input cforge-w-full"
+                                value={post.post_parent}
+                                onChange={e => setPost({ ...post, post_parent: e.target.value })}
+                            >
+                                <option value="0">{__('No Parent', 'content-forge')}</option>
+                                {pages.map((page) => (
+                                    <option key={page.id} value={page.id}>{page.title.rendered}</option>
+                                ))}
+                            </select>
+                        </div>
+                    )}
                 </div>
 
                 <div>
@@ -399,7 +399,7 @@ export default function AIGenerateTab({ post, setPost, onSuccess }) {
                         label={__('Randomize Post Dates', 'content-forge')}
                         checked={randomizeDates}
                         onChange={setRandomizeDates}
-                        help={__('Assign a random publish date within a date range to each generated post', 'content-forge')}
+                        help={__('Random date within a range', 'content-forge')}
                     />
                     {randomizeDates && (
                         <div className="cforge-mt-3">

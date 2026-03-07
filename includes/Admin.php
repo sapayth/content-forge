@@ -275,16 +275,6 @@ class Admin {
         ];
         if ( isset( $page_configs[ $hook ] ) ) {
             $config = $page_configs[ $hook ];
-            if ( defined( 'WP_DEBUG' ) && WP_DEBUG && defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
-                $log_context = [ 'hook' => $hook ];
-                if ( isset( $config['localize_data']['post_types'] ) ) {
-                    $log_context['post_types'] = $config['localize_data']['post_types'];
-                    $log_context['post_types_count'] = is_array( $config['localize_data']['post_types'] ) ? count( $config['localize_data']['post_types'] ) : 'n/a';
-                } else {
-                    $log_context['post_types'] = 'not set (page uses its own list)';
-                }
-                error_log( '[ContentForge Admin] enqueue_assets: ' . wp_json_encode( $log_context ) );
-            }
             self::enqueue_page_assets( $config );
         }
     }
@@ -307,6 +297,10 @@ class Admin {
         );
         $list = [];
         foreach ( $post_types as $name => $obj ) {
+            // post and page have their own dedicated pages
+            if ( in_array( $name, [ 'post', 'page' ], true ) ) {
+                continue;
+            }
             if ( ! in_array( $name, $allowed, true ) ) {
                 continue;
             }

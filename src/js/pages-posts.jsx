@@ -12,15 +12,6 @@ const allowedPostTypes = ['post', 'page'];
 const allowedPostStatuses = ['publish', 'pending', 'draft', 'private'];
 const allowedCommentStatuses = ['closed', 'open'];
 
-if (typeof window !== 'undefined') {
-	console.log('[ContentForge Pages/Posts]', {
-		page: 'Pages/Posts',
-		allowedPostTypes,
-		cforgeKeys: window.cforge ? Object.keys(window.cforge) : [],
-		post_typesFromPHP: window.cforge?.post_types ?? 'not set',
-	});
-}
-
 function AddNewView({ onCancel, onSuccess }) {
   const [tab, setTab] = useState('auto');
   const [post, setPost] = useState({
@@ -36,8 +27,9 @@ function AddNewView({ onCancel, onSuccess }) {
   const [imageSources, setImageSources] = useState({ picsum: true, placehold: false });
   const [generateExcerpt, setGenerateExcerpt] = useState(true);
   const [randomizeDates, setRandomizeDates] = useState(false);
-  const [dateFrom, setDateFrom] = useState('');
-  const [dateTo, setDateTo] = useState('');
+  const today = new Date().toISOString().split('T')[0];
+  const [dateFrom, setDateFrom] = useState(today);
+  const [dateTo, setDateTo] = useState(today);
   const [pages, setPages] = useState([]);
   const [errors, setErrors] = useState({});
   const [notice, setNotice] = useState(null);
@@ -246,53 +238,57 @@ function AddNewView({ onCancel, onSuccess }) {
           <div className="cforge-mt-8">
             {tab === 'auto' ? (
               <>
-                <div className="cforge-mb-4">
-                  <label className="cforge-block cforge-mb-1 cforge-font-medium">{__('Number of Pages/Posts', 'content-forge')}</label>
-                  <input
-                    type="number"
-                    min="1"
-                    className={`cforge-input ${errorClass('post_number')}`}
-                    value={post['post_number']}
-                    onChange={e => setPost({ ...post, post_number: e.target.value })}
-                  />
-                  {errors['post_number'] && <p className="cforge-text-red-500 cforge-text-sm">{errors['post_number']}</p>}
+                <div className="cforge-flex cforge-gap-4 cforge-mb-4">
+                  <div className="cforge-flex-1">
+                    <label className="cforge-block cforge-mb-1 cforge-font-medium">{__('Type', 'content-forge')}</label>
+                    <select
+                      className={`cforge-input ${errorClass('post_type')}`}
+                      value={post['post_type']}
+                      onChange={e => setPost({ ...post, post_type: e.target.value })}
+                    >
+                      <option value="post">{__('Post', 'content-forge')}</option>
+                      <option value="page">{__('Page', 'content-forge')}</option>
+                    </select>
+                    {errors['post_type'] && <p className="cforge-text-red-500 cforge-text-sm">{errors['post_type']}</p>}
+                  </div>
+                  <div className="cforge-flex-1">
+                    <label className="cforge-block cforge-mb-1 cforge-font-medium">{__('Number of Pages/Posts', 'content-forge')}</label>
+                    <input
+                      type="number"
+                      min="1"
+                      className={`cforge-input ${errorClass('post_number')}`}
+                      value={post['post_number']}
+                      onChange={e => setPost({ ...post, post_number: e.target.value })}
+                    />
+                    {errors['post_number'] && <p className="cforge-text-red-500 cforge-text-sm">{errors['post_number']}</p>}
+                  </div>
                 </div>
-                <div className="cforge-mb-4">
-                  <label className="cforge-block cforge-mb-1 cforge-font-medium">{__('Type', 'content-forge')}</label>
-                  <select
-                    className={`cforge-input ${errorClass('post_type')}`}
-                    value={post['post_type']}
-                    onChange={e => setPost({ ...post, post_type: e.target.value })}
-                  >
-                    <option value="post">{__('Post', 'content-forge')}</option>
-                    <option value="page">{__('Page', 'content-forge')}</option>
-                  </select>
-                  {errors['post_type'] && <p className="cforge-text-red-500 cforge-text-sm">{errors['post_type']}</p>}
-                </div>
-                <div className="cforge-mb-4">
-                  <label className="cforge-block cforge-mb-1 cforge-font-medium">{__('Pages/Posts Status', 'content-forge')}</label>
-                  <select
-                    className={`cforge-input ${errorClass('post_status')}`}
-                    value={post['post_status']}
-                    onChange={e => setPost({ ...post, post_status: e.target.value })}
-                  >
-                    <option value="publish">{__('Publish', 'content-forge')}</option>
-                    <option value="pending">{__('Pending', 'content-forge')}</option>
-                    <option value="draft">{__('Draft', 'content-forge')}</option>
-                  </select>
-                  {errors['post_status'] && <p className="cforge-text-red-500 cforge-text-sm">{errors['post_status']}</p>}
-                </div>
-                <div className="cforge-mb-4">
-                  <label className="cforge-block cforge-mb-1 cforge-font-medium">{__('Comment Status', 'content-forge')}</label>
-                  <select
-                    className={`cforge-input ${errorClass('comment_status')}`}
-                    value={post['comment_status']}
-                    onChange={e => setPost({ ...post, comment_status: e.target.value })}
-                  >
-                    <option value="closed">{__('Closed', 'content-forge')}</option>
-                    <option value="open">{__('Open', 'content-forge')}</option>
-                  </select>
-                  {errors['comment_status'] && <p className="cforge-text-red-500 cforge-text-sm">{errors['comment_status']}</p>}
+                <div className="cforge-flex cforge-gap-4 cforge-mb-4">
+                  <div className="cforge-flex-1">
+                    <label className="cforge-block cforge-mb-1 cforge-font-medium">{__('Pages/Posts Status', 'content-forge')}</label>
+                    <select
+                      className={`cforge-input ${errorClass('post_status')}`}
+                      value={post['post_status']}
+                      onChange={e => setPost({ ...post, post_status: e.target.value })}
+                    >
+                      <option value="publish">{__('Publish', 'content-forge')}</option>
+                      <option value="pending">{__('Pending', 'content-forge')}</option>
+                      <option value="draft">{__('Draft', 'content-forge')}</option>
+                    </select>
+                    {errors['post_status'] && <p className="cforge-text-red-500 cforge-text-sm">{errors['post_status']}</p>}
+                  </div>
+                  <div className="cforge-flex-1">
+                    <label className="cforge-block cforge-mb-1 cforge-font-medium">{__('Comment Status', 'content-forge')}</label>
+                    <select
+                      className={`cforge-input ${errorClass('comment_status')}`}
+                      value={post['comment_status']}
+                      onChange={e => setPost({ ...post, comment_status: e.target.value })}
+                    >
+                      <option value="closed">{__('Closed', 'content-forge')}</option>
+                      <option value="open">{__('Open', 'content-forge')}</option>
+                    </select>
+                    {errors['comment_status'] && <p className="cforge-text-red-500 cforge-text-sm">{errors['comment_status']}</p>}
+                  </div>
                 </div>
                 {post.post_type === 'page' && (
                   <div className="cforge-mb-4">
@@ -311,13 +307,33 @@ function AddNewView({ onCancel, onSuccess }) {
                   </div>
                 )}
                 <div className="cforge-mb-4 cforge-border cforge-border-gray-200 cforge-rounded-lg cforge-p-4 cforge-bg-gray-50">
-                  <ToggleControl
-                    label={__('Generate Featured Image', 'content-forge')}
-                    checked={generateImage}
-                    onChange={setGenerateImage}
-                  />
+                  <div className="cforge-flex cforge-gap-6">
+                    <div className="cforge-flex-1">
+                      <ToggleControl
+                        label={__('Generate Featured Image', 'content-forge')}
+                        checked={generateImage}
+                        onChange={setGenerateImage}
+                      />
+                    </div>
+                    <div className="cforge-flex-1">
+                      <ToggleControl
+                        label={__('Generate Post Excerpt', 'content-forge')}
+                        checked={generateExcerpt}
+                        onChange={setGenerateExcerpt}
+                        help={__('Auto-generate excerpt from content', 'content-forge')}
+                      />
+                    </div>
+                    <div className="cforge-flex-1">
+                      <ToggleControl
+                        label={__('Randomize Post Dates', 'content-forge')}
+                        checked={randomizeDates}
+                        onChange={setRandomizeDates}
+                        help={__('Random date within a range', 'content-forge')}
+                      />
+                    </div>
+                  </div>
                   {generateImage && (
-                    <div className="cforge-ml-6 cforge-space-y-2 cforge-mt-3">
+                    <div className="cforge-ml-6 cforge-space-y-2 cforge-mt-3 cforge-pt-3 cforge-border-t cforge-border-gray-200">
                       <p className="cforge-text-sm cforge-text-gray-600 cforge-mb-2">{__('Image Sources:', 'content-forge')}</p>
                       <div className="cforge-flex cforge-items-center">
                         <input
@@ -350,24 +366,8 @@ function AddNewView({ onCancel, onSuccess }) {
                       )}
                     </div>
                   )}
-                </div>
-                <div className="cforge-mb-4 cforge-border cforge-border-gray-200 cforge-rounded-lg cforge-p-4 cforge-bg-gray-50">
-                  <ToggleControl
-                    label={__('Generate Post Excerpt', 'content-forge')}
-                    checked={generateExcerpt}
-                    onChange={setGenerateExcerpt}
-                    help={__('Automatically generate a post excerpt from the content (55 words by default)', 'content-forge')}
-                  />
-                </div>
-                <div className="cforge-mb-4 cforge-border cforge-border-gray-200 cforge-rounded-lg cforge-p-4 cforge-bg-gray-50">
-                  <ToggleControl
-                    label={__('Randomize Post Dates', 'content-forge')}
-                    checked={randomizeDates}
-                    onChange={setRandomizeDates}
-                    help={__('Assign a random publish date within a date range to each generated post', 'content-forge')}
-                  />
                   {randomizeDates && (
-                    <div className="cforge-mt-3">
+                    <div className="cforge-mt-3 cforge-pt-3 cforge-border-t cforge-border-gray-200">
                       <DateRangePicker
                         dateFrom={dateFrom}
                         dateTo={dateTo}
@@ -380,18 +380,62 @@ function AddNewView({ onCancel, onSuccess }) {
               </>
             ) : tab === 'manual' ? (
               <>
-                <div className="cforge-mb-4">
-                  <label className="cforge-block cforge-mb-1 cforge-font-medium">{__('Type', 'content-forge')}</label>
-                  <select
-                    className={`cforge-input ${errorClass('post_type')}`}
-                    value={post['post_type']}
-                    onChange={e => setPost({ ...post, post_type: e.target.value })}
-                  >
-                    <option value="post">{__('Post', 'content-forge')}</option>
-                    <option value="page">{__('Page', 'content-forge')}</option>
-                  </select>
-                  {errors['post_type'] && <p className="cforge-text-red-500 cforge-text-sm">{errors['post_type']}</p>}
+                <div className="cforge-flex cforge-gap-4 cforge-mb-4">
+                  <div className="cforge-flex-1">
+                    <label className="cforge-block cforge-mb-1 cforge-font-medium">{__('Type', 'content-forge')}</label>
+                    <select
+                      className={`cforge-input ${errorClass('post_type')}`}
+                      value={post['post_type']}
+                      onChange={e => setPost({ ...post, post_type: e.target.value })}
+                    >
+                      <option value="post">{__('Post', 'content-forge')}</option>
+                      <option value="page">{__('Page', 'content-forge')}</option>
+                    </select>
+                    {errors['post_type'] && <p className="cforge-text-red-500 cforge-text-sm">{errors['post_type']}</p>}
+                  </div>
+                  <div className="cforge-flex-1">
+                    <label className="cforge-block cforge-mb-1 cforge-font-medium">{__('Pages/Posts Status', 'content-forge')}</label>
+                    <select
+                      className={`cforge-input ${errorClass('post_status')}`}
+                      value={post['post_status']}
+                      onChange={e => setPost({ ...post, post_status: e.target.value })}
+                    >
+                      <option value="publish">{__('Publish', 'content-forge')}</option>
+                      <option value="pending">{__('Pending', 'content-forge')}</option>
+                      <option value="draft">{__('Draft', 'content-forge')}</option>
+                      <option value="private">{__('Private', 'content-forge')}</option>
+                    </select>
+                    {errors['post_status'] && <p className="cforge-text-red-500 cforge-text-sm">{errors['post_status']}</p>}
+                  </div>
+                  <div className="cforge-flex-1">
+                    <label className="cforge-block cforge-mb-1 cforge-font-medium">{__('Comment Status', 'content-forge')}</label>
+                    <select
+                      className={`cforge-input ${errorClass('comment_status')}`}
+                      value={post['comment_status']}
+                      onChange={e => setPost({ ...post, comment_status: e.target.value })}
+                    >
+                      <option value="closed">{__('Closed', 'content-forge')}</option>
+                      <option value="open">{__('Open', 'content-forge')}</option>
+                    </select>
+                    {errors['comment_status'] && <p className="cforge-text-red-500 cforge-text-sm">{errors['comment_status']}</p>}
+                  </div>
                 </div>
+                {post.post_type === 'page' && (
+                  <div className="cforge-mb-4">
+                    <label className="cforge-block cforge-mb-1 cforge-font-medium">{__('Parent Page', 'content-forge')}</label>
+                    <select
+                      className={`cforge-input ${errorClass('post_parent')}`}
+                      value={post['post_parent']}
+                      onChange={e => setPost({ ...post, post_parent: e.target.value })}
+                    >
+                      <option value="0">{__('No Parent', 'content-forge')}</option>
+                      {pages.map((page) => (
+                        <option key={page.id} value={page.id}>{page.title.rendered}</option>
+                      ))}
+                    </select>
+                    {errors['post_parent'] && <p className="cforge-text-red-500 cforge-text-sm">{errors['post_parent']}</p>}
+                  </div>
+                )}
                 <div className="cforge-mb-4">
                   <label className="cforge-block cforge-mb-1 cforge-font-medium">{__('Titles (comma separated)', 'content-forge')}</label>
                   <input
@@ -413,48 +457,6 @@ function AddNewView({ onCancel, onSuccess }) {
                   {errors['post_content'] && <p className="cforge-text-red-500 cforge-text-sm">{errors['post_content']}</p>}
                   <p className="cforge-text-sm cforge-text-gray-500">{__('eg. This is the content of the page/post', 'content-forge')}</p>
                 </div>
-                <div className="cforge-mb-4">
-                  <label className="cforge-block cforge-mb-1 cforge-font-medium">{__('Pages/Posts Status', 'content-forge')}</label>
-                  <select
-                    className={`cforge-input ${errorClass('post_status')}`}
-                    value={post['post_status']}
-                    onChange={e => setPost({ ...post, post_status: e.target.value })}
-                  >
-                    <option value="publish">{__('Publish', 'content-forge')}</option>
-                    <option value="pending">{__('Pending', 'content-forge')}</option>
-                    <option value="draft">{__('Draft', 'content-forge')}</option>
-                    <option value="private">{__('Private', 'content-forge')}</option>
-                  </select>
-                  {errors['post_status'] && <p className="cforge-text-red-500 cforge-text-sm">{errors['post_status']}</p>}
-                </div>
-                <div className="cforge-mb-4">
-                  <label className="cforge-block cforge-mb-1 cforge-font-medium">{__('Comment Status', 'content-forge')}</label>
-                  <select
-                    className={`cforge-input ${errorClass('comment_status')}`}
-                    value={post['comment_status']}
-                    onChange={e => setPost({ ...post, comment_status: e.target.value })}
-                  >
-                    <option value="closed">{__('Closed', 'content-forge')}</option>
-                    <option value="open">{__('Open', 'content-forge')}</option>
-                  </select>
-                  {errors['comment_status'] && <p className="cforge-text-red-500 cforge-text-sm">{errors['comment_status']}</p>}
-                </div>
-                {post.post_type === 'page' && (
-                  <div className="cforge-mb-4">
-                    <label className="cforge-block cforge-mb-1 cforge-font-medium">{__('Parent Page', 'content-forge')}</label>
-                    <select
-                      className={`cforge-input ${errorClass('post_parent')}`}
-                      value={post['post_parent']}
-                      onChange={e => setPost({ ...post, post_parent: e.target.value })}
-                    >
-                      <option value="0">{__('No Parent', 'content-forge')}</option>
-                      {pages.map((page) => (
-                        <option key={page.id} value={page.id}>{page.title.rendered}</option>
-                      ))}
-                    </select>
-                    {errors['post_parent'] && <p className="cforge-text-red-500 cforge-text-sm">{errors['post_parent']}</p>}
-                  </div>
-                )}
                 <div className="cforge-mb-4 cforge-border cforge-border-gray-200 cforge-rounded-lg cforge-p-4 cforge-bg-gray-50">
                   <ToggleControl
                     label={__('Randomize Post Dates', 'content-forge')}
@@ -540,14 +542,12 @@ function PagesPostsApp() {
     apiFetch({ path, method: 'GET' })
       .then((res) => {
         if (!isMounted) return;
-        console.log('[ContentForge Pages/Posts list]', { path, response: res, itemsCount: res?.items?.length, total: res?.total });
         setItems(res.items || []);
         setTotal(res.total || 0);
         setLoading(false);
       })
       .catch((err) => {
         if (!isMounted) return;
-        console.error('[ContentForge Pages/Posts list]', { path, error: err });
         setError(err.message || __('Failed to load data', 'content-forge'));
         setLoading(false);
       });
@@ -568,7 +568,6 @@ function PagesPostsApp() {
     const refreshPath = `posts/list?page=${pageToLoad}&per_page=${perPage}&post_types=post,page`;
     apiFetch({ path: refreshPath, method: 'GET' })
       .then((res) => {
-        console.log('[ContentForge Pages/Posts list refresh]', { path: refreshPath, response: res, itemsCount: res?.items?.length, total: res?.total });
         setItems(res.items || []);
         setTotal(res.total || 0);
         if (targetPage !== null) {
@@ -577,7 +576,6 @@ function PagesPostsApp() {
         setLoading(false);
       })
       .catch((err) => {
-        console.error('[ContentForge Pages/Posts list refresh]', { path: refreshPath, error: err });
         setError(err.message || __('Failed to load data', 'content-forge'));
         setLoading(false);
       });

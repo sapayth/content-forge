@@ -2,9 +2,9 @@
 Contributors: sapayth
 Tags: fake data, dummy content, testing, development, generator
 Requires at least: 5.6
-Tested up to: 6.9
+Tested up to: 6.9.1
 Requires PHP: 7.4
-Stable tag: 1.3.0
+Stable tag: 1.4.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -76,6 +76,13 @@ Yes, Content Forge is fully translation ready and includes a .pot file for trans
 5. Bulk content management tools
 
 == Changelog ==
+= 1.4.0 07-03-2026 =
+* New - Random date-range for generated posts — time travel your content
+* New - Easy Digital Downloads, The Events Calendar & WP User Frontend support — more post types, more fun
+* New - Deactivation cleanup — we tidy up after ourselves
+* Fix - CPT page no longer awkwardly shows Post & Page in the dropdown
+* Fix - Friendly empty state when no CPT plugins are active
+
 = 1.3.0 12-02-2026 =
 * New - WooCommerce integration
 * New - weDocs integration

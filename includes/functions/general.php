@@ -14,7 +14,7 @@
  * @return array List of post type slugs.
  */
 function cforge_get_allowed_post_types() {
-	$default = [];
+	$default = [ 'post', 'page' ];
 	if ( function_exists( 'wedocs' ) ) {
 		$default[] = 'docs';
 	}

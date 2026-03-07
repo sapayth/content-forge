@@ -114,6 +114,7 @@ class Post extends CForge_REST_Controller {
      */
     public function handle_bulk_create( $request ) {
         $params         = $request->get_json_params();
+
         $post_type      = isset( $params['post_type'] ) ? sanitize_key( $params['post_type'] ) : 'post';
         $post_status    = isset( $params['post_status'] ) ? sanitize_key( $params['post_status'] ) : 'publish';
         $comment_status = isset( $params['comment_status'] ) ? sanitize_key( $params['comment_status'] ) : 'closed';
@@ -533,19 +534,6 @@ class Post extends CForge_REST_Controller {
             return $formatted_items;
         }
         $response = $this->prepare_list_response( $total_count, $formatted_items );
-        if ( defined( 'WP_DEBUG' ) && WP_DEBUG && defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
-            $req_post_types = $request->get_param( 'post_types' );
-            $req_exclude    = $request->get_param( 'exclude_post_types' );
-            error_log(
-                '[ContentForge API posts/list] ' . wp_json_encode( [
-                    'request_post_types'   => $req_post_types,
-                    'request_exclude_post_types' => $req_exclude,
-                    'post_types_resolved'  => $pagination_params['post_types_resolved'],
-                    'total_count'          => $total_count,
-                    'items_count'          => is_array( $formatted_items ) ? count( $formatted_items ) : 0,
-                ] )
-            );
-        }
         return $response;
     }
 
@@ -621,7 +609,7 @@ class Post extends CForge_REST_Controller {
         $table_name          = $wpdb->prefix . CFORGE_DBNAME;
         $posts_table         = $wpdb->posts;
         $placeholders        = implode( ',', array_fill( 0, count( $data_types ), '%s' ) );
-        $statuses            = [ 'publish', 'pending', 'draft', 'private' ];
+        $statuses            = [ 'publish', 'pending', 'draft', 'private', 'future' ];
         $status_placeholders = implode( ',', array_fill( 0, count( $statuses ), '%s' ) );
         $query_params        = array_merge( $data_types, $statuses, $data_types );
         // phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
@@ -662,7 +650,7 @@ class Post extends CForge_REST_Controller {
         $table_name          = $wpdb->prefix . CFORGE_DBNAME;
         $posts_table         = $wpdb->posts;
         $placeholders        = implode( ',', array_fill( 0, count( $data_types ), '%s' ) );
-        $statuses            = [ 'publish', 'pending', 'draft', 'private' ];
+        $statuses            = [ 'publish', 'pending', 'draft', 'private', 'future' ];
         $status_placeholders = implode( ',', array_fill( 0, count( $statuses ), '%s' ) );
         $query_params        = array_merge(
             $data_types,
@@ -716,7 +704,7 @@ class Post extends CForge_REST_Controller {
                 'post__in'    => $post_ids,
                 'orderby'     => 'post__in',
                 'numberposts' => count( $post_ids ),
-                'post_status' => [ 'publish', 'pending', 'draft', 'private' ],
+                'post_status' => [ 'publish', 'pending', 'draft', 'private', 'future' ],
                 'post_type'   => $post_types,
             ]
         );
