@@ -5,9 +5,16 @@ build/
 assets/
 release/
 
+# Environment and credentials
+.env
+.env.*
+
 # Editor and system files
 .DS_Store
 .cursor/
+.idea/
+*.swp
+*.swo
 
 # Composer
 vendor/

@@ -1,10 +1,12 @@
 import { useState, useEffect } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
+import { ToggleControl } from '@wordpress/components';
 import '../css/common.css';
 import Header from './components/Header';
 import apiFetch from '@wordpress/api-fetch';
 import ListView from './components/ListView';
 import MultiSelect from './components/MultiSelect';
+import DateRangePicker from './components/DateRangePicker';
 
 const STOCK_STATUSES = [
 	{ value: 'instock', label: 'In stock' },
@@ -57,6 +59,10 @@ function AddNewView({ onCancel, onSuccess }) {
 	const [errors, setErrors] = useState({});
 	const [notice, setNotice] = useState(null);
 	const [submitting, setSubmitting] = useState(false);
+	const [randomizeDates, setRandomizeDates] = useState(false);
+	const [dateFrom, setDateFrom] = useState('');
+	const [dateTo, setDateTo] = useState('');
+
 
 	useEffect(() => {
 		if (postTypes.length && !form.post_type) {
@@ -147,6 +153,11 @@ function AddNewView({ onCancel, onSuccess }) {
 			post_status: form.post_status,
 			comment_status: 'closed',
 		};
+
+		if (randomizeDates && dateFrom && dateTo) {
+			payload.date_from = dateFrom;
+			payload.date_to = dateTo;
+		}
 
 		if (form.post_type === 'product' && woocommerceActive) {
 			const po = form.product_options;
@@ -356,6 +367,25 @@ function AddNewView({ onCancel, onSuccess }) {
 							)}
 						</div>
 					)}
+
+					<div className="cforge-border cforge-border-gray-200 cforge-rounded-lg cforge-p-4 cforge-bg-gray-50">
+						<ToggleControl
+							label={__('Randomize Post Dates', 'content-forge')}
+							checked={randomizeDates}
+							onChange={setRandomizeDates}
+							help={__('Assign a random publish date within a date range to each generated post', 'content-forge')}
+						/>
+						{randomizeDates && (
+							<div className="cforge-mt-3">
+								<DateRangePicker
+									dateFrom={dateFrom}
+									dateTo={dateTo}
+									onDateFromChange={setDateFrom}
+									onDateToChange={setDateTo}
+								/>
+							</div>
+						)}
+					</div>
 
 					{isProduct && (
 						<div className="cforge-border cforge-border-border cforge-rounded cforge-p-4 cforge-bg-tertiary/30 cforge-space-y-4">

@@ -129,6 +129,19 @@ class Post extends Generator {
             // Remove generate_excerpt from post_data as it's not a valid wp_insert_post parameter
             unset( $post_data['generate_excerpt'] );
 
+            // Generate random post_date within the specified date range if provided
+            if ( ! empty( $post_data['date_from'] ) && ! empty( $post_data['date_to'] ) ) {
+                $from_ts = strtotime( $post_data['date_from'] );
+                $to_ts   = strtotime( $post_data['date_to'] );
+
+                if ( $from_ts && $to_ts && $from_ts <= $to_ts ) {
+                    $random_ts                  = wp_rand( $from_ts, $to_ts );
+                    $post_data['post_date']     = gmdate( 'Y-m-d H:i:s', $random_ts );
+                    $post_data['post_date_gmt'] = get_gmt_from_date( $post_data['post_date'] );
+                }
+            }
+            unset( $post_data['date_from'], $post_data['date_to'] );
+
             if ( $should_generate_excerpt && ( ! isset( $post_data['post_excerpt'] ) || empty( $post_data['post_excerpt'] ) ) ) {
                 $filtered_excerpt          = apply_filters( 'cforge_generate_post_excerpt', '', $post_type, $args );
                 $post_data['post_excerpt'] = ( '' !== $filtered_excerpt ) ? $filtered_excerpt : $this->generate_excerpt( $post_data['post_content'] );

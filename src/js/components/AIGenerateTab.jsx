@@ -1,7 +1,8 @@
 import { useState, useEffect } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
-import { SelectControl, TextareaControl, Button, Notice } from '@wordpress/components';
+import { SelectControl, TextareaControl, Button, Notice, ToggleControl } from '@wordpress/components';
 import apiFetch from '@wordpress/api-fetch';
+import DateRangePicker from './DateRangePicker';
 
 export default function AIGenerateTab({ post, setPost, onSuccess }) {
     const [isConfigured, setIsConfigured] = useState(false);
@@ -13,6 +14,10 @@ export default function AIGenerateTab({ post, setPost, onSuccess }) {
     const [loading, setLoading] = useState(true);
     const [pages, setPages] = useState([]);
     const [numberOfPosts, setNumberOfPosts] = useState(1);
+
+    const [randomizeDates, setRandomizeDates] = useState(false);
+    const [dateFrom, setDateFrom] = useState('');
+    const [dateTo, setDateTo] = useState('');
 
     // Async generation states
     const [batchId, setBatchId] = useState(null);
@@ -110,6 +115,7 @@ export default function AIGenerateTab({ post, setPost, onSuccess }) {
                     ai_prompt: customPrompt,
                     editor_type: editorType,
                     use_ai: true,
+                    ...(randomizeDates && dateFrom && dateTo ? { date_from: dateFrom, date_to: dateTo } : {}),
                 },
             });
 
@@ -386,6 +392,25 @@ export default function AIGenerateTab({ post, setPost, onSuccess }) {
                     <p className="cforge-text-sm cforge-text-gray-500 cforge-mt-1">
                         {__('Provide additional context or instructions to guide the AI generation.', 'content-forge')}
                     </p>
+                </div>
+
+                <div className="cforge-border cforge-border-gray-200 cforge-rounded-lg cforge-p-4 cforge-bg-gray-50">
+                    <ToggleControl
+                        label={__('Randomize Post Dates', 'content-forge')}
+                        checked={randomizeDates}
+                        onChange={setRandomizeDates}
+                        help={__('Assign a random publish date within a date range to each generated post', 'content-forge')}
+                    />
+                    {randomizeDates && (
+                        <div className="cforge-mt-3">
+                            <DateRangePicker
+                                dateFrom={dateFrom}
+                                dateTo={dateTo}
+                                onDateFromChange={setDateFrom}
+                                onDateToChange={setDateTo}
+                            />
+                        </div>
+                    )}
                 </div>
 
                 <div className="cforge-mt-6">

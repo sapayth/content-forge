@@ -6,6 +6,7 @@ import Header from './components/Header';
 import apiFetch from '@wordpress/api-fetch';
 import ListView from './components/ListView';
 import AIGenerateTab from './components/AIGenerateTab';
+import DateRangePicker from './components/DateRangePicker';
 
 const allowedPostTypes = ['post', 'page'];
 const allowedPostStatuses = ['publish', 'pending', 'draft', 'private'];
@@ -34,6 +35,9 @@ function AddNewView({ onCancel, onSuccess }) {
   const [generateImage, setGenerateImage] = useState(false);
   const [imageSources, setImageSources] = useState({ picsum: true, placehold: false });
   const [generateExcerpt, setGenerateExcerpt] = useState(true);
+  const [randomizeDates, setRandomizeDates] = useState(false);
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
   const [pages, setPages] = useState([]);
   const [errors, setErrors] = useState({});
   const [notice, setNotice] = useState(null);
@@ -117,6 +121,11 @@ function AddNewView({ onCancel, onSuccess }) {
     // Add excerpt generation option
     if (tab === 'auto') {
       payload.generate_excerpt = generateExcerpt;
+    }
+    // Add date range options
+    if (randomizeDates && dateFrom && dateTo) {
+      payload.date_from = dateFrom;
+      payload.date_to = dateTo;
     }
     if (tab === 'auto') {
       payload.post_number = Number(post.post_number);
@@ -350,6 +359,24 @@ function AddNewView({ onCancel, onSuccess }) {
                     help={__('Automatically generate a post excerpt from the content (55 words by default)', 'content-forge')}
                   />
                 </div>
+                <div className="cforge-mb-4 cforge-border cforge-border-gray-200 cforge-rounded-lg cforge-p-4 cforge-bg-gray-50">
+                  <ToggleControl
+                    label={__('Randomize Post Dates', 'content-forge')}
+                    checked={randomizeDates}
+                    onChange={setRandomizeDates}
+                    help={__('Assign a random publish date within a date range to each generated post', 'content-forge')}
+                  />
+                  {randomizeDates && (
+                    <div className="cforge-mt-3">
+                      <DateRangePicker
+                        dateFrom={dateFrom}
+                        dateTo={dateTo}
+                        onDateFromChange={setDateFrom}
+                        onDateToChange={setDateTo}
+                      />
+                    </div>
+                  )}
+                </div>
               </>
             ) : tab === 'manual' ? (
               <>
@@ -428,6 +455,24 @@ function AddNewView({ onCancel, onSuccess }) {
                     {errors['post_parent'] && <p className="cforge-text-red-500 cforge-text-sm">{errors['post_parent']}</p>}
                   </div>
                 )}
+                <div className="cforge-mb-4 cforge-border cforge-border-gray-200 cforge-rounded-lg cforge-p-4 cforge-bg-gray-50">
+                  <ToggleControl
+                    label={__('Randomize Post Dates', 'content-forge')}
+                    checked={randomizeDates}
+                    onChange={setRandomizeDates}
+                    help={__('Assign a random publish date within a date range to each generated post', 'content-forge')}
+                  />
+                  {randomizeDates && (
+                    <div className="cforge-mt-3">
+                      <DateRangePicker
+                        dateFrom={dateFrom}
+                        dateTo={dateTo}
+                        onDateFromChange={setDateFrom}
+                        onDateToChange={setDateTo}
+                      />
+                    </div>
+                  )}
+                </div>
               </>
             ) : tab === 'ai' ? (
               <AIGenerateTab

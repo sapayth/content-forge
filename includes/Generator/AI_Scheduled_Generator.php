@@ -105,6 +105,10 @@ class AI_Scheduled_Generator {
 		if ( ! empty( $args['product_options'] ) && is_array( $args['product_options'] ) ) {
 			$action_args['product_options'] = $args['product_options'];
 		}
+		if ( ! empty( $args['date_from'] ) && ! empty( $args['date_to'] ) ) {
+			$action_args['date_from'] = $args['date_from'];
+			$action_args['date_to']   = $args['date_to'];
+		}
 
 		// Schedule ONLY the first action
 		$action_id = \as_schedule_single_action(
@@ -174,8 +178,10 @@ class AI_Scheduled_Generator {
 		$editor_type     = $actual_args['editor_type'];
 		$user_id         = $actual_args['user_id'];
 		$product_options = ! empty( $actual_args['product_options'] ) && is_array( $actual_args['product_options'] ) ? $actual_args['product_options'] : [];
+		$date_from       = ! empty( $actual_args['date_from'] ) ? $actual_args['date_from'] : '';
+		$date_to         = ! empty( $actual_args['date_to'] ) ? $actual_args['date_to'] : '';
 
-		return $this->handle_sequential_generation( $batch_id, $current_index, $total_count, $post_type, $post_status, $content_type, $ai_prompt, $editor_type, $user_id, $product_options );
+		return $this->handle_sequential_generation( $batch_id, $current_index, $total_count, $post_type, $post_status, $content_type, $ai_prompt, $editor_type, $user_id, $product_options, $date_from, $date_to );
 	}
 
 	/**
@@ -193,9 +199,11 @@ class AI_Scheduled_Generator {
 	 * @param string $editor_type   Editor type.
 	 * @param int    $user_id       User ID.
 	 * @param array  $product_options Optional product options for WooCommerce products.
+	 * @param string $date_from       Optional date range start (ISO string).
+	 * @param string $date_to         Optional date range end (ISO string).
 	 * @throws Exception If AI generation fails.
 	 */
-	public function handle_sequential_generation( $batch_id, $current_index, $total_count, $post_type, $post_status, $content_type, $ai_prompt, $editor_type, $user_id, $product_options = [] ) {
+	public function handle_sequential_generation( $batch_id, $current_index, $total_count, $post_type, $post_status, $content_type, $ai_prompt, $editor_type, $user_id, $product_options = [], $date_from = '', $date_to = '' ) {
 
 		// Get batch tracking
 		$batch_data = get_option( self::BATCH_OPTION_PREFIX . $batch_id );
@@ -264,6 +272,10 @@ class AI_Scheduled_Generator {
 			if ( ! empty( $product_options ) ) {
 				$post_args['product_options'] = $product_options;
 			}
+			if ( $date_from && $date_to ) {
+				$post_args['date_from'] = $date_from;
+				$post_args['date_to']   = $date_to;
+			}
 
 			$post_ids = $post_generator->generate( 1, $post_args );
 
@@ -290,7 +302,7 @@ class AI_Scheduled_Generator {
 		update_option( self::BATCH_OPTION_PREFIX . $batch_id, $batch_data );
 
 		// Schedule next action or mark as complete
-		$this->schedule_next_or_complete( $batch_id, $current_index, $total_count, $post_type, $post_status, $content_type, $ai_prompt, $editor_type, $user_id, $product_options );
+		$this->schedule_next_or_complete( $batch_id, $current_index, $total_count, $post_type, $post_status, $content_type, $ai_prompt, $editor_type, $user_id, $product_options, $date_from, $date_to );
 	}
 
 	/**
@@ -308,8 +320,10 @@ class AI_Scheduled_Generator {
 	 * @param string $editor_type      Editor type.
 	 * @param int    $user_id          User ID.
 	 * @param array  $product_options  Optional product options for WooCommerce.
+	 * @param string $date_from        Optional date range start (ISO string).
+	 * @param string $date_to          Optional date range end (ISO string).
 	 */
-	protected function schedule_next_or_complete( $batch_id, $current_index, $total_count, $post_type, $post_status, $content_type, $ai_prompt, $editor_type, $user_id, $product_options = [] ) {
+	protected function schedule_next_or_complete( $batch_id, $current_index, $total_count, $post_type, $post_status, $content_type, $ai_prompt, $editor_type, $user_id, $product_options = [], $date_from = '', $date_to = '' ) {
 		$next_index = $current_index + 1;
 
 		if ( $next_index < $total_count ) {
@@ -327,6 +341,10 @@ class AI_Scheduled_Generator {
 			];
 			if ( ! empty( $product_options ) ) {
 				$action_args['product_options'] = $product_options;
+			}
+			if ( $date_from && $date_to ) {
+				$action_args['date_from'] = $date_from;
+				$action_args['date_to']   = $date_to;
 			}
 
 			// Schedule the next action

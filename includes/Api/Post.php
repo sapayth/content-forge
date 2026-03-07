@@ -130,6 +130,24 @@ class Post extends CForge_REST_Controller {
             return new \WP_REST_Response( [ 'message' => __( 'Invalid comment status.', 'content-forge' ) ], 400 );
         }
 
+        // Extract date range parameters
+        $date_from = isset( $params['date_from'] ) ? sanitize_text_field( $params['date_from'] ) : '';
+        $date_to   = isset( $params['date_to'] ) ? sanitize_text_field( $params['date_to'] ) : '';
+
+        // Validate date range if provided
+        if ( $date_from && $date_to ) {
+            $from_ts = strtotime( $date_from );
+            $to_ts   = strtotime( $date_to );
+
+            if ( ! $from_ts || ! $to_ts ) {
+                return new \WP_REST_Response( [ 'message' => __( 'Invalid date format.', 'content-forge' ) ], 400 );
+            }
+
+            if ( $from_ts > $to_ts ) {
+                return new \WP_REST_Response( [ 'message' => __( '"From" date must be before "To" date.', 'content-forge' ) ], 400 );
+            }
+        }
+
         // Extract AI generation parameters
         $use_ai       = isset( $params['use_ai'] ) && $params['use_ai'];
         $content_type = isset( $params['content_type'] ) ? sanitize_key( $params['content_type'] ) : 'general';
@@ -166,6 +184,10 @@ class Post extends CForge_REST_Controller {
             if ( 'product' === $post_type && ! empty( $params['product_options'] ) && is_array( $params['product_options'] ) ) {
                 $ai_args['product_options'] = $params['product_options'];
             }
+            if ( $date_from && $date_to ) {
+                $ai_args['date_from'] = $date_from;
+                $ai_args['date_to']   = $date_to;
+            }
 
             // Schedule AI generation
             $result = $this->scheduled_generator->schedule_generation( $ai_args );
@@ -187,8 +209,15 @@ class Post extends CForge_REST_Controller {
         $generate_image   = isset( $params['generate_image'] ) && $params['generate_image'];
         $image_sources    = isset( $params['image_sources'] ) && is_array( $params['image_sources'] ) ? array_map( 'sanitize_text_field', $params['image_sources'] ) : [];
         $generate_excerpt = isset( $params['generate_excerpt'] ) ? (bool) $params['generate_excerpt'] : true;
-        $created          = [];
-        $generator        = new GeneratorPost( get_current_user_id() );
+        $date_range_args  = [];
+        if ( $date_from && $date_to ) {
+            $date_range_args = [
+                'date_from' => $date_from,
+                'date_to'   => $date_to,
+            ];
+        }
+        $created   = [];
+        $generator = new GeneratorPost( get_current_user_id() );
 
         // Manual mode: expects post_titles (array) and post_contents (array)
         if ( isset( $params['post_titles'] ) && is_array( $params['post_titles'] ) ) {
@@ -219,6 +248,7 @@ class Post extends CForge_REST_Controller {
                 }
                 // Add excerpt generation parameter
                 $args['generate_excerpt'] = $generate_excerpt;
+                $args                     = array_merge( $args, $date_range_args );
                 $ids                      = $generator->generate( 1, $args );
                 if ( empty( $ids ) ) {
                     return new \WP_REST_Response(
@@ -294,13 +324,16 @@ class Post extends CForge_REST_Controller {
                     if ( 0 === $level ) {
                         // Root level - create items with no parent
                         for ( $i = 0; $i < $per_parent_count; $i++ ) {
-                            $args = [
-                                'post_type'        => $post_type,
-                                'post_status'      => $post_status,
-                                'comment_status'   => $comment_status,
-                                'post_parent'      => 0,
-                                'generate_excerpt' => $generate_excerpt,
-                            ];
+                            $args = array_merge(
+                                [
+                                    'post_type'        => $post_type,
+                                    'post_status'      => $post_status,
+                                    'comment_status'   => $comment_status,
+                                    'post_parent'      => 0,
+                                    'generate_excerpt' => $generate_excerpt,
+                                ],
+                                $date_range_args
+                            );
                             if ( $generate_image ) {
                                 $args['generate_image'] = true;
                                 if ( ! empty( $image_sources ) ) {
@@ -327,13 +360,16 @@ class Post extends CForge_REST_Controller {
 
                         foreach ( $prev_parents as $parent_id ) {
                             for ( $i = 0; $i < $per_parent_count; $i++ ) {
-                                $args = [
-                                    'post_type'        => $post_type,
-                                    'post_status'      => $post_status,
-                                    'comment_status'   => $comment_status,
-                                    'post_parent'      => $parent_id,
-                                    'generate_excerpt' => $generate_excerpt,
-                                ];
+                                $args = array_merge(
+                                    [
+                                        'post_type'        => $post_type,
+                                        'post_status'      => $post_status,
+                                        'comment_status'   => $comment_status,
+                                        'post_parent'      => $parent_id,
+                                        'generate_excerpt' => $generate_excerpt,
+                                    ],
+                                    $date_range_args
+                                );
                                 if ( $generate_image ) {
                                     $args['generate_image'] = true;
                                     if ( ! empty( $image_sources ) ) {
@@ -375,6 +411,7 @@ class Post extends CForge_REST_Controller {
                     }
                 }
                 $args['generate_excerpt'] = $generate_excerpt;
+                $args                     = array_merge( $args, $date_range_args );
                 $ids                      = $generator->generate( $post_number, $args );
                 if ( empty( $ids ) ) {
                     return new \WP_REST_Response(
