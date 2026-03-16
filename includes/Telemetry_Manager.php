@@ -51,8 +51,11 @@ class Telemetry_Manager {
         TelemetryConfig::setSlug( 'content-forge' );
         TelemetryConfig::setPrefix( 'cforge_' );
         TelemetryConfig::setVersion( CFORGE_VERSION );
-        // Set server base URL for telemetry.
-        $server_url = apply_filters( 'cforge_telemetry_server_url', 'https://feedio.sapayth.com/api/' );
+        // Set server base URL for telemetry with plugin token for authentication.
+        // The token is embedded in the URL path so wp-telemetry can authenticate
+        // without needing custom HTTP headers.
+        $token      = defined( 'CFORGE_TELEMETRY_TOKEN' ) ? CFORGE_TELEMETRY_TOKEN : '';
+        $server_url = apply_filters( 'cforge_telemetry_server_url', 'https://feedio.sapayth.com/api/t/' . $token . '/' );
         if ( ! empty( $server_url ) ) {
             TelemetryConfig::setServerBaseUrl( $server_url );
         }

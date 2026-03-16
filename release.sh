@@ -80,8 +80,8 @@ echo ""
 echo "Step 5: Creating tag $VERSION..."
 
 if [ -d "$SVN_DIR/tags/$VERSION" ]; then
-    echo "Warning: Tag $VERSION already exists. Removing and re-creating..."
-    rm -rf "$SVN_DIR/tags/$VERSION"
+    echo "Warning: Tag $VERSION already exists in SVN. Removing and re-creating..."
+    svn rm "$SVN_DIR/tags/$VERSION" --force
 fi
 
 mkdir -p "$SVN_DIR/tags/$VERSION"
