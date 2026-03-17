@@ -31,6 +31,102 @@ if [ -z "$VERSION" ]; then
     exit 1
 fi
 
+# ------------------------------------------------------------------
+# Confirm or update version
+# ------------------------------------------------------------------
+echo ""
+echo "Detected version: $VERSION (from $PLUGIN_SLUG.php)"
+read -r -p "Is this the correct version to release? [Y/n] " confirm_version
+if [[ "$confirm_version" == "n" || "$confirm_version" == "N" ]]; then
+    read -r -p "Enter the new version number (e.g. 1.5.0): " NEW_VERSION
+
+    if [ -z "$NEW_VERSION" ]; then
+        echo "Error: No version provided. Aborting."
+        exit 1
+    fi
+
+    if [[ ! "$NEW_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+        echo "Error: Version must be in semver format (e.g. 1.5.0). Aborting."
+        exit 1
+    fi
+
+    echo "Updating version from $VERSION to $NEW_VERSION..."
+
+    # Update plugin header: " * Version: x.y.z"
+    sed -i '' "s/^\( \* Version: *\)$VERSION/\1$NEW_VERSION/" "$PLUGIN_SLUG.php"
+
+    # Update PHP constant: const VERSION = 'x.y.z';
+    sed -i '' "s/const VERSION = '$VERSION'/const VERSION = '$NEW_VERSION'/" "$PLUGIN_SLUG.php"
+
+    # Update readme.txt stable tag
+    if [ -f "readme.txt" ]; then
+        sed -i '' "s/^Stable tag: *$VERSION/Stable tag: $NEW_VERSION/" readme.txt
+    fi
+
+    VERSION="$NEW_VERSION"
+    echo "Version updated to $VERSION."
+fi
+
+# ------------------------------------------------------------------
+# Collect changelog
+# ------------------------------------------------------------------
+echo ""
+echo "Paste the changelog for v$VERSION."
+echo "Each line should start with '* ' (e.g. * New - Feature description)"
+echo ""
+echo "When done, press Ctrl+D on an empty line."
+echo "---"
+
+CHANGELOG_INPUT=$(cat)
+
+if [ -z "$CHANGELOG_INPUT" ]; then
+    echo "Error: Changelog cannot be empty."
+    exit 1
+fi
+
+# Show changelog summary and confirm
+echo ""
+echo "---"
+echo "Changelog for v$VERSION:"
+echo "$CHANGELOG_INPUT"
+echo ""
+read -r -p "Proceed with release? [Y/n] " confirm_release
+if [[ "$confirm_release" == "n" || "$confirm_release" == "N" ]]; then
+    echo "Aborted."
+    exit 0
+fi
+
+# ------------------------------------------------------------------
+# Update readme.txt changelog
+# ------------------------------------------------------------------
+TODAY=$(date +"%d-%m-%Y")
+CHANGELOG_HEADER="= $VERSION $TODAY ="
+
+# Build the changelog block
+CHANGELOG_BLOCK=$(printf '%s\n%s' "$CHANGELOG_HEADER" "$CHANGELOG_INPUT")
+
+# Insert the new changelog block after "== Changelog ==" in readme.txt
+if [ -f "readme.txt" ]; then
+    TEMP_FILE=$(mktemp)
+    BLOCK_FILE=$(mktemp)
+    printf '\n%s\n' "$CHANGELOG_BLOCK" > "$BLOCK_FILE"
+
+    while IFS= read -r line; do
+        echo "$line"
+        if [ "$line" = "== Changelog ==" ]; then
+            cat "$BLOCK_FILE"
+        fi
+    done < readme.txt > "$TEMP_FILE"
+
+    mv "$TEMP_FILE" readme.txt
+    rm -f "$BLOCK_FILE"
+    echo ""
+    echo "Updated readme.txt changelog."
+else
+    echo "Warning: readme.txt not found. Skipping changelog update."
+fi
+
+echo ""
 echo "Deploying $PLUGIN_SLUG v$VERSION to WordPress.org..."
 
 # ------------------------------------------------------------------
