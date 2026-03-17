@@ -6,8 +6,6 @@ assets/
 release/
 
 # Environment and credentials
-.env
-.env.*
 
 # Editor and system files
 .DS_Store
@@ -19,3 +17,4 @@ release/
 # Composer
 vendor/
 composer.lock
+config.bat
