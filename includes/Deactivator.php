@@ -24,8 +24,10 @@ class Deactivator {
             return;
         }
 
-        // Apply filters to allow overriding the server URL if needed.
-        $server_url = apply_filters( 'cforge_telemetry_server_url', 'https://feedio.sapayth.com/api/' );
+        // Use the same token-based URL as the telemetry manager so requests
+        // authenticate via the plugin_token middleware, not the api_key middleware.
+        $token      = defined( 'CFORGE_TELEMETRY_TOKEN' ) ? CFORGE_TELEMETRY_TOKEN : '';
+        $server_url = apply_filters( 'cforge_telemetry_server_url', 'https://feedio.sapayth.com/api/t/' . $token . '/' );
         $endpoint   = rtrim( $server_url, '/' ) . '/plugin-deactivate';
 
         $body = [

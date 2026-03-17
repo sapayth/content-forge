@@ -58,7 +58,7 @@ final class ContentForge {
         $this->define( 'CFORGE_INCLUDES_PATH', CFORGE_PATH . 'includes/' );
         $this->define( 'CFORGE_TEXT_DOMAIN', 'content-forge' );
         $this->define( 'CFORGE_DBNAME', 'cforge' );
-        $this->define( 'CFORGE_TELEMETRY_TOKEN', '10d0e4b3-f4dc-4022-93e9-a9ddca2fc1ef' );
+        $this->define( 'CFORGE_TELEMETRY_TOKEN', 'ef0a5661-7381-4b13-83b1-3e232cb40fb2' );
     }
 
     /**

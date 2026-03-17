@@ -76,8 +76,6 @@ class Telemetry_Manager {
         add_filter( 'cforge_telemetry_data', [ __CLASS__, 'remove_plugin_counts' ], 10, 1 );
         // Add additional system data (MySQL, language, themes).
         add_filter( 'cforge_telemetry_data', [ __CLASS__, 'add_additional_system_data' ], 10, 1 );
-        // Add logging hook to track when telemetry data is being sent
-        add_action( 'cforge_tracking_opt_in', [ __CLASS__, 'log_telemetry_send' ], 10, 0 );
         // Initialize telemetry tracking.
         Telemetry::report()->addPluginData()->init();
         // Initialize deactivation feedback survey.
@@ -205,16 +203,6 @@ class Telemetry_Manager {
         }
 
         return $data;
-    }
-
-    /**
-     * Log telemetry send attempt.
-     * Hooked into cforge_tracking_opt_in action.
-     *
-     * @return void
-     */
-    public static function log_telemetry_send() {
-        // Hook fired - telemetry opt-in completed
     }
 
     /**
