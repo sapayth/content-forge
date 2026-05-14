@@ -30,19 +30,21 @@ cp composer.json "$RELEASE_DIR/"
 cp -R includes "$RELEASE_DIR/"
 cp -R Lib "$RELEASE_DIR/"
 cp -R assets "$RELEASE_DIR/"
-cp -R vendor "$RELEASE_DIR/"
-cp -R languages "$RELEASE_DIR/"
 cp -R src "$RELEASE_DIR/"
 
 if [ -d "languages" ]; then
     cp -R languages "$RELEASE_DIR/"
 fi
 
-# Vendor dependencies (if they exist)
-if [ -d "vendor" ]; then
-    echo "Copying vendor dependencies..."
-    cp -R vendor "$RELEASE_DIR/"
-fi
+# Install production-only composer dependencies into the release
+# (skips dev tools like phpcs, phpunit, wpcs). Restore dev deps afterwards
+# so the developer's local environment is unaffected.
+echo "Installing production-only composer dependencies for the release..."
+composer install --no-dev --optimize-autoloader --quiet
+cp -R vendor "$RELEASE_DIR/"
+
+echo "Restoring developer composer dependencies..."
+composer install --quiet
 
 # 4. Create zip archive of the release directory contents
 echo "Creating release zip..."
@@ -70,4 +72,21 @@ if [ -d "vendor" ]; then
     echo "- vendor/ (composer dependencies)"
 fi
 echo ""
-echo "🚀 Ready for WordPress.org submission!" 
+echo "🚀 Ready for WordPress.org submission!"
+
+# 6. Audit summary — top-level zip contents + vendor packages shipped
+echo ""
+echo "--- Release audit ---"
+echo "Top-level entries in the zip:"
+unzip -l "$ZIP_FILE" | awk 'NR>3 {print $4}' | awk -F/ '{print $1}' | sort -u | grep -v '^$'
+
+if [ -d "$RELEASE_DIR/vendor" ]; then
+    echo ""
+    echo "Vendor packages shipped:"
+    find "$RELEASE_DIR/vendor" -mindepth 2 -maxdepth 2 -type d | sed "s|$RELEASE_DIR/vendor/||" | sort
+fi
+
+echo ""
+ZIP_SIZE=$(du -h "$ZIP_FILE" | awk '{print $1}')
+echo "Release zip size: $ZIP_SIZE"
+echo "---"

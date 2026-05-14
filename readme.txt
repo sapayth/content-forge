@@ -4,7 +4,7 @@ Tags: ai content generator, autopilot, scheduled posts, dummy content, testing
 Requires at least: 5.6
 Tested up to: 6.9.1
 Requires PHP: 7.4
-Stable tag: 1.4.2
+Stable tag: 1.5.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -113,6 +113,9 @@ Yes. Run one per category, niche, or author — they operate independently.
 5. Bulk content management tools
 
 == Changelog ==
+
+= 1.5.0 14-05-2026 =
+New - Autopilot — set it once, and your posts generate themselves on schedule
 
 = 1.4.2 17-03-2026 =
 * New - Random date-range for generated posts — time travel your content
