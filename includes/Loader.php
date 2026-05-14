@@ -84,6 +84,9 @@ class Loader {
 			require_once CFORGE_INCLUDES_PATH . 'Generator/AI_Scheduled_Generator.php';
 		}
 
+		// Boot the Autopilot subsystem (registers CPT, wires AS handlers when enabled).
+		\ContentForge\Autopilot\Plugin::boot();
+
 		$this->container['api'] = new Api();
 
 		// Load and initialize telemetry tracking.

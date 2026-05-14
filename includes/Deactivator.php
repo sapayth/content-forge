@@ -19,6 +19,11 @@ class Deactivator {
      * @since 1.4.0
      */
     public static function deactivate() {
+        // Tear down Autopilot recurring actions; preserve all data (schedules CPT + runs table).
+        if ( class_exists( '\\ContentForge\\Autopilot\\Plugin' ) ) {
+            \ContentForge\Autopilot\Plugin::unschedule_recurring_actions();
+        }
+
         // Only run if wp_remote_post is available
         if ( ! function_exists( 'wp_remote_post' ) ) {
             return;

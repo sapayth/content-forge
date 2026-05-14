@@ -12,6 +12,7 @@ module.exports = (env = {}) => {
     comments: './src/js/comments.jsx',
     settings: './src/js/settings.jsx',
     taxonomy: './src/js/taxonomy.jsx',
+    autopilot: './src/js/autopilot.jsx',
   }
 
   // Allow custom entry/output via env

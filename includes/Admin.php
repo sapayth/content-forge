@@ -82,6 +82,16 @@ class Admin {
             'cforge-taxonomies',
             [ __CLASS__, 'render_taxonomies_page' ]
         );
+
+        add_submenu_page(
+            $parent_slug,
+            __( 'Autopilot', 'content-forge' ),
+            __( 'Autopilot', 'content-forge' ),
+            $capability,
+            'cforge-autopilot',
+            [ __CLASS__, 'render_autopilot_page' ]
+        );
+
         add_submenu_page(
             $parent_slug,
             __( 'Settings', 'content-forge' ),
@@ -132,6 +142,13 @@ class Admin {
      */
     public static function render_settings_page() {
         echo '<div id="cforge-settings-app" style="margin-left: -20px"></div>';
+    }
+
+    /**
+     * Render the Autopilot React app root div.
+     */
+    public static function render_autopilot_page() {
+        echo '<div id="cforge-autopilot-app" style="margin-left: -20px"></div>';
     }
 
     /**
@@ -272,6 +289,27 @@ class Admin {
                     'pluginVersion'     => CFORGE_VERSION,
                 ],
             ],
+            'content-forge_page_cforge-autopilot'  => [
+                'script_handle' => 'cforge-autopilot-app',
+                'script_file'   => 'autopilot.js',
+                'style_handle'  => 'cforge-autopilot-style',
+                'style_file'    => 'autopilot.css',
+                'localize_data' => [
+                    'apiUrl'             => esc_url_raw( rest_url( 'cforge/v1/' ) ),
+                    'rest_nonce'         => wp_create_nonce( 'wp_rest' ),
+                    'ajax_url'           => admin_url( 'admin-ajax.php' ),
+                    'ajax_nonce'         => wp_create_nonce( 'cforge_telemetry' ),
+                    'telemetry_enabled'  => Telemetry_Manager::is_tracking_allowed(),
+                    'pluginVersion'      => CFORGE_VERSION,
+                    'categories'         => self::get_categories_for_select(),
+                    'authors'            => self::get_authors_for_select(),
+                    'post_types'         => self::get_autopilot_post_types(),
+                    'ai_configured'      => \ContentForge\Settings\AI_Settings_Manager::is_configured(),
+                    'site_timezone'      => wp_timezone_string(),
+                    'autopilot_enabled'  => \ContentForge\Autopilot\Plugin::is_enabled(),
+                    'settings_url'       => admin_url( 'admin.php?page=cforge-settings' ),
+                ],
+            ],
         ];
         if ( isset( $page_configs[ $hook ] ) ) {
             $config = $page_configs[ $hook ];
@@ -310,6 +348,73 @@ class Admin {
             ];
         }
         return apply_filters( 'cforge_cpt_page_post_types', $list );
+    }
+
+    /**
+     * Categories formatted for the Autopilot UI select control.
+     *
+     * @return array<int, array{value:int,label:string}>
+     */
+    public static function get_categories_for_select() {
+        $terms = get_terms(
+            [
+                'taxonomy'   => 'category',
+                'hide_empty' => false,
+                'number'     => 200,
+            ]
+        );
+        if ( is_wp_error( $terms ) ) {
+            return [];
+        }
+        return array_map(
+            static function ( $term ) {
+                return [
+                    'value' => (int) $term->term_id,
+                    'label' => (string) $term->name,
+                ];
+            },
+            $terms
+        );
+    }
+
+    /**
+     * Authors who can publish posts.
+     *
+     * @return array<int, array{value:int,label:string}>
+     */
+    public static function get_authors_for_select() {
+        $users = get_users(
+            [
+                'capability' => 'publish_posts',
+                'number'     => 100,
+                'fields'     => [ 'ID', 'display_name' ],
+            ]
+        );
+        return array_map(
+            static function ( $user ) {
+                return [
+                    'value' => (int) $user->ID,
+                    'label' => (string) $user->display_name,
+                ];
+            },
+            $users
+        );
+    }
+
+    /**
+     * Post types available for autopilot generation (post + supported CPTs).
+     *
+     * @return array<int, array{value:string,label:string}>
+     */
+    public static function get_autopilot_post_types() {
+        $list = [
+            [
+                'value' => 'post',
+                'label' => __( 'Post', 'content-forge' ),
+            ],
+        ];
+        // CPT support deferred to P3+; only 'post' for now.
+        return $list;
     }
 
     /**

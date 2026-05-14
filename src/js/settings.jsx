@@ -2,6 +2,7 @@ import { __ } from '@wordpress/i18n';
 import '../css/common.css';
 import Header from './components/Header';
 import AISettings from './components/AISettings';
+import AutopilotSettings from './components/AutopilotSettings';
 
 function SettingsApp() {
     return (
@@ -11,6 +12,7 @@ function SettingsApp() {
             />
             <div className="cforge-bg-white cforge-min-h-screen">
                 <AISettings />
+                <AutopilotSettings />
             </div>
         </>
     );

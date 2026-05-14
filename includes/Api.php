@@ -14,6 +14,9 @@ use ContentForge\Api\User;
 use ContentForge\Api\Taxonomy;
 use ContentForge\Api\AI;
 use ContentForge\Api\Generation_Status;
+use ContentForge\Api\Autopilot_Schedules;
+use ContentForge\Api\Autopilot_Runs;
+use ContentForge\Api\Autopilot_Settings;
 use ContentForge\Traits\ContainerTrait;
 
 class Api {
@@ -31,6 +34,9 @@ class Api {
 		$this->container['taxonomy']          = new Taxonomy();
 		$this->container['ai']                = new AI();
 		$this->container['generation_status'] = new Generation_Status();
+		$this->container['autopilot_schedules'] = new Autopilot_Schedules();
+		$this->container['autopilot_runs']      = new Autopilot_Runs();
+		$this->container['autopilot_settings']  = new Autopilot_Settings();
 
 		add_action( 'rest_api_init', [ $this, 'init_api' ] );
 	}

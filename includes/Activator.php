@@ -18,6 +18,7 @@ class Activator {
 	 */
 	public static function activate() {
 		self::create_tracking_table();
+		\ContentForge\Autopilot\Installer::maybe_install();
 	}
 
 	/**

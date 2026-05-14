@@ -47,7 +47,7 @@ const Header = ({heading = '', subheading = '' }) => {
                     className="cforge-bg-white/20 cforge-px-2 cforge-py-1 cforge-rounded cforge-text-xs cforge-font-medium hover:cforge-text-white"
                     rel="noopener noreferrer"
                     >
-                        {__('Request Feature', 'content-forge')}
+                        {__('Feature Idea', 'content-forge')}
                     </a>
                     <a
                         href="https://wordpress.org/support/plugin/content-forge/"
