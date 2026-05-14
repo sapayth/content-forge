@@ -23,3 +23,22 @@ composer.lock
 # PHPUnit
 .phpunit.result.cache
 .phpunit.cache/
+# Node and build output
+node_modules/
+dist/
+build/
+assets/
+release/
+
+# Environment and credentials
+
+# Editor and system files
+.DS_Store
+.cursor/
+.idea/
+*.swp
+*.swo
+
+# Composer
+vendor/
+composer.lock
