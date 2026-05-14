@@ -1,0 +1,252 @@
+<!--
+DESCRIPTION: Gutenberg block-formatted blog post announcing Content Forge Autopilot.
+Paste directly into the WordPress block editor (Code Editor mode) on a live site.
+-->
+<!-- wp:paragraph -->
+<p>If you've ever stared at an empty WordPress drafts folder at 6 AM wondering what to write, this one's for you. <strong>Content Forge Autopilot</strong> is a new, completely free feature that schedules AI-generated posts for you — on your terms, with your AI provider, and with safety rails so nothing ships without your say-so.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:heading -->
+<h2 class="wp-block-heading">What is Autopilot?</h2>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph -->
+<p>Autopilot is a scheduled AI publishing assistant built into Content Forge. You define a recurring rule once — <em>"every weekday at 9 AM, draft one post about WordPress productivity tips"</em> — and Content Forge handles the rest in the background using whichever AI provider you've already connected (OpenAI, Anthropic, or Google).</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>It's the difference between <em>"AI can write a post if I ask it to"</em> and <em>"AI is quietly putting drafts on my desk every morning before I sit down."</em></p>
+<!-- /wp:paragraph -->
+
+<!-- wp:heading -->
+<h2 class="wp-block-heading">Who is this for?</h2>
+<!-- /wp:heading -->
+
+<!-- wp:list -->
+<ul class="wp-block-list">
+<!-- wp:list-item -->
+<li><strong>Solo bloggers</strong> who want a steady supply of first drafts without the blank-page tax.</li>
+<!-- /wp:list-item -->
+<!-- wp:list-item -->
+<li><strong>Content marketers</strong> populating a niche site, demo, or staging environment with realistic posts.</li>
+<!-- /wp:list-item -->
+<!-- wp:list-item -->
+<li><strong>Agencies</strong> spinning up a content backbone for a client site before editorial takes over.</li>
+<!-- /wp:list-item -->
+<!-- wp:list-item -->
+<li><strong>Developers and testers</strong> who want a site with real, ongoing content for theme, SEO, or performance testing.</li>
+<!-- /wp:list-item -->
+</ul>
+<!-- /wp:list -->
+
+<!-- wp:heading -->
+<h2 class="wp-block-heading">How it works, in 30 seconds</h2>
+<!-- /wp:heading -->
+
+<!-- wp:list {"ordered":true} -->
+<ol class="wp-block-list">
+<!-- wp:list-item -->
+<li>Go to <strong>Content Forge → Autopilot</strong> and click <strong>New Autopilot</strong>.</li>
+<!-- /wp:list-item -->
+<!-- wp:list-item -->
+<li>Pick a <strong>topic source</strong> — a list you write, a queue, or an AI-generated topic from a theme.</li>
+<!-- /wp:list-item -->
+<!-- wp:list-item -->
+<li>Pick a <strong>frequency</strong> — daily, weekly, monthly, or any custom interval.</li>
+<!-- /wp:list-item -->
+<!-- wp:list-item -->
+<li>Pick a <strong>tone and length</strong>, optionally add a custom prompt for your brand voice.</li>
+<!-- /wp:list-item -->
+<!-- wp:list-item -->
+<li>Pick what happens to the result — <strong>draft, pending, scheduled, or live</strong>.</li>
+<!-- /wp:list-item -->
+<!-- wp:list-item -->
+<li>Save. Done.</li>
+<!-- /wp:list-item -->
+</ol>
+<!-- /wp:list -->
+
+<!-- wp:paragraph -->
+<p>From that point on, the post arrives in your drafts folder (or wherever you told it to go) on the schedule you set, without you opening the editor.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:heading -->
+<h2 class="wp-block-heading">Four topic strategies, pick the one that fits your workflow</h2>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph -->
+<p>This is the part most users will spend the longest deciding on, so here's a quick map:</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:list -->
+<ul class="wp-block-list">
+<!-- wp:list-item -->
+<li><strong>List (cycle in order)</strong> — You've planned 20 specific topics and want them written in sequence. Predictable, editorial-friendly.</li>
+<!-- /wp:list-item -->
+<!-- wp:list-item -->
+<li><strong>List (random pick)</strong> — Same list, but Autopilot picks one at random each run. Good for evergreen topic pools.</li>
+<!-- /wp:list-item -->
+<!-- wp:list-item -->
+<li><strong>Topic queue</strong> — A "one-shot" queue. Each topic is used once and removed. Great for sprint-style content batches.</li>
+<!-- /wp:list-item -->
+<!-- wp:list-item -->
+<li><strong>AI-suggested from theme</strong> — Give it a niche like <em>"home brewing for beginners"</em> and let the AI invent the topic each time. Most hands-off mode.</li>
+<!-- /wp:list-item -->
+</ul>
+<!-- /wp:list -->
+
+<!-- wp:heading -->
+<h2 class="wp-block-heading">"But what if the AI goes off the rails?"</h2>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph -->
+<p>Reasonable question. Autopilot ships with several safety rails on by default:</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:list -->
+<ul class="wp-block-list">
+<!-- wp:list-item -->
+<li><strong>Default-to-draft.</strong> Nothing goes live without you flipping that switch yourself.</li>
+<!-- /wp:list-item -->
+<!-- wp:list-item -->
+<li><strong>Daily post cap.</strong> Hard ceiling on how many posts a single Autopilot can create per day.</li>
+<!-- /wp:list-item -->
+<!-- wp:list-item -->
+<li><strong>Auto-pause on failure.</strong> Three failed runs in a row (configurable) and Autopilot pauses itself and emails you.</li>
+<!-- /wp:list-item -->
+<!-- wp:list-item -->
+<li><strong>Duplicate guard.</strong> Optional similarity check against your recent posts in the same category — no more accidentally writing the same article twice.</li>
+<!-- /wp:list-item -->
+<!-- wp:list-item -->
+<li><strong>Dispatcher heartbeat.</strong> The dashboard warns you if WP-Cron has stalled and Autopilot hasn't run when it should have.</li>
+<!-- /wp:list-item -->
+</ul>
+<!-- /wp:list -->
+
+<!-- wp:heading -->
+<h2 class="wp-block-heading">A few example setups</h2>
+<!-- /wp:heading -->
+
+<!-- wp:heading {"level":3} -->
+<h3 class="wp-block-heading">The "daily coffee draft"</h3>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph -->
+<p>One draft on your desk every morning, ready for you to polish before publishing.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:list -->
+<ul class="wp-block-list">
+<!-- wp:list-item -->
+<li>Topic source: <strong>AI-suggested from theme</strong></li>
+<!-- /wp:list-item -->
+<!-- wp:list-item -->
+<li>Frequency: <strong>Daily at 06:00</strong></li>
+<!-- /wp:list-item -->
+<!-- wp:list-item -->
+<li>Publishing: <strong>Save as draft</strong></li>
+<!-- /wp:list-item -->
+<!-- wp:list-item -->
+<li>Notifications: <strong>Failure only</strong></li>
+<!-- /wp:list-item -->
+</ul>
+<!-- /wp:list -->
+
+<!-- wp:heading {"level":3} -->
+<h3 class="wp-block-heading">The "fill out a niche site in 30 days"</h3>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph -->
+<p>Hand it a list of 30 topics and walk away. Drafts land daily; you review them on your own schedule.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:list -->
+<ul class="wp-block-list">
+<!-- wp:list-item -->
+<li>Topic source: <strong>List (cycle in order)</strong> with all 30 topics</li>
+<!-- /wp:list-item -->
+<!-- wp:list-item -->
+<li>Frequency: <strong>Daily at 09:00</strong></li>
+<!-- /wp:list-item -->
+<!-- wp:list-item -->
+<li>Publishing: <strong>Schedule to publish later</strong>, 6-hour review window</li>
+<!-- /wp:list-item -->
+<!-- wp:list-item -->
+<li>Daily post cap: <strong>1</strong></li>
+<!-- /wp:list-item -->
+</ul>
+<!-- /wp:list -->
+
+<!-- wp:heading {"level":3} -->
+<h3 class="wp-block-heading">The "Sunday-night content batch"</h3>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph -->
+<p>One run, five drafts, every Sunday evening. The whole week of content ready before Monday morning.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:list -->
+<ul class="wp-block-list">
+<!-- wp:list-item -->
+<li>Topic source: <strong>Topic queue</strong> with 7 topics</li>
+<!-- /wp:list-item -->
+<!-- wp:list-item -->
+<li>Frequency: <strong>Weekly, Sunday at 22:00</strong></li>
+<!-- /wp:list-item -->
+<!-- wp:list-item -->
+<li>Posts per run: <strong>5</strong></li>
+<!-- /wp:list-item -->
+<!-- wp:list-item -->
+<li>Publishing: <strong>Save as draft</strong></li>
+<!-- /wp:list-item -->
+</ul>
+<!-- /wp:list -->
+
+<!-- wp:heading -->
+<h2 class="wp-block-heading">What does it cost?</h2>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph -->
+<p>Content Forge is free. Autopilot is free. The only thing you pay for is the AI provider's API usage — and that bill goes directly to OpenAI, Anthropic, or Google, not to us.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:heading -->
+<h2 class="wp-block-heading">A note on AI-generated content and Google</h2>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph -->
+<p>This needs saying plainly: <strong>Autopilot is not a tool for mass-publishing unedited AI content.</strong> Google's guidelines penalize low-quality, unhelpful content regardless of how it was produced. The point of Autopilot is to remove the blank-page friction — to put a first draft in front of you so you can edit, improve, and add your own perspective. Used that way, it's a productivity multiplier. Used to spam? You'll get what you deserve from Search.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:heading -->
+<h2 class="wp-block-heading">Getting started</h2>
+<!-- /wp:heading -->
+
+<!-- wp:list {"ordered":true} -->
+<ol class="wp-block-list">
+<!-- wp:list-item -->
+<li>Install or update <strong>Content Forge</strong> from the WordPress plugin directory.</li>
+<!-- /wp:list-item -->
+<!-- wp:list-item -->
+<li>Go to <strong>Content Forge → Settings → AI</strong> and connect a provider (OpenAI, Anthropic, or Google).</li>
+<!-- /wp:list-item -->
+<!-- wp:list-item -->
+<li>Open <strong>Content Forge → Autopilot</strong> and create your first scheduled rule.</li>
+<!-- /wp:list-item -->
+<!-- wp:list-item -->
+<li>Hit <strong>Run now</strong> to test it end-to-end, then let it ride on the schedule.</li>
+<!-- /wp:list-item -->
+</ol>
+<!-- /wp:list -->
+
+<!-- wp:paragraph -->
+<p>Got feedback, a feature request, or a recipe of your own that works well? We'd love to hear it.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:separator -->
+<hr class="wp-block-separator has-alpha-channel-opacity"/>
+<!-- /wp:separator -->
+
+<!-- wp:paragraph {"fontSize":"small"} -->
+<p class="has-small-font-size"><em>Content Forge is a free WordPress plugin for generating realistic content — dummy data for development, AI-generated posts for real publishing, and now scheduled AI publishing with Autopilot.</em></p>
+<!-- /wp:paragraph -->

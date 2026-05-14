@@ -1,6 +1,6 @@
-=== Content Forge - Generate realistic dummy content, posts, comments, users, taxonomies, and pages ===
+=== Content Forge - AI & non-AI content generator, scheduled AI posts, dummy data for your site ===
 Contributors: sapayth
-Tags: fake data, dummy content, testing, development, generator
+Tags: ai content generator, autopilot, scheduled posts, dummy content, testing
 Requires at least: 5.6
 Tested up to: 6.9.1
 Requires PHP: 7.4
@@ -8,15 +8,25 @@ Stable tag: 1.4.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Generate realistic dummy posts, pages, users, and comments. Choose AI-powered or traditional generation methods for development and testing.
+Generate WordPress content with or without AI. Schedule AI posts via Autopilot, or instantly create dummy posts, users, comments, pages.
 
 == Description ==
 
-Content Forge is a powerful WordPress plugin designed for developers and site builders who need to quickly generate realistic dummy content for testing and development purposes. Choose between AI-powered content generation (using OpenAI, Anthropic, or Google) for high-quality, contextually relevant content, or use traditional generation methods for quick content creation. Whether you're building a new theme, testing functionality, or demonstrating a website, Content Forge provides an easy way to populate your WordPress site with meaningful fake data.
+Content Forge is a free WordPress plugin that works two ways — with AI or without. The built-in traditional generator instantly creates dummy posts, pages, users, comments, and taxonomies for development, testing, and demos, no API key required. Or connect an AI provider (OpenAI, Anthropic, or Google) to generate real, contextually relevant posts on demand — and let Autopilot schedule those AI posts to run automatically on the cadence you choose. Use either mode standalone, or mix both in the same workflow.
+
+= Autopilot: schedule AI-generated WordPress posts =
+
+Autopilot is a free, built-in scheduler that turns Content Forge into a hands-off AI publishing assistant. Define a recurring rule once and it generates posts in the background — daily, weekly, monthly, or any custom interval. Pick your topic strategy (cycling list, random list, one-shot queue, or AI-suggested from a theme), your tone and length, and what should happen to the result: save as draft, mark as pending review, schedule to publish later, or publish immediately. Safety rails are on by default — daily post caps, auto-pause on failure, duplicate guard, and default-to-draft mode — so nothing goes live without your explicit opt-in.
 
 = Features =
 
-* Optional AI-powered content generation using OpenAI, Anthropic, and Google
+* Autopilot: scheduled AI post generation with daily, weekly, monthly, or custom intervals
+* Multiple topic strategies for Autopilot: cycling list, random list, one-shot queue, AI-suggested from theme
+* Per-Autopilot tone (professional, casual, technical, conversational) and length controls
+* Publishing modes for Autopilot: draft, pending review, scheduled, or immediate publish
+* Safety controls: daily post caps, auto-pause after consecutive failures, duplicate guard
+* Email notifications for Autopilot runs (every run, failures only, or off)
+* AI-powered content generation using OpenAI, Anthropic, and Google
 * Traditional content generation (no AI required)
 * Generate fake posts with realistic titles, content, metadata, and excerpts
 * Create dummy pages with hierarchical structure
@@ -31,6 +41,9 @@ Content Forge is a powerful WordPress plugin designed for developers and site bu
 
 = Use Cases =
 
+* Scheduled AI blogging for solo creators and niche site owners
+* Editorial workflows where AI produces drafts and humans review before publish
+* Filling demo or staging sites with realistic ongoing content
 * Theme development and testing
 * Plugin development
 * Client demonstrations
@@ -46,6 +59,10 @@ Content Forge is a powerful WordPress plugin designed for developers and site bu
 4. Configure your generation settings and start creating dummy content.
 
 == Frequently Asked Questions ==
+
+= Do I need an AI API key to use this plugin? =
+
+No. Content Forge has two independent modes. The traditional generator creates dummy posts, pages, users, comments, and taxonomies without any AI configuration — install, activate, generate. An AI API key (OpenAI, Anthropic, or Google) is only required if you want AI-generated content on demand or you want to use Autopilot.
 
 = Is the generated content safe for production sites? =
 
@@ -66,6 +83,26 @@ Yes, Content Forge provides bulk deletion options to easily remove all generated
 = Is the plugin translation ready? =
 
 Yes, Content Forge is fully translation ready and includes a .pot file for translators.
+
+= What is Autopilot? =
+
+Autopilot is a free, built-in feature that schedules AI-generated posts. You set the topic source, frequency, tone, length, and what happens to the post (draft, pending, scheduled, or immediate publish), and Content Forge runs it in the background using your AI provider.
+
+= Is Autopilot free? =
+
+Yes. Autopilot and every other feature of Content Forge are free. You only pay your AI provider (OpenAI, Anthropic, or Google) for their API usage.
+
+= Will Autopilot publish posts without my permission? =
+
+No. Autopilot defaults to saving every generated post as a draft. You explicitly opt into pending review, scheduled, or immediate publish modes per Autopilot.
+
+= What happens if the AI fails repeatedly? =
+
+Autopilot auto-pauses after a configurable number of consecutive failures (default 3) and emails you. You fix the cause (expired API key, rate limit, etc.) and click Resume.
+
+= Can I run multiple Autopilots at the same time? =
+
+Yes. Run one per category, niche, or author — they operate independently.
 
 == Screenshots ==
 
