@@ -2,9 +2,9 @@
 Contributors: sapayth
 Tags: ai content generator, autopilot, scheduled posts, dummy content, testing
 Requires at least: 5.6
-Tested up to: 6.9.1
+Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.5.0
+Stable tag: 1.6.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -26,7 +26,8 @@ Autopilot is a free, built-in scheduler that turns Content Forge into a hands-of
 * Publishing modes for Autopilot: draft, pending review, scheduled, or immediate publish
 * Safety controls: daily post caps, auto-pause after consecutive failures, duplicate guard
 * Email notifications for Autopilot runs (every run, failures only, or off)
-* AI-powered content generation using OpenAI, Anthropic, and Google
+* AI-powered content generation using OpenAI, Anthropic, Google, Mistral, and DeepSeek
+* Assign generated posts to a specific author, or shuffle them across a random pool of authors
 * Traditional content generation (no AI required)
 * Generate fake posts with realistic titles, content, metadata, and excerpts
 * Create dummy pages with hierarchical structure
@@ -113,6 +114,10 @@ Yes. Run one per category, niche, or author — they operate independently.
 5. Bulk content management tools
 
 == Changelog ==
+
+= 1.6.0 14-06-2026 =
+* New - Byline roulette — assign generated posts to one author or shuffle them across a random crew
+* New - DeepSeek and Mistral join the AI party — more brains, more choices
 
 = 1.5.0 14-05-2026 =
 New - Autopilot — set it once, and your posts generate themselves on schedule

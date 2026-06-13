@@ -1,0 +1,61 @@
+# DESCRIPTION: Deploy Content Forge to the WordPress.org SVN repository.
+# Triggered on push of a version tag (e.g. v1.6.0).
+
+name: Deploy to WordPress.org
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  deploy:
+    name: Build and deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '7.4'
+          coverage: none
+          tools: composer
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Read plugin version
+        id: plugin_version
+        run: |
+          VERSION=$(grep -i "Version:" content-forge.php | head -1 | awk '{print $NF}')
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Verify tag matches plugin version
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          if [ "$TAG_VERSION" != "${{ steps.plugin_version.outputs.version }}" ]; then
+            echo "Tag $GITHUB_REF_NAME does not match plugin version ${{ steps.plugin_version.outputs.version }}"
+            exit 1
+          fi
+
+      - name: Build assets
+        run: npm run build
+
+      - name: Install production composer dependencies
+        run: composer install --no-dev --optimize-autoloader
+
+      - name: WordPress Plugin Deploy
+        uses: 10up/action-wordpress-plugin-deploy@stable
+        env:
+          SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
+          SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
+          SLUG: content-forge
+          VERSION: ${{ steps.plugin_version.outputs.version }}
