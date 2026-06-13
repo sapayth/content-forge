@@ -76,6 +76,8 @@ class Telemetry_Manager {
         add_filter( 'cforge_telemetry_data', [ __CLASS__, 'remove_plugin_counts' ], 10, 1 );
         // Add additional system data (MySQL, language, themes).
         add_filter( 'cforge_telemetry_data', [ __CLASS__, 'add_additional_system_data' ], 10, 1 );
+        // Remove the "I have Pro" deactivation reason since Content Forge has no Pro version.
+        add_filter( 'cforge_deactivate_reasons', [ __CLASS__, 'remove_pro_deactivate_reason' ], 10, 1 );
         // Initialize telemetry tracking.
         Telemetry::report()->addPluginData()->init();
         // Initialize deactivation feedback survey.
@@ -203,6 +205,19 @@ class Telemetry_Manager {
         }
 
         return $data;
+    }
+
+    /**
+     * Remove the "I have Content Forge Pro" deactivation reason.
+     *
+     * Content Forge does not have a Pro version, so this reason is not applicable.
+     *
+     * @param array $reasons The deactivation reasons array.
+     * @return array Modified reasons array without the Pro option.
+     */
+    public static function remove_pro_deactivate_reason( $reasons ) {
+        unset( $reasons[ TelemetryConfig::getPrefix() . 'pro' ] );
+        return $reasons;
     }
 
     /**

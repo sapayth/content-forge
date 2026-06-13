@@ -248,6 +248,10 @@ export default function AISettings() {
                 return 'https://cloud.google.com/docs/authentication/api-keys';
             case 'anthropic':
                 return 'https://platform.claude.com/docs/en/api/admin/api_keys/retrieve';
+            case 'mistral':
+                return 'https://console.mistral.ai/api-keys';
+            case 'deepseek':
+                return 'https://platform.deepseek.com/api_keys';
             case 'openai':
             default:
                 return 'https://platform.openai.com/api-keys';

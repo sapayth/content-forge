@@ -3,8 +3,18 @@ import { __ } from '@wordpress/i18n';
 import { SelectControl, TextareaControl, Button, Notice, ToggleControl } from '@wordpress/components';
 import apiFetch from '@wordpress/api-fetch';
 import DateRangePicker from './DateRangePicker';
+import AuthorSelect from './AuthorSelect';
 
-export default function AIGenerateTab({ post, setPost, onSuccess }) {
+export default function AIGenerateTab({
+    post,
+    setPost,
+    onSuccess,
+    authors = [],
+    authorMode = 'me',
+    setAuthorMode = () => {},
+    authorIds = [],
+    setAuthorIds = () => {},
+}) {
     const [isConfigured, setIsConfigured] = useState(false);
     const [contentType, setContentType] = useState('general');
     const [customPrompt, setCustomPrompt] = useState('');
@@ -114,6 +124,8 @@ export default function AIGenerateTab({ post, setPost, onSuccess }) {
                 editor_type: editorType,
                 use_ai: true,
                 ...(randomizeDates && dateFrom && dateTo ? { date_from: dateFrom, date_to: dateTo } : {}),
+                ...(authorMode === 'specific' && authorIds.length > 0 ? { author_mode: 'specific', authors: authorIds } : {}),
+                ...(authorMode === 'random' ? { author_mode: 'random' } : {}),
             };
 
             const response = await apiFetch({
@@ -412,6 +424,14 @@ export default function AIGenerateTab({ post, setPost, onSuccess }) {
                         </div>
                     )}
                 </div>
+
+                <AuthorSelect
+                    authors={authors}
+                    mode={authorMode}
+                    onModeChange={setAuthorMode}
+                    selected={authorIds}
+                    onSelectedChange={setAuthorIds}
+                />
 
                 <div className="cforge-mt-6">
                     <Button

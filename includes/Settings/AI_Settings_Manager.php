@@ -20,6 +20,8 @@ class AI_Settings_Manager {
 	const PROVIDER_OPENAI    = 'openai';
 	const PROVIDER_ANTHROPIC = 'anthropic';
 	const PROVIDER_GOOGLE    = 'google';
+	const PROVIDER_MISTRAL   = 'mistral';
+	const PROVIDER_DEEPSEEK  = 'deepseek';
 
 	// Option names.
 	const OPTION_PROVIDER     = 'cforge_ai_provider';
@@ -32,6 +34,8 @@ class AI_Settings_Manager {
 	const DEFAULT_MODEL_OPENAI    = 'gpt-4';
 	const DEFAULT_MODEL_ANTHROPIC = 'claude-3-opus-20240229';
 	const DEFAULT_MODEL_GOOGLE    = 'gemini-2.5-flash';
+	const DEFAULT_MODEL_MISTRAL   = 'mistral-small-latest';
+	const DEFAULT_MODEL_DEEPSEEK  = 'deepseek-v4-flash';
 
 	/**
 	 * Get available AI providers.
@@ -45,6 +49,8 @@ class AI_Settings_Manager {
 			self::PROVIDER_OPENAI    => 'OpenAI',
 			self::PROVIDER_ANTHROPIC => 'Anthropic',
 			self::PROVIDER_GOOGLE    => 'Google',
+			self::PROVIDER_MISTRAL   => 'Mistral',
+			self::PROVIDER_DEEPSEEK  => 'DeepSeek',
 		];
 
 		/**
@@ -137,6 +143,24 @@ class AI_Settings_Manager {
 					'gemini-pro'                          => 'Gemini Pro (Legacy)',
 				];
 				break;
+
+			case self::PROVIDER_MISTRAL:
+				$models = [
+					'mistral-large-latest'  => 'Mistral Large',
+					'mistral-medium-latest' => 'Mistral Medium',
+					'mistral-small-latest'  => 'Mistral Small',
+					'open-mistral-nemo'     => 'Mistral Nemo',
+					'codestral-latest'      => 'Codestral',
+					'pixtral-large-latest'  => 'Pixtral Large',
+				];
+				break;
+
+			case self::PROVIDER_DEEPSEEK:
+				$models = [
+					'deepseek-v4-pro'   => 'DeepSeek V4 Pro',
+					'deepseek-v4-flash' => 'DeepSeek V4 Flash',
+				];
+				break;
 		}
 
 		/**
@@ -191,6 +215,10 @@ class AI_Settings_Manager {
 					return self::DEFAULT_MODEL_ANTHROPIC;
 				case self::PROVIDER_GOOGLE:
 					return self::DEFAULT_MODEL_GOOGLE;
+				case self::PROVIDER_MISTRAL:
+					return self::DEFAULT_MODEL_MISTRAL;
+				case self::PROVIDER_DEEPSEEK:
+					return self::DEFAULT_MODEL_DEEPSEEK;
 			}
 		}
 

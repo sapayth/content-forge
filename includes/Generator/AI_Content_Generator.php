@@ -15,6 +15,8 @@ use ContentForge\Generator\Providers\AI_Provider_Base;
 use ContentForge\Generator\Providers\AI_Provider_OpenAI;
 use ContentForge\Generator\Providers\AI_Provider_Anthropic;
 use ContentForge\Generator\Providers\AI_Provider_Google;
+use ContentForge\Generator\Providers\AI_Provider_Mistral;
+use ContentForge\Generator\Providers\AI_Provider_DeepSeek;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -92,6 +94,12 @@ class AI_Content_Generator {
 
 			case AI_Settings_Manager::PROVIDER_GOOGLE:
 				return new AI_Provider_Google( $api_key, $model );
+
+			case AI_Settings_Manager::PROVIDER_MISTRAL:
+				return new AI_Provider_Mistral( $api_key, $model );
+
+			case AI_Settings_Manager::PROVIDER_DEEPSEEK:
+				return new AI_Provider_DeepSeek( $api_key, $model );
 
 			default:
 				// Default to OpenAI.

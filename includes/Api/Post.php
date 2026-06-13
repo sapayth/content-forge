@@ -131,6 +131,11 @@ class Post extends CForge_REST_Controller {
             return new \WP_REST_Response( [ 'message' => __( 'Invalid comment status.', 'content-forge' ) ], 400 );
         }
 
+        // Resolve the author assignment pool (empty = generating user).
+        $author_mode = isset( $params['author_mode'] ) ? sanitize_key( $params['author_mode'] ) : 'me';
+        $authors_in  = isset( $params['authors'] ) && is_array( $params['authors'] ) ? $params['authors'] : [];
+        $author_pool = $this->resolve_author_pool( $author_mode, $authors_in, $post_type );
+
         // Extract date range parameters
         $date_from = isset( $params['date_from'] ) ? sanitize_text_field( $params['date_from'] ) : '';
         $date_to   = isset( $params['date_to'] ) ? sanitize_text_field( $params['date_to'] ) : '';
@@ -189,6 +194,9 @@ class Post extends CForge_REST_Controller {
                 $ai_args['date_from'] = $date_from;
                 $ai_args['date_to']   = $date_to;
             }
+            if ( ! empty( $author_pool ) ) {
+                $ai_args['authors'] = $author_pool;
+            }
 
             // Schedule AI generation
             $result = $this->scheduled_generator->schedule_generation( $ai_args );
@@ -210,12 +218,15 @@ class Post extends CForge_REST_Controller {
         $generate_image   = isset( $params['generate_image'] ) && $params['generate_image'];
         $image_sources    = isset( $params['image_sources'] ) && is_array( $params['image_sources'] ) ? array_map( 'sanitize_text_field', $params['image_sources'] ) : [];
         $generate_excerpt = isset( $params['generate_excerpt'] ) ? (bool) $params['generate_excerpt'] : true;
-        $date_range_args  = [];
+        // Per-post generation args merged into every generate() call below
+        // (date range and author pool). The generator strips these before insert.
+        $date_range_args = [];
         if ( $date_from && $date_to ) {
-            $date_range_args = [
-                'date_from' => $date_from,
-                'date_to'   => $date_to,
-            ];
+            $date_range_args['date_from'] = $date_from;
+            $date_range_args['date_to']   = $date_to;
+        }
+        if ( ! empty( $author_pool ) ) {
+            $date_range_args['authors'] = $author_pool;
         }
         $created   = [];
         $generator = new GeneratorPost( get_current_user_id() );
@@ -424,6 +435,51 @@ class Post extends CForge_REST_Controller {
             }
         }
         return new \WP_REST_Response( [ 'created' => $created ], 200 );
+    }
+
+    /**
+     * Resolve the pool of author IDs to assign generated posts to.
+     *
+     * - 'random'   : all users eligible to publish the post type.
+     * - 'specific' : the requested user IDs, filtered to existing users.
+     * - 'me' (else): empty pool, so the generator falls back to the current user.
+     *
+     * @since 1.6.0
+     *
+     * @param string $author_mode Author assignment mode ('me', 'specific', 'random').
+     * @param array  $authors     Requested author IDs (used when mode is 'specific').
+     * @param string $post_type   Target post type slug.
+     * @return array<int, int> Resolved author IDs (may be empty).
+     */
+    private function resolve_author_pool( $author_mode, $authors, $post_type ) {
+        if ( 'random' === $author_mode ) {
+            return \cforge_get_eligible_author_ids( $post_type );
+        }
+
+        if ( 'specific' === $author_mode && is_array( $authors ) ) {
+            $ids = array_values(
+                array_unique(
+                    array_filter(
+                        array_map( 'intval', $authors ),
+                        static function ( $id ) {
+                            return $id > 0;
+                        }
+                    )
+                )
+            );
+
+            // Keep only IDs that map to real users.
+            return array_values(
+                array_filter(
+                    $ids,
+                    static function ( $id ) {
+                        return (bool) get_userdata( $id );
+                    }
+                )
+            );
+        }
+
+        return [];
     }
 
     /**

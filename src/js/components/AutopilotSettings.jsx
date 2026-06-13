@@ -67,6 +67,14 @@ export default function AutopilotSettings() {
             </h2>
             <p className="cforge-text-sm cforge-text-gray-600 cforge-mt-0 cforge-mb-4">
                 {__('Schedule AI to generate posts on a cadence. Requires AI configured above.', 'content-forge')}
+                {' '}
+                <a
+                    href="https://wp.sapayth.com/schedule-ai-blog-posts-wordpress/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    {__('Setup guide', 'content-forge')}
+                </a>
             </p>
 
             {notice && (

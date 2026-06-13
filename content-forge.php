@@ -58,7 +58,9 @@ final class ContentForge {
         $this->define( 'CFORGE_INCLUDES_PATH', CFORGE_PATH . 'includes/' );
         $this->define( 'CFORGE_TEXT_DOMAIN', 'content-forge' );
         $this->define( 'CFORGE_DBNAME', 'cforge' );
-        $this->define( 'CFORGE_TELEMETRY_TOKEN', 'ef0a5661-7381-4b13-83b1-3e232cb40fb2' );
+        $this->define( 'CFORGE_TELEMETRY_TOKEN', '08e72000-a2d4-4316-85c0-d05f11d7725e' );
+        $this->define( 'CFORGE_FEATURE_REQUEST_URL', 'https://content-forge.canny.io/feature-requests' );
+        $this->define( 'CFORGE_REVIEW_URL', 'https://wordpress.org/support/plugin/content-forge/reviews/?filter=5#new-post' );
     }
 
     /**

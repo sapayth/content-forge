@@ -7,10 +7,25 @@ import apiFetch from '@wordpress/api-fetch';
 import ListView from './components/ListView';
 import AIGenerateTab from './components/AIGenerateTab';
 import DateRangePicker from './components/DateRangePicker';
+import AuthorSelect from './components/AuthorSelect';
 
 const allowedPostTypes = ['post', 'page'];
 const allowedPostStatuses = ['publish', 'pending', 'draft', 'private'];
 const allowedCommentStatuses = ['closed', 'open'];
+
+/**
+ * Build the author-related payload keys from the selected mode/IDs.
+ * Returns {} for 'me' so the backend defaults to the current user.
+ */
+function buildAuthorPayload(authorMode, authorIds) {
+  if (authorMode === 'specific' && authorIds.length > 0) {
+    return { author_mode: 'specific', authors: authorIds };
+  }
+  if (authorMode === 'random') {
+    return { author_mode: 'random' };
+  }
+  return {};
+}
 
 function AddNewView({ onCancel, onSuccess }) {
   const [tab, setTab] = useState('auto');
@@ -26,6 +41,9 @@ function AddNewView({ onCancel, onSuccess }) {
   const [generateImage, setGenerateImage] = useState(false);
   const [imageSources, setImageSources] = useState({ picsum: true, placehold: false });
   const [generateExcerpt, setGenerateExcerpt] = useState(true);
+  const authors = window.cforge?.authors || [];
+  const [authorMode, setAuthorMode] = useState('me');
+  const [authorIds, setAuthorIds] = useState([]);
   const [randomizeDates, setRandomizeDates] = useState(false);
   const today = new Date().toISOString().split('T')[0];
   const [dateFrom, setDateFrom] = useState(today);
@@ -119,6 +137,8 @@ function AddNewView({ onCancel, onSuccess }) {
       payload.date_from = dateFrom;
       payload.date_to = dateTo;
     }
+    // Add author assignment options
+    Object.assign(payload, buildAuthorPayload(authorMode, authorIds));
     if (tab === 'auto') {
       payload.post_number = Number(post.post_number);
     } else {
@@ -377,6 +397,15 @@ function AddNewView({ onCancel, onSuccess }) {
                     </div>
                   )}
                 </div>
+                <div className="cforge-mb-4">
+                  <AuthorSelect
+                    authors={authors}
+                    mode={authorMode}
+                    onModeChange={setAuthorMode}
+                    selected={authorIds}
+                    onSelectedChange={setAuthorIds}
+                  />
+                </div>
               </>
             ) : tab === 'manual' ? (
               <>
@@ -475,11 +504,25 @@ function AddNewView({ onCancel, onSuccess }) {
                     </div>
                   )}
                 </div>
+                <div className="cforge-mb-4">
+                  <AuthorSelect
+                    authors={authors}
+                    mode={authorMode}
+                    onModeChange={setAuthorMode}
+                    selected={authorIds}
+                    onSelectedChange={setAuthorIds}
+                  />
+                </div>
               </>
             ) : tab === 'ai' ? (
               <AIGenerateTab
                 post={post}
                 setPost={setPost}
+                authors={authors}
+                authorMode={authorMode}
+                setAuthorMode={setAuthorMode}
+                authorIds={authorIds}
+                setAuthorIds={setAuthorIds}
                 onSuccess={() => {
                   // Content generated, user can now submit the form
                 }}

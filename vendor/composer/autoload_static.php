@@ -12,53 +12,53 @@ class ComposerStaticInitbf03f7898ba1d1d082cbb8803c61a7b6
     );
 
     public static $prefixLengthsPsr4 = array (
-        'P' => 
+        'P' =>
         array (
             'PhpParser\\' => 10,
             'PHPCSStandards\\Composer\\Plugin\\Installers\\PHPCodeSniffer\\' => 57,
         ),
-        'D' => 
+        'D' =>
         array (
             'Doctrine\\Instantiator\\' => 22,
             'DeepCopy\\' => 9,
         ),
-        'C' => 
+        'C' =>
         array (
             'ContentForge\\Tests\\' => 19,
             'ContentForge\\' => 13,
         ),
-        'B' => 
+        'B' =>
         array (
             'BitApps\\WPTelemetry\\' => 20,
         ),
     );
 
     public static $prefixDirsPsr4 = array (
-        'PhpParser\\' => 
+        'PhpParser\\' =>
         array (
             0 => __DIR__ . '/..' . '/nikic/php-parser/lib/PhpParser',
         ),
-        'PHPCSStandards\\Composer\\Plugin\\Installers\\PHPCodeSniffer\\' => 
+        'PHPCSStandards\\Composer\\Plugin\\Installers\\PHPCodeSniffer\\' =>
         array (
             0 => __DIR__ . '/..' . '/dealerdirect/phpcodesniffer-composer-installer/src',
         ),
-        'Doctrine\\Instantiator\\' => 
+        'Doctrine\\Instantiator\\' =>
         array (
             0 => __DIR__ . '/..' . '/doctrine/instantiator/src/Doctrine/Instantiator',
         ),
-        'DeepCopy\\' => 
+        'DeepCopy\\' =>
         array (
             0 => __DIR__ . '/..' . '/myclabs/deep-copy/src/DeepCopy',
         ),
-        'ContentForge\\Tests\\' => 
+        'ContentForge\\Tests\\' =>
         array (
             0 => __DIR__ . '/../..' . '/tests/unit',
         ),
-        'ContentForge\\' => 
+        'ContentForge\\' =>
         array (
             0 => __DIR__ . '/../..' . '/includes',
         ),
-        'BitApps\\WPTelemetry\\' => 
+        'BitApps\\WPTelemetry\\' =>
         array (
             0 => __DIR__ . '/..' . '/bitapps/wp-telemetry/src',
         ),

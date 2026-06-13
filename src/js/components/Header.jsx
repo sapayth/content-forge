@@ -42,7 +42,7 @@ const Header = ({heading = '', subheading = '' }) => {
                 </div>
                 <div className="cforge-flex cforge-items-center cforge-gap-2">
                     <a
-                    href="https://content-forge.canny.io/feature-requests"
+                    href={cforge.featureRequestUrl || 'https://content-forge.canny.io/feature-requests'}
                     target="_blank"
                     className="cforge-bg-white/20 cforge-px-2 cforge-py-1 cforge-rounded cforge-text-xs cforge-font-medium hover:cforge-text-white"
                     rel="noopener noreferrer"

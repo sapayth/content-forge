@@ -109,6 +109,9 @@ class AI_Scheduled_Generator {
 			$action_args['date_from'] = $args['date_from'];
 			$action_args['date_to']   = $args['date_to'];
 		}
+		if ( ! empty( $args['authors'] ) && is_array( $args['authors'] ) ) {
+			$action_args['authors'] = array_map( 'intval', $args['authors'] );
+		}
 
 		// Schedule ONLY the first action
 		$action_id = \as_schedule_single_action(
@@ -180,8 +183,9 @@ class AI_Scheduled_Generator {
 		$product_options = ! empty( $actual_args['product_options'] ) && is_array( $actual_args['product_options'] ) ? $actual_args['product_options'] : [];
 		$date_from       = ! empty( $actual_args['date_from'] ) ? $actual_args['date_from'] : '';
 		$date_to         = ! empty( $actual_args['date_to'] ) ? $actual_args['date_to'] : '';
+		$authors         = ! empty( $actual_args['authors'] ) && is_array( $actual_args['authors'] ) ? $actual_args['authors'] : [];
 
-		return $this->handle_sequential_generation( $batch_id, $current_index, $total_count, $post_type, $post_status, $content_type, $ai_prompt, $editor_type, $user_id, $product_options, $date_from, $date_to );
+		return $this->handle_sequential_generation( $batch_id, $current_index, $total_count, $post_type, $post_status, $content_type, $ai_prompt, $editor_type, $user_id, $product_options, $date_from, $date_to, $authors );
 	}
 
 	/**
@@ -201,9 +205,10 @@ class AI_Scheduled_Generator {
 	 * @param array  $product_options Optional product options for WooCommerce products.
 	 * @param string $date_from       Optional date range start (ISO string).
 	 * @param string $date_to         Optional date range end (ISO string).
+	 * @param array  $authors         Optional pool of author IDs; one is picked at random per post.
 	 * @throws Exception If AI generation fails.
 	 */
-	public function handle_sequential_generation( $batch_id, $current_index, $total_count, $post_type, $post_status, $content_type, $ai_prompt, $editor_type, $user_id, $product_options = [], $date_from = '', $date_to = '' ) {
+	public function handle_sequential_generation( $batch_id, $current_index, $total_count, $post_type, $post_status, $content_type, $ai_prompt, $editor_type, $user_id, $product_options = [], $date_from = '', $date_to = '', $authors = [] ) {
 
 		// Get batch tracking
 		$batch_data = get_option( self::BATCH_OPTION_PREFIX . $batch_id );
@@ -276,6 +281,9 @@ class AI_Scheduled_Generator {
 				$post_args['date_from'] = $date_from;
 				$post_args['date_to']   = $date_to;
 			}
+			if ( ! empty( $authors ) && is_array( $authors ) ) {
+				$post_args['authors'] = $authors;
+			}
 
 			$post_ids = $post_generator->generate( 1, $post_args );
 
@@ -302,7 +310,7 @@ class AI_Scheduled_Generator {
 		update_option( self::BATCH_OPTION_PREFIX . $batch_id, $batch_data );
 
 		// Schedule next action or mark as complete
-		$this->schedule_next_or_complete( $batch_id, $current_index, $total_count, $post_type, $post_status, $content_type, $ai_prompt, $editor_type, $user_id, $product_options, $date_from, $date_to );
+		$this->schedule_next_or_complete( $batch_id, $current_index, $total_count, $post_type, $post_status, $content_type, $ai_prompt, $editor_type, $user_id, $product_options, $date_from, $date_to, $authors );
 	}
 
 	/**
@@ -322,8 +330,9 @@ class AI_Scheduled_Generator {
 	 * @param array  $product_options  Optional product options for WooCommerce.
 	 * @param string $date_from        Optional date range start (ISO string).
 	 * @param string $date_to          Optional date range end (ISO string).
+	 * @param array  $authors          Optional pool of author IDs; one is picked at random per post.
 	 */
-	protected function schedule_next_or_complete( $batch_id, $current_index, $total_count, $post_type, $post_status, $content_type, $ai_prompt, $editor_type, $user_id, $product_options = [], $date_from = '', $date_to = '' ) {
+	protected function schedule_next_or_complete( $batch_id, $current_index, $total_count, $post_type, $post_status, $content_type, $ai_prompt, $editor_type, $user_id, $product_options = [], $date_from = '', $date_to = '', $authors = [] ) {
 		$next_index = $current_index + 1;
 
 		if ( $next_index < $total_count ) {
@@ -345,6 +354,9 @@ class AI_Scheduled_Generator {
 			if ( $date_from && $date_to ) {
 				$action_args['date_from'] = $date_from;
 				$action_args['date_to']   = $date_to;
+			}
+			if ( ! empty( $authors ) && is_array( $authors ) ) {
+				$action_args['authors'] = $authors;
 			}
 
 			// Schedule the next action

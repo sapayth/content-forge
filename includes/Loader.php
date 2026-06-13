@@ -97,6 +97,9 @@ class Loader {
 
 		if ( is_admin() ) {
 			$this->container['admin'] = new Admin();
+
+			$review_notice = new Review_Notice();
+			$review_notice->register();
 		}
 
 		if ( class_exists( 'WooCommerce', false ) ) {

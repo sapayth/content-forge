@@ -34,6 +34,34 @@ function cforge_get_allowed_post_types() {
 }
 
 /**
+ * Get the IDs of users eligible to be assigned as authors for a post type.
+ *
+ * Used by the "random authors" assignment mode. Mirrors the author list shown
+ * in the admin UI by filtering to users who can publish the given post type.
+ *
+ * @param string $post_type Post type slug. Default 'post'.
+ * @param int    $limit     Maximum number of users to return. Default 100.
+ *
+ * @return array<int, int> List of user IDs.
+ */
+function cforge_get_eligible_author_ids( $post_type = 'post', $limit = 100 ) {
+	$post_type_object = get_post_type_object( $post_type );
+	$capability       = ( $post_type_object && isset( $post_type_object->cap->publish_posts ) )
+		? $post_type_object->cap->publish_posts
+		: 'publish_posts';
+
+	$user_ids = get_users(
+		[
+			'capability' => $capability,
+			'number'     => $limit,
+			'fields'     => 'ID',
+		]
+	);
+
+	return array_map( 'intval', $user_ids );
+}
+
+/**
  * Get random post id's from selected post types.
  *
  * @param array $post_types Array of post types to get posts from.

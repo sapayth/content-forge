@@ -203,7 +203,9 @@ class Admin {
                     'ajax_nonce'        => wp_create_nonce( 'cforge_telemetry' ),
                     'telemetry_enabled' => Telemetry_Manager::is_tracking_allowed(),
                     'pluginVersion'     => CFORGE_VERSION,
+                    'featureRequestUrl' => CFORGE_FEATURE_REQUEST_URL,
                     'restUrl'           => rest_url(),
+                    'authors'           => self::get_authors_for_select(),
                 ],
             ],
             'content-forge_page_cforge-comments'   => [
@@ -219,6 +221,7 @@ class Admin {
                     'ajax_nonce'        => wp_create_nonce( 'cforge_telemetry' ),
                     'telemetry_enabled' => Telemetry_Manager::is_tracking_allowed(),
                     'pluginVersion'     => CFORGE_VERSION,
+                    'featureRequestUrl' => CFORGE_FEATURE_REQUEST_URL,
                 ],
             ],
             'content-forge_page_cforge-users'      => [
@@ -234,6 +237,7 @@ class Admin {
                     'ajax_nonce'        => wp_create_nonce( 'cforge_telemetry' ),
                     'telemetry_enabled' => Telemetry_Manager::is_tracking_allowed(),
                     'pluginVersion'     => CFORGE_VERSION,
+                    'featureRequestUrl' => CFORGE_FEATURE_REQUEST_URL,
                 ],
             ],
             'content-forge_page_cforge-taxonomies' => [
@@ -248,6 +252,7 @@ class Admin {
                     'ajax_nonce'        => wp_create_nonce( 'cforge_telemetry' ),
                     'telemetry_enabled' => Telemetry_Manager::is_tracking_allowed(),
                     'pluginVersion'     => CFORGE_VERSION,
+                    'featureRequestUrl' => CFORGE_FEATURE_REQUEST_URL,
                     'taxonomies'        => array_filter(
                         get_taxonomies( [ 'public' => true ], 'objects' ),
                         function ( $taxonomy ) {
@@ -270,9 +275,11 @@ class Admin {
                     'ajax_nonce'         => wp_create_nonce( 'cforge_telemetry' ),
                     'telemetry_enabled'  => Telemetry_Manager::is_tracking_allowed(),
                     'pluginVersion'      => CFORGE_VERSION,
+                    'featureRequestUrl'  => CFORGE_FEATURE_REQUEST_URL,
                     'post_types'         => self::get_cpt_page_post_types(),
                     'woocommerce_active' => class_exists( 'WooCommerce', false ),
                     'wedocs_active'      => function_exists( 'wedocs' ),
+                    'authors'            => self::get_authors_for_select(),
                 ],
             ],
             'content-forge_page_cforge-settings'   => [
@@ -287,6 +294,7 @@ class Admin {
                     'ajax_nonce'        => wp_create_nonce( 'cforge_telemetry' ),
                     'telemetry_enabled' => Telemetry_Manager::is_tracking_allowed(),
                     'pluginVersion'     => CFORGE_VERSION,
+                    'featureRequestUrl' => CFORGE_FEATURE_REQUEST_URL,
                 ],
             ],
             'content-forge_page_cforge-autopilot'  => [
@@ -301,6 +309,7 @@ class Admin {
                     'ajax_nonce'         => wp_create_nonce( 'cforge_telemetry' ),
                     'telemetry_enabled'  => Telemetry_Manager::is_tracking_allowed(),
                     'pluginVersion'      => CFORGE_VERSION,
+                    'featureRequestUrl'  => CFORGE_FEATURE_REQUEST_URL,
                     'categories'         => self::get_categories_for_select(),
                     'authors'            => self::get_authors_for_select(),
                     'post_types'         => self::get_autopilot_post_types(),

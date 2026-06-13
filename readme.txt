@@ -86,7 +86,7 @@ Yes, Content Forge is fully translation ready and includes a .pot file for trans
 
 = What is Autopilot? =
 
-Autopilot is a free, built-in feature that schedules AI-generated posts. You set the topic source, frequency, tone, length, and what happens to the post (draft, pending, scheduled, or immediate publish), and Content Forge runs it in the background using your AI provider.
+Autopilot is a free, built-in feature that schedules AI-generated posts. You set the topic source, frequency, tone, length, and what happens to the post (draft, pending, scheduled, or immediate publish), and Content Forge runs it in the background using your AI provider. See the full setup guide: https://wp.sapayth.com/schedule-ai-blog-posts-wordpress/
 
 = Is Autopilot free? =
 

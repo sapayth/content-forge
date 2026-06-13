@@ -34,6 +34,13 @@ class Post extends Generator {
         $ids             = [];
         $image_generator = new Image( $this->user_id );
 
+        // Resolve an optional pool of author IDs. When present, each post is
+        // assigned a randomly-picked author from the pool so a batch spreads
+        // across authors. When empty, posts fall back to the generating user.
+        $author_pool = ( isset( $args['authors'] ) && is_array( $args['authors'] ) )
+            ? array_values( array_filter( array_map( 'intval', $args['authors'] ), static fn( $id ) => $id > 0 ) )
+            : [];
+
         for ( $i = 0; $i < $count; $i++ ) {
             // Generate default title and content if not provided in args
             $post_type = isset( $args['post_type'] ) ? $args['post_type'] : 'post';
@@ -121,6 +128,14 @@ class Post extends Generator {
             if ( ! empty( $args ) ) {
                 $post_data = array_merge( $post_data, $args );
             }
+
+            // Assign a per-post author from the pool (overrides any merged value),
+            // otherwise keep the generating user set above. 'authors' is not a
+            // valid wp_insert_post key, so remove it after resolution.
+            if ( ! empty( $author_pool ) ) {
+                $post_data['post_author'] = (int) $author_pool[ array_rand( $author_pool ) ];
+            }
+            unset( $post_data['authors'] );
 
             // Generate excerpt from final content (after merge) if not explicitly provided
             // Only generate if generate_excerpt is true (defaults to true for backward compatibility)

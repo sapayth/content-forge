@@ -7,6 +7,7 @@ import apiFetch from '@wordpress/api-fetch';
 import ListView from './components/ListView';
 import MultiSelect from './components/MultiSelect';
 import DateRangePicker from './components/DateRangePicker';
+import AuthorSelect from './components/AuthorSelect';
 
 const STOCK_STATUSES = [
 	{ value: 'instock', label: 'In stock' },
@@ -26,6 +27,7 @@ function AddNewView({ onCancel, onSuccess }) {
 	const postTypes = window.cforge?.post_types || [];
 	const woocommerceActive = window.cforge?.woocommerce_active || false;
 	const wedocsActive = window.cforge?.wedocs_active || false;
+	const authors = window.cforge?.authors || [];
 
 	const [form, setForm] = useState({
 		post_type: postTypes.length ? postTypes[0].name : '',
@@ -51,6 +53,8 @@ function AddNewView({ onCancel, onSuccess }) {
 	const [randomizeDates, setRandomizeDates] = useState(false);
 	const [dateFrom, setDateFrom] = useState('');
 	const [dateTo, setDateTo] = useState('');
+	const [authorMode, setAuthorMode] = useState('me');
+	const [authorIds, setAuthorIds] = useState([]);
 
 
 	useEffect(() => {
@@ -146,6 +150,13 @@ function AddNewView({ onCancel, onSuccess }) {
 		if (randomizeDates && dateFrom && dateTo) {
 			payload.date_from = dateFrom;
 			payload.date_to = dateTo;
+		}
+
+		if (authorMode === 'specific' && authorIds.length > 0) {
+			payload.author_mode = 'specific';
+			payload.authors = authorIds;
+		} else if (authorMode === 'random') {
+			payload.author_mode = 'random';
 		}
 
 		if (form.post_type === 'product' && woocommerceActive) {
@@ -289,6 +300,16 @@ function AddNewView({ onCancel, onSuccess }) {
 							<option value="draft">{__('Draft', 'content-forge')}</option>
 							<option value="pending">{__('Pending', 'content-forge')}</option>
 						</select>
+					</div>
+
+					<div>
+						<AuthorSelect
+							authors={authors}
+							mode={authorMode}
+							onModeChange={setAuthorMode}
+							selected={authorIds}
+							onSelectedChange={setAuthorIds}
+						/>
 					</div>
 
 					{form.post_type === 'docs' && wedocsActive && (
