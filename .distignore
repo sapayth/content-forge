@@ -6,6 +6,7 @@
 .git
 .gitattributes
 .github
+.husky
 .gitignore
 .phpunit.cache
 .phpunit.result.cache
@@ -23,7 +24,9 @@ postcss.config.js
 release
 release.sh
 scripts
+src
 tailwind.config.js
 tests
+tools
 webpack.config.js
 *.zip
