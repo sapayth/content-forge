@@ -7,18 +7,22 @@ This design system provides the visual and interaction guidelines for the Conten
 
 ## 1. Color Palette
 
-- **Primary (Base):** `#62748E` (Tailwind `slate-500`)
-- **Secondary:** `#475569` (Tailwind `slate-700`)
-- **Tertiary/Background:** `#F1F5F9` (Tailwind `slate-100`)
-- **Accent:** `#F59E42` (Tailwind `amber-400`)
-- **Success:** `#22C55E` (Tailwind `green-500`)
-- **Warning:** `#FACC15` (Tailwind `yellow-400`)
-- **Error:** `#EF4444` (Tailwind `red-500`)
-- **Border/Divider:** `#CBD5E1` (Tailwind `slate-300`)
-- **Text Primary:** `#1E293B` (Tailwind `slate-900`)
-- **Text Secondary:** `#64748B` (Tailwind `slate-400`)
+**Source of truth:** `tailwind.config.js`. The tokens are role-named and carry their
+measured contrast ratios as comments — read them there rather than duplicating hex values
+in two places that drift apart. Summary:
 
-> **Accessibility:** All color combinations are chosen to meet or exceed WCAG AA contrast ratios. Always verify with [WebAIM Contrast Checker](https://webaim.org/resources/contrastchecker/).
+- **Brand:** `primary` / `primaryHover` for solid fills carrying white labels; `accent` for
+  fills only, never text or borders; `brand-50` for icon chips and tinted rows.
+- **Text:** `text-primary`, `text-secondary`.
+- **Surface and line:** `tertiary`, `border`.
+- **Status:** `success`, `warning`, `error`, `errorHover` — all solid fills under white text,
+  so they are dark by necessity.
+
+Use the `cforge-` prefixed utility classes; do not hardcode hex values in components.
+
+> **Accessibility:** Every token carrying text meets WCAG AA (4.5:1) against white. Ratios
+> are recorded next to each value in `tailwind.config.js`. Verify new colors with the
+> [WebAIM Contrast Checker](https://webaim.org/resources/contrastchecker/) before adding them.
 
 ---
 
@@ -27,6 +31,7 @@ This design system provides the visual and interaction guidelines for the Conten
 - **Font Family:** System UI stack
   - `font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";`
 - **Font Sizes:**
+  - XXS: 11px (`cforge-text-xxs`, badges and micro-labels only)
   - XS: 12px
   - SM: 14px
   - Base: 16px
@@ -49,6 +54,9 @@ This design system provides the visual and interaction guidelines for the Conten
 ---
 
 ## 4. Components
+
+Shared React implementations live in `src/js/components/` — `Button.jsx`, `Card.jsx`,
+`Field.jsx`, `Badge.jsx`, `Notice.jsx`. Reach for those before writing new markup.
 
 - **Buttons:**
   - Primary, secondary, disabled states
