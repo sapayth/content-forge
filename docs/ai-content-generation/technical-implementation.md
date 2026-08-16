@@ -1,10 +1,11 @@
-# AI Content Generation - Technical Implementation Plan
+# AI Content Generation - Technical Reference
 
 **Document Type:** Technical Specification  
 **Feature:** AI Settings & Content Generation  
+**Status:** Shipped in v1.2.0; Mistral and DeepSeek providers added in v1.6.0  
 **Target Audience:** Developers  
-**Last Updated:** December 2024  
-**Related Documents:** [User Flow](./user-flow.md), [v1.2.0 Plan](../planning/v1.2.0-plan.md)
+**Last Updated:** August 2026  
+**Related Documents:** [User Flow](./user-flow.md), [Release Plan](../ideas/release-plan.md)
 
 ---
 
@@ -1229,6 +1230,23 @@ x-goog-api-key: {api_key}
 Content-Type: application/json
 ```
 
+### Mistral Implementation
+
+**File:** `includes/Generator/Providers/AI_Provider_Mistral.php`
+
+**API Endpoint:** `https://api.mistral.ai/v1/chat/completions`
+
+OpenAI-compatible chat-completions shape — same request payload, same response parsing,
+`Authorization: Bearer {api_key}` header. Added in v1.6.0.
+
+### DeepSeek Implementation
+
+**File:** `includes/Generator/Providers/AI_Provider_DeepSeek.php`
+
+**API Endpoint:** `https://api.deepseek.com/chat/completions`
+
+Also OpenAI-compatible in request and response shape. Added in v1.6.0.
+
 ---
 
 ## Error Handling
@@ -1613,7 +1631,9 @@ content-forge/
 │   │       ├── AI_Provider_Base.php
 │   │       ├── AI_Provider_OpenAI.php
 │   │       ├── AI_Provider_Anthropic.php
-│   │       └── AI_Provider_Google.php
+│   │       ├── AI_Provider_Google.php
+│   │       ├── AI_Provider_Mistral.php
+│   │       └── AI_Provider_DeepSeek.php
 │   ├── Content/
 │   │   └── Content_Type_Data.php
 │   └── Api/
@@ -1686,7 +1706,9 @@ content-forge/
 
 ---
 
-## Implementation Phases
+## Implementation History
+
+All phases below are complete. Phase 3 later gained Mistral and DeepSeek in v1.6.0.
 
 ### Phase 1: Core Infrastructure
 1. Create `AI_Settings_Manager` class

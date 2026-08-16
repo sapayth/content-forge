@@ -3,13 +3,13 @@
 **Document Type:** Product Requirements - User Flow  
 **Feature:** AI Settings Configuration  
 **Target Audience:** End Users (WordPress Administrators)  
-**Last Updated:** December 2024
+**Last Updated:** August 2026
 
 ---
 
 ## Overview
 
-This document describes the user flow for configuring AI content generation settings in Content Forge. Users can select from multiple AI providers (OpenAI, Anthropic, Google), choose appropriate models, and store API keys for seamless switching between providers.
+This document describes the user flow for configuring AI content generation settings in Content Forge. Users can select from multiple AI providers (OpenAI, Anthropic, Google, Mistral, DeepSeek), choose appropriate models, and store API keys for seamless switching between providers. The walkthroughs below use OpenAI, Anthropic and Google as examples; Mistral and DeepSeek behave identically.
 
 ### Pages/Posts Tab Structure
 

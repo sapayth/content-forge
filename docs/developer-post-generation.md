@@ -46,6 +46,8 @@ Content Forge is designed for extensibility and maintainability, using clear pat
 
 - All generated content is tracked in the `wp_cforge` table with fields: `object_id`, `data_type`, `created_at`, `created_by`.
 - This enables listing and bulk deletion of only plugin-generated content.
+- `data_type` holds the post type for posts (including `attachment` and any CPT), the taxonomy slug for terms, and `user` / `comment` for those. Rows are matched on `object_id` **and** `data_type`, since IDs collide across object types.
+- `ContentForge\Cleanup` hooks `deleted_post`, `deleted_user`, `deleted_comment` and `delete_term` to drop the tracking row whenever an object is deleted outside the plugin. Trashing a post is not a deletion, so its row is kept.
 
 ---
 
@@ -61,6 +63,8 @@ Content Forge is designed for extensibility and maintainability, using clear pat
 ## Hooks & Filters
 
 - `cforge_generate_user_data`, `cforge_before_generate_user`, `cforge_after_generate_user` (see User generator)
+- `cforge_allowed_post_types` — post types offered for generation, listing and deletion.
+- `cforge_assignable_taxonomies` — taxonomy objects offered for term assignment on a post type.
 - Similar hooks exist for posts and comments.
 - Use these to customize or extend generation logic.
 
@@ -112,6 +116,7 @@ This document provides a technical overview of how Content Forge handles fake po
      - Merge with any custom `$args` provided.
      - Insert post using `wp_insert_post()`.
      - If successful, track the post in the custom DB table (`track_generated()`).
+     - Apply post-insert extras: integration defaults (product, download, event, subscription), taxonomy terms (`assign_terms()`), and the featured image.
   3. Return array of generated post IDs.
 
 #### Title & Content Generation
@@ -148,6 +153,31 @@ This document provides a technical overview of how Content Forge handles fake po
 - **Subclassing:** Extend the `Post` class for custom generators.
 - **Hooks/Filters:** (Add as needed for extensibility.)
 
+### Taxonomy Assignment
+
+Pass `taxonomy_options` in `$args` to assign terms to each generated post. The array is keyed by taxonomy slug:
+
+```php
+$args['taxonomy_options'] = [
+    'category' => [ 'mode' => 'random', 'min' => 1, 'max' => 1 ],
+    'post_tag' => [ 'mode' => 'specific', 'terms' => [ 4, 9, 17 ], 'min' => 2, 'max' => 4 ],
+];
+```
+
+- `mode` — `random` draws from every existing term in the taxonomy; `specific` draws from the supplied `terms`.
+- `min` / `max` — how many terms each post receives. Picked independently per post, so the distribution across terms is intentionally uneven.
+- Terms are assigned with `wp_set_object_terms( ..., false )`, replacing rather than appending.
+
+Guard rails applied by the generator, regardless of caller:
+
+- A taxonomy not registered for the post type is skipped (`is_object_in_taxonomy()`).
+- An empty term pool is skipped rather than erroring.
+- `min` greater than `max` is swapped; `max` above the pool size is capped at the pool size.
+
+The REST layer (`ContentForge\Api\Post::sanitize_taxonomy_options()`) additionally drops unknown taxonomies and nonexistent term IDs, and clamps counts to `Api\Post::MAX_TERMS_PER_TAXONOMY`. Direct PHP callers bypass that sanitizing, so pass clean values.
+
+To discover the taxonomies available for a post type, use `cforge_get_assignable_taxonomies( $post_type )` or the REST endpoint `GET /cforge/v1/taxonomy/assignable?post_type={slug}`.
+
 ---
 
 ## Example Usage
@@ -156,6 +186,19 @@ This document provides a technical overview of how Content Forge handles fake po
 // Generate 5 posts
 global $contentforge_post_generator;
 $ids = $contentforge_post_generator->generate(5);
+
+// Generate 20 posts, each in one random category with 2-4 random tags
+$ids = $contentforge_post_generator->generate(
+    20,
+    [
+        'post_type'        => 'post',
+        'post_status'      => 'publish',
+        'taxonomy_options' => [
+            'category' => [ 'mode' => 'random', 'min' => 1, 'max' => 1 ],
+            'post_tag' => [ 'mode' => 'random', 'min' => 2, 'max' => 4 ],
+        ],
+    ]
+);
 
 // Delete generated posts
 $contentforge_post_generator->delete($ids);

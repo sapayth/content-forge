@@ -7,6 +7,7 @@ Content Forge helps you quickly generate fake or dummy content (posts, pages, co
 ## Table of Contents
 
 - [Generating Posts & Pages](#generating-posts--pages)
+- [Assigning Categories & Tags](#assigning-categories--tags)
 - [Generating Comments](#generating-comments)
 - [Generating Users](#generating-users)
 - [Managing Generated Content](#managing-generated-content)
@@ -70,6 +71,61 @@ Content Forge is a tool that lets you generate realistic-looking posts for testi
 
 ## Need Help?
 If you have questions or run into issues, check the plugin documentation or contact your site administrator.
+
+---
+
+## Assigning Categories & Tags
+
+By default, generated posts land in your site's default category and nothing else. That makes category and tag archives useless for testing — every archive is empty and every breadcrumb is one level deep. The **Taxonomies** section on the generation form fixes that.
+
+### Before you start
+
+Content Forge assigns terms that already exist; it does not invent new ones. If a taxonomy has no terms yet, its controls are greyed out with a note telling you so. Generate the terms first:
+
+1. Go to **Content Forge > Taxonomies**.
+2. Generate some categories and tags.
+3. Come back to **Content Forge > Pages/Posts** (or **Custom Post Types**).
+
+### Choosing how terms are assigned
+
+The Taxonomies section lists every taxonomy registered for the post type you selected — Categories and Tags for posts, Product Categories and Product Tags for WooCommerce products, plus any custom taxonomy your theme or plugins add. Each taxonomy offers three choices:
+
+- **Do not assign** — the default. Nothing changes from previous behaviour.
+- **Specific terms** — pick the exact terms to draw from. Hold Ctrl (Cmd on Mac) to select more than one.
+- **Random from existing** — draw from every term in that taxonomy.
+
+### Terms per item
+
+Whenever you pick anything other than "Do not assign", two fields appear:
+
+- **Min per post** — the fewest terms each item receives.
+- **Max per post** — the most.
+
+Set both to 1 for a single category per post. Set 2 and 4 for tags and each post picks up two to four. If you ask for more terms than exist, Content Forge assigns as many as it can rather than failing.
+
+### What you get
+
+Terms are picked independently for each item, so the distribution comes out uneven — one category may end up with ten posts and another with one. That is deliberate. Perfectly even distribution is unrealistic and hides pagination bugs in archive templates.
+
+### Typical setups
+
+**Testing a theme's archive templates**
+
+Generate 8 categories and 30 tags, then generate 50 posts with Categories set to *Random from existing* (min 1, max 1) and Tags set to *Random from existing* (min 2, max 4). Every category and tag archive now has content to render.
+
+**Building a WooCommerce demo store**
+
+Generate some product categories, then go to **Content Forge > Custom Post Types**, choose **Product**, and set Product Categories to *Random from existing*. The shop page filters, category widgets, and breadcrumbs all populate.
+
+**Filling one specific section**
+
+Set Categories to *Specific terms* and select just the one you want, then generate. Useful for testing a category-filtered menu item or a homepage block that pulls from a single category.
+
+### Notes
+
+- Taxonomy choices reset when you change the target post type, since the available taxonomies change with it.
+- Assignment works the same on AI-generated posts as on traditionally generated ones.
+- If a taxonomy has more than 200 terms, the "Specific terms" list shows the first 200. Use *Random from existing* to draw from all of them.
 
 ---
 
