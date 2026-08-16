@@ -87,6 +87,9 @@ class Loader {
 		// Boot the Autopilot subsystem (registers CPT, wires AS handlers when enabled).
 		\ContentForge\Autopilot\Plugin::boot();
 
+		// Keep the tracking table in sync with deletions made outside the plugin.
+		Cleanup::register();
+
 		$this->container['api'] = new Api();
 
 		// Load and initialize telemetry tracking.
