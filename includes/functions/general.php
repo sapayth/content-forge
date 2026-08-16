@@ -130,3 +130,37 @@ function cforge_detect_editor_type( $post_type = 'post' )
 
     return $classic_editor_active ? 'classic' : 'block';
 }
+
+/**
+ * Get the taxonomies that generated content can be assigned to for a post type.
+ *
+ * Excludes non-public and internal taxonomies (post formats, theme metadata),
+ * which are never useful as generated test data.
+ *
+ * @since 1.7.0
+ *
+ * @param string $post_type Post type slug.
+ *
+ * @return array<int, \WP_Taxonomy> Assignable taxonomy objects.
+ */
+function cforge_get_assignable_taxonomies( $post_type ) {
+	$excluded = [ 'post_format', 'wp_theme', 'wp_template_part_area', 'wp_pattern_category' ];
+	$result   = [];
+
+	foreach ( get_object_taxonomies( $post_type, 'objects' ) as $taxonomy ) {
+		if ( in_array( $taxonomy->name, $excluded, true ) || ! $taxonomy->public ) {
+			continue;
+		}
+		$result[] = $taxonomy;
+	}
+
+	/**
+	 * Filter the taxonomies offered for assignment to generated content.
+	 *
+	 * @since 1.7.0
+	 *
+	 * @param array<int, \WP_Taxonomy> $result    Assignable taxonomy objects.
+	 * @param string                   $post_type Post type slug.
+	 */
+	return apply_filters( 'cforge_assignable_taxonomies', $result, $post_type );
+}

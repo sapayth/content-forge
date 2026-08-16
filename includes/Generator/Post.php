@@ -23,6 +23,15 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Post extends Generator {
     /**
+     * Term ID pools per taxonomy, cached for the lifetime of the request.
+     *
+     * @since 1.7.0
+     *
+     * @var array<string, array<int, int>>
+     */
+    protected $term_pools = [];
+
+    /**
      * Generate fake posts.
      *
      * @param int   $count Number of posts to generate.
@@ -190,6 +199,11 @@ class Post extends Generator {
                     \ContentForge\Integration\WPUF_Subscription::apply_subscription_defaults( $post_id, $subscription_options );
                 }
 
+                // Assign taxonomy terms if requested
+                if ( ! empty( $args['taxonomy_options'] ) && is_array( $args['taxonomy_options'] ) ) {
+                    $this->assign_terms( $post_id, $post_type, $args['taxonomy_options'] );
+                }
+
                 // Generate Featured Image if requested
                 if ( isset( $args['generate_image'] ) && $args['generate_image'] ) {
                     $image_args     = [
@@ -205,6 +219,82 @@ class Post extends Generator {
         }
 
         return $ids;
+    }
+
+    /**
+     * Assign taxonomy terms to a generated post.
+     *
+     * Each taxonomy is picked independently per post, so the resulting term
+     * distribution is uneven — which is what real content looks like, and what
+     * surfaces archive pagination bugs.
+     *
+     * @since 1.7.0
+     *
+     * @param int    $post_id   Generated post ID.
+     * @param string $post_type Post type slug.
+     * @param array  $options   Sanitized taxonomy options keyed by taxonomy slug.
+     */
+    protected function assign_terms( $post_id, $post_type, array $options ) {
+        foreach ( $options as $taxonomy => $option ) {
+            // Never trust the caller: the taxonomy must be registered for this post type.
+            if ( ! is_object_in_taxonomy( $post_type, $taxonomy ) ) {
+                continue;
+            }
+
+            $mode = isset( $option['mode'] ) ? $option['mode'] : 'none';
+            if ( 'specific' !== $mode && 'random' !== $mode ) {
+                continue;
+            }
+
+            $pool = ( 'specific' === $mode )
+                ? ( isset( $option['terms'] ) ? array_map( 'absint', (array) $option['terms'] ) : [] )
+                : $this->get_taxonomy_term_pool( $taxonomy );
+
+            $pool = array_values( array_unique( array_filter( $pool ) ) );
+            if ( empty( $pool ) ) {
+                continue;
+            }
+
+            $min = isset( $option['min'] ) ? max( 1, (int) $option['min'] ) : 1;
+            $max = isset( $option['max'] ) ? max( 1, (int) $option['max'] ) : $min;
+            if ( $min > $max ) {
+                list( $min, $max ) = [ $max, $min ];
+            }
+
+            $count = wp_rand( $min, $max );
+            $count = min( $count, count( $pool ) );
+
+            $picked = (array) array_rand( array_flip( $pool ), $count );
+
+            wp_set_object_terms( $post_id, array_map( 'intval', $picked ), $taxonomy, false );
+        }
+    }
+
+    /**
+     * Get all existing term IDs for a taxonomy, cached for the current request.
+     *
+     * @since 1.7.0
+     *
+     * @param string $taxonomy Taxonomy slug.
+     *
+     * @return array<int, int> Term IDs.
+     */
+    protected function get_taxonomy_term_pool( $taxonomy ) {
+        if ( isset( $this->term_pools[ $taxonomy ] ) ) {
+            return $this->term_pools[ $taxonomy ];
+        }
+
+        $term_ids = get_terms(
+            [
+                'taxonomy'   => $taxonomy,
+                'hide_empty' => false,
+                'fields'     => 'ids',
+            ]
+        );
+
+        $this->term_pools[ $taxonomy ] = is_wp_error( $term_ids ) ? [] : array_map( 'intval', $term_ids );
+
+        return $this->term_pools[ $taxonomy ];
     }
 
     /**

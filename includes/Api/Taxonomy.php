@@ -20,6 +20,15 @@ class Taxonomy extends CForge_REST_Controller {
     protected $base = 'taxonomy';
 
     /**
+     * Maximum terms returned inline per taxonomy by the assignable endpoint.
+     *
+     * @since 1.7.0
+     *
+     * @var int
+     */
+    const MAX_TERMS_RETURNED = 200;
+
+    /**
      * Constructor for Taxonomy REST API controller.
      *
      * @since 1.0.0
@@ -48,6 +57,24 @@ class Taxonomy extends CForge_REST_Controller {
                     'methods'             => WP_REST_Server::DELETABLE,
                     'callback'            => [ $this, 'handle_bulk_delete' ],
                     'permission_callback' => [ $this, 'permission_check' ],
+                ],
+            ]
+        );
+        // Assignable taxonomies for a post type, with their terms.
+        register_rest_route(
+            $this->namespace,
+            '/' . $this->base . '/assignable',
+            [
+                [
+                    'methods'             => WP_REST_Server::READABLE,
+                    'callback'            => [ $this, 'handle_assignable' ],
+                    'permission_callback' => [ $this, 'permission_check' ],
+                    'args'                => [
+                        'post_type' => [
+                            'default'           => 'post',
+                            'sanitize_callback' => 'sanitize_key',
+                        ],
+                    ],
                 ],
             ]
         );
@@ -91,6 +118,67 @@ class Taxonomy extends CForge_REST_Controller {
                 ],
             ]
         );
+    }
+
+    /**
+     * List the taxonomies that generated content can be assigned to, with terms.
+     *
+     * Terms are returned inline but capped, so a site with thousands of tags
+     * does not stall the generation screen. The cap only affects the "specific
+     * terms" picker — random assignment resolves its pool server-side.
+     *
+     * @since 1.7.0
+     *
+     * @param \WP_REST_Request $request The REST API request object.
+     *
+     * @return \WP_REST_Response
+     */
+    public function handle_assignable( $request ) {
+        $post_type = $request->get_param( 'post_type' );
+
+        if ( ! post_type_exists( $post_type ) ) {
+            return new \WP_REST_Response( [ 'message' => __( 'Invalid post type.', 'content-forge' ) ], 400 );
+        }
+
+        $taxonomies = [];
+
+        foreach ( \cforge_get_assignable_taxonomies( $post_type ) as $taxonomy ) {
+            $total = (int) wp_count_terms(
+                [
+                    'taxonomy'   => $taxonomy->name,
+                    'hide_empty' => false,
+                ]
+            );
+
+            $terms = get_terms(
+                [
+                    'taxonomy'   => $taxonomy->name,
+                    'hide_empty' => false,
+                    'number'     => self::MAX_TERMS_RETURNED,
+                    'orderby'    => 'name',
+                ]
+            );
+
+            $taxonomies[] = [
+                'slug'         => $taxonomy->name,
+                'label'        => $taxonomy->labels->name,
+                'hierarchical' => (bool) $taxonomy->hierarchical,
+                'total'        => $total,
+                'truncated'    => $total > self::MAX_TERMS_RETURNED,
+                'terms'        => is_wp_error( $terms ) ? [] : array_map(
+                    function ( $term ) {
+                        return [
+                            'id'    => (int) $term->term_id,
+                            'name'  => $term->name,
+                            'count' => (int) $term->count,
+                        ];
+                    },
+                    $terms
+                ),
+            ];
+        }
+
+        return new \WP_REST_Response( [ 'taxonomies' => $taxonomies ], 200 );
     }
 
     /**
@@ -182,12 +270,18 @@ class Taxonomy extends CForge_REST_Controller {
             if ( is_wp_error( $term ) || ! $term ) {
                 continue;
             }
+            // Both helpers return an empty value when the term is not editable or
+            // not publicly viewable, which is what hides the matching row action.
+            $edit_link         = get_edit_term_link( $term->term_id, $row->data_type );
+            $term_link         = get_term_link( $term );
             $formatted_items[] = [
-                'ID'       => absint( $term->term_id ),
-                'id'       => absint( $term->term_id ),
-                'title'    => sanitize_text_field( $term->name ),
-                'taxonomy' => sanitize_text_field( $row->data_type ),
-                'date'     => sanitize_text_field( $row->created_at ),
+                'ID'        => absint( $term->term_id ),
+                'id'        => absint( $term->term_id ),
+                'title'     => sanitize_text_field( $term->name ),
+                'taxonomy'  => sanitize_text_field( $row->data_type ),
+                'date'      => sanitize_text_field( $row->created_at ),
+                'edit_link' => $edit_link ? esc_url_raw( $edit_link ) : '',
+                'permalink' => is_wp_error( $term_link ) ? '' : esc_url_raw( $term_link ),
             ];
         }
         return new \WP_REST_Response(

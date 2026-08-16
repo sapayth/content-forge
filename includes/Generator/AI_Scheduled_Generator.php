@@ -112,6 +112,9 @@ class AI_Scheduled_Generator {
 		if ( ! empty( $args['authors'] ) && is_array( $args['authors'] ) ) {
 			$action_args['authors'] = array_map( 'intval', $args['authors'] );
 		}
+		if ( ! empty( $args['taxonomy_options'] ) && is_array( $args['taxonomy_options'] ) ) {
+			$action_args['taxonomy_options'] = $args['taxonomy_options'];
+		}
 
 		// Schedule ONLY the first action
 		$action_id = \as_schedule_single_action(
@@ -184,8 +187,9 @@ class AI_Scheduled_Generator {
 		$date_from       = ! empty( $actual_args['date_from'] ) ? $actual_args['date_from'] : '';
 		$date_to         = ! empty( $actual_args['date_to'] ) ? $actual_args['date_to'] : '';
 		$authors         = ! empty( $actual_args['authors'] ) && is_array( $actual_args['authors'] ) ? $actual_args['authors'] : [];
+		$taxonomy_opts   = ! empty( $actual_args['taxonomy_options'] ) && is_array( $actual_args['taxonomy_options'] ) ? $actual_args['taxonomy_options'] : [];
 
-		return $this->handle_sequential_generation( $batch_id, $current_index, $total_count, $post_type, $post_status, $content_type, $ai_prompt, $editor_type, $user_id, $product_options, $date_from, $date_to, $authors );
+		return $this->handle_sequential_generation( $batch_id, $current_index, $total_count, $post_type, $post_status, $content_type, $ai_prompt, $editor_type, $user_id, $product_options, $date_from, $date_to, $authors, $taxonomy_opts );
 	}
 
 	/**
@@ -206,9 +210,10 @@ class AI_Scheduled_Generator {
 	 * @param string $date_from       Optional date range start (ISO string).
 	 * @param string $date_to         Optional date range end (ISO string).
 	 * @param array  $authors         Optional pool of author IDs; one is picked at random per post.
+	 * @param array  $taxonomy_options Optional taxonomy term assignment options keyed by taxonomy.
 	 * @throws Exception If AI generation fails.
 	 */
-	public function handle_sequential_generation( $batch_id, $current_index, $total_count, $post_type, $post_status, $content_type, $ai_prompt, $editor_type, $user_id, $product_options = [], $date_from = '', $date_to = '', $authors = [] ) {
+	public function handle_sequential_generation( $batch_id, $current_index, $total_count, $post_type, $post_status, $content_type, $ai_prompt, $editor_type, $user_id, $product_options = [], $date_from = '', $date_to = '', $authors = [], $taxonomy_options = [] ) {
 
 		// Get batch tracking
 		$batch_data = get_option( self::BATCH_OPTION_PREFIX . $batch_id );
@@ -284,6 +289,9 @@ class AI_Scheduled_Generator {
 			if ( ! empty( $authors ) && is_array( $authors ) ) {
 				$post_args['authors'] = $authors;
 			}
+			if ( ! empty( $taxonomy_options ) && is_array( $taxonomy_options ) ) {
+				$post_args['taxonomy_options'] = $taxonomy_options;
+			}
 
 			$post_ids = $post_generator->generate( 1, $post_args );
 
@@ -310,7 +318,7 @@ class AI_Scheduled_Generator {
 		update_option( self::BATCH_OPTION_PREFIX . $batch_id, $batch_data );
 
 		// Schedule next action or mark as complete
-		$this->schedule_next_or_complete( $batch_id, $current_index, $total_count, $post_type, $post_status, $content_type, $ai_prompt, $editor_type, $user_id, $product_options, $date_from, $date_to, $authors );
+		$this->schedule_next_or_complete( $batch_id, $current_index, $total_count, $post_type, $post_status, $content_type, $ai_prompt, $editor_type, $user_id, $product_options, $date_from, $date_to, $authors, $taxonomy_options );
 	}
 
 	/**
@@ -331,8 +339,9 @@ class AI_Scheduled_Generator {
 	 * @param string $date_from        Optional date range start (ISO string).
 	 * @param string $date_to          Optional date range end (ISO string).
 	 * @param array  $authors          Optional pool of author IDs; one is picked at random per post.
+	 * @param array  $taxonomy_options Optional taxonomy term assignment options keyed by taxonomy.
 	 */
-	protected function schedule_next_or_complete( $batch_id, $current_index, $total_count, $post_type, $post_status, $content_type, $ai_prompt, $editor_type, $user_id, $product_options = [], $date_from = '', $date_to = '', $authors = [] ) {
+	protected function schedule_next_or_complete( $batch_id, $current_index, $total_count, $post_type, $post_status, $content_type, $ai_prompt, $editor_type, $user_id, $product_options = [], $date_from = '', $date_to = '', $authors = [], $taxonomy_options = [] ) {
 		$next_index = $current_index + 1;
 
 		if ( $next_index < $total_count ) {
@@ -357,6 +366,9 @@ class AI_Scheduled_Generator {
 			}
 			if ( ! empty( $authors ) && is_array( $authors ) ) {
 				$action_args['authors'] = $authors;
+			}
+			if ( ! empty( $taxonomy_options ) && is_array( $taxonomy_options ) ) {
+				$action_args['taxonomy_options'] = $taxonomy_options;
 			}
 
 			// Schedule the next action
