@@ -1,80 +1,42 @@
 # Content Forge - Release Plan
 
-This document outlines the release schedule for Content Forge, targeting a moderate cadence of 1-2 releases per month. The goal is to deliver high-value features incrementally while ensuring stability and support for both Block (Gutenberg) and Classic editors.
+Release schedule for Content Forge, at a cadence of roughly one release per month.
 
-**Release Cadence:** Monthly / Bi-monthly
 **Core Requirement:** All content generation features must support both **Block Editor** and **Classic Editor** environments.
 
----
-
-## Phase 1: Core Content & Intelligence (Month 1-2)
-
-### v1.1.0 - The Visual Update (Month 1) ✅ **COMPLETED**
-**Focus:** Media generation and basic post enhancements.
-- **Feature:** Featured Image Generation (Placeholders). ✅
-  - *Classic:* Set `_thumbnail_id`.
-  - *Block:* Set `_thumbnail_id` (compatible with all block themes).
-- **Feature:** Basic Post Excerpts. ✅
-- **Fix:** Ensure all current generators respect the active editor (wrap content in blocks if Block Editor is active, plain HTML if Classic). ✅
-
-### v1.2.0 - The AI & Smart Update (Month 2)
-**Focus:** AI Integration & User-Selected Content Types.
-- **Feature:** **AI Content Generation (Beta)**.
-  - Integration with OpenAI API (User provides key).
-  - Generate realistic titles and body content based on prompts.
-  - *Block:* Generate content as Paragraph/Heading blocks.
-  - *Classic:* Generate content as HTML.
-- **Feature:** User-Selected Content Types.
-  - Allow users to select content category (Blog, E-commerce, Portfolio, Business, etc.).
-  - Enhance both AI and regular generation with content-type-specific data.
-- **Feature:** Post Status Variations.
-  - Generate Drafts, Pending, Private, Future (Scheduled).
+**Positioning note:** Content Forge started as a dummy-data generator and now leads with
+AI publishing. Autopilot is the headline feature; traditional generation is the no-API-key
+fallback that also serves developers and demo sites. Roadmap items are weighed against
+"does this make Autopilot output publishable without a human touching it?"
 
 ---
 
-## Phase 2: E-Commerce & Integration (Month 3-4)
+## Shipped
 
-### v1.3.0 - The Commerce Update (Month 3)
-**Focus:** WooCommerce Integration (Basic).
-- **Feature:** Product Generation (Simple Products).
-  - Title, Description, Price, SKU.
-  - *Block/Classic:* Product description compatibility.
-- **Feature:** Product Categories & Tags.
-- **Feature:** Product Images (Featured + Gallery placeholders).
-- **Feature:** Custom Post Type (CPT) Support (Moved from v1.2.0).
-
-### v1.4.0 - The Commerce Enhanced Update (Month 4)
-**Focus:** Advanced WooCommerce & Third-Party.
-- **Feature:** Product Variations (Variable Products).
-- **Feature:** Customer Generation (Users with 'customer' role + billing/shipping data).
-- **Feature:** Order Generation (Simulate sales for reporting).
-- **Feature:** **Third-Party Integration API** (Foundation for future integrations).
+| Version | Date | Highlights |
+|---|---|---|
+| v1.1.0 | 2025-12-05 | Featured image generation (placeholders), post excerpts, Block/Classic content formatting |
+| v1.2.0 | 2025-12-19 | AI content generation (OpenAI, Anthropic, Google), Picsum + Placehold.co images, excerpts |
+| v1.3.0 | 2026-02-12 | WooCommerce integration, weDocs integration |
+| v1.4.x | 2026-03 | Random date ranges, EDD / The Events Calendar / WP User Frontend support, deactivation cleanup, CPT fixes |
+| v1.5.0 | 2026-05-14 | **Autopilot** — scheduled AI post generation |
+| v1.6.0 | 2026-06-14 | Author modes (fixed or random pool), DeepSeek + Mistral providers, review notice |
+| v1.7.0 | 2026-08-17 | Taxonomy assignment, AI featured images for Autopilot, Dashboard page, edit/view row links, orphaned tracking-row cleanup |
 
 ---
 
-## Phase 3: Efficiency & Scale (Month 5-6)
+## Next
 
-### v1.5.0 - The Bulk Update (Month 5)
-**Focus:** Bulk Operations & Scheduling.
-- **Feature:** Scheduled Generation (Cron).
-  - "Generate 5 posts every day".
-- **Feature:** Export/Import Generated Content.
-- **Enhancement:** Bulk Delete/Cleanup Tools (by Date, Type).
+### Candidates for v1.8.0+
+- **SEO meta for Autopilot posts** — populate Yoast / Rank Math title and description fields.
+- **Autopilot for other post types** — pages, CPTs, products.
+- **Internal linking** — cross-link Autopilot posts to existing site content.
+- **Advanced filtering & search** in the generated-content list views.
+- **Multisite support** (network-wide generation).
+- **Performance stress-test mode** (10k+ items).
+- **Advanced analytics**, **GDPR tooling**, **video tutorials & in-app help**.
 
-### v1.6.0 - The Performance Update (Month 6)
-**Focus:** Performance & Multisite.
-- **Feature:** Performance Stress Test Mode (10k+ items).
-- **Feature:** Multisite Support (Network-wide generation).
-- **Enhancement:** Advanced Filtering in Admin List.
-
----
-
-## Phase 4: Future Roadmap (Low Priority / Long Term)
-
-### v1.7.0+
-- **Advanced Analytics** (Detailed usage reports).
-- **GDPR Compliance Tools** (Anonymized data).
-- **Video Tutorials & In-App Help**.
+Longer, unfiltered idea list: `docs/ideas/feature-ideas.md`.
 
 ---
 

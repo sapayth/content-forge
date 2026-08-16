@@ -4,7 +4,7 @@ Tags: ai content generator, autopilot, scheduled posts, dummy content, testing
 Requires at least: 5.6
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.6.0
+Stable tag: 1.7.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -25,6 +25,7 @@ Autopilot is a free, built-in scheduler that turns Content Forge into a hands-of
 * Per-Autopilot tone (professional, casual, technical, conversational) and length controls
 * Publishing modes for Autopilot: draft, pending review, scheduled, or immediate publish
 * Safety controls: daily post caps, auto-pause after consecutive failures, duplicate guard
+* AI-generated featured images for Autopilot posts (OpenAI and Google), with placeholder fallback
 * Email notifications for Autopilot runs (every run, failures only, or off)
 * AI-powered content generation using OpenAI, Anthropic, Google, Mistral, and DeepSeek
 * Assign generated posts to a specific author, or shuffle them across a random pool of authors
@@ -34,8 +35,11 @@ Autopilot is a free, built-in scheduler that turns Content Forge into a hands-of
 * Generate featured images using Picsum and Placehold.co
 * Generate test users with various roles and capabilities
 * Create fake taxonomies (categories and tags)
+* Assign generated posts, pages, CPTs and products to taxonomy terms, so category and tag archives actually have content
 * Generate realistic comments and comment threads
 * Bulk generation capabilities for efficient testing
+* Dashboard showing what you have generated, Autopilot health, and one-click cleanup
+* Edit and View links on every generated item, so you can jump straight to it
 * Clean and intuitive admin interface
 * Follows WordPress coding standards
 * Translation ready
@@ -45,7 +49,7 @@ Autopilot is a free, built-in scheduler that turns Content Forge into a hands-of
 * Scheduled AI blogging for solo creators and niche site owners
 * Editorial workflows where AI produces drafts and humans review before publish
 * Filling demo or staging sites with realistic ongoing content
-* Theme development and testing
+* Theme development and testing, including category, tag and custom taxonomy archive templates
 * Plugin development
 * Client demonstrations
 * Performance testing with large datasets
@@ -71,7 +75,7 @@ Content Forge is designed for development and testing purposes only. While the g
 
 = Can I customize the type of content generated? =
 
-Yes, Content Forge provides various options to customize the generated content. You can choose between AI-powered generation (with provider selection: OpenAI, Anthropic, or Google) or traditional generation methods. Additional customization options include post types, user roles, taxonomy terms, content length, featured images, and post excerpts.
+Yes, Content Forge provides various options to customize the generated content. You can choose between AI-powered generation (with provider selection: OpenAI, Anthropic, or Google) or traditional generation methods. Additional customization options include post types, user roles, taxonomy term assignment, content length, featured images, and post excerpts.
 
 = Will this plugin slow down my site? =
 
@@ -84,6 +88,12 @@ Yes, Content Forge provides bulk deletion options to easily remove all generated
 = Is the plugin translation ready? =
 
 Yes, Content Forge is fully translation ready and includes a .pot file for translators.
+
+= Can generated posts be assigned to categories and tags? =
+
+Yes. Every generation form has a Taxonomies section listing the taxonomies registered for the post type you picked — categories and tags for posts, product categories and product tags for WooCommerce products, and any custom taxonomy your theme or plugins register. For each one you can assign specific terms, draw at random from all existing terms, or assign nothing. You also set how many terms each item gets, so a post can land in one category and pick up two to four tags. Terms are spread unevenly on purpose, which is what real content looks like and what surfaces pagination bugs in archive templates.
+
+Content Forge assigns existing terms rather than inventing new ones. Generate the terms first on the Taxonomies screen, then generate the posts.
 
 = What is Autopilot? =
 
@@ -114,6 +124,17 @@ Yes. Run one per category, niche, or author — they operate independently.
 5. Bulk content management tools
 
 == Changelog ==
+
+= 1.7.0 17-08-2026 =
+* New - Taxonomy assignment — generated posts, pages, CPTs and products can finally land in real categories and tags, so your archive templates have something to render
+* New - AI featured images — Autopilot posts can now generate their own artwork from the post title, so a scheduled post arrives ready to publish
+* New - Placeholder featured images for Autopilot, for when you want a thumbnail without spending API credits
+* New - Dashboard — a landing page showing what you have generated, whether Autopilot is healthy, and where to go next
+* New - Edit and View links on every generated item, so you can open one without hunting for it in wp-admin
+* Enhancement - Generated images now get alt text from their post title
+* Enhancement - Refreshed admin interface built on a shared component set, with contrast-checked colours throughout
+* Fix - Deleting generated content from anywhere in WordPress now clears its tracking row, instead of leaving a ghost behind in the counts
+* Note - AI images use your own provider credits, roughly one image per generated post, bounded by your daily post cap. Available on OpenAI and Google; other providers fall back to placeholders.
 
 = 1.6.0 14-06-2026 =
 * New - Byline roulette — assign generated posts to one author or shuffle them across a random crew

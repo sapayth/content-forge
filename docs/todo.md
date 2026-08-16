@@ -1,6 +1,35 @@
-[x] attach generated posts to existing or random set of authors
-[x] add deepseek and other ai provider
-[x] ask for a 5 star review or feature idea after 24 hours
-[ ] new feedio key
-[x] market autopilot feature and add documentation link: https://wp.sapayth.com/schedule-ai-blog-posts-wordpress/
-[ ] deleting item/posts/pages from wp dashboard or other places still keeps the info in *_cforge table. need to implement a proper solution
+# Content Forge - Open Tasks
+
+Completed items are removed once shipped — git history is the record.
+
+## Shipping
+
+- [ ] Release v1.7.0: taxonomy assignment, AI featured images, Dashboard page,
+      edit/view row links, orphaned-row cleanup. Committed and version-bumped;
+      remaining gates before tagging `v1.7.0`:
+  - [ ] Live API-key run — `wp eval-file tests/manual/featured-image-check.php`
+        (the only feature that spends provider credits and has never run against
+        a real endpoint)
+  - [ ] `wp eval-file tests/manual/taxonomy-assignment-check.php`
+  - [ ] `wp eval-file tests/manual/cleanup-check.php`
+  - [ ] Editor matrix: latest WP + block theme, and + classic theme with Classic Editor
+  - [ ] Smoke the Dashboard at `admin.php?page=cforge` in a browser
+
+## Testing
+
+- [ ] Set up PHPUnit following the WordPress core testing guidelines
+  - https://make.wordpress.org/core/handbook/testing/automated-testing/phpunit/
+  - https://github.com/WordPress/phpunit-test-runner
+- [ ] Test suite for the Generator classes (Post, User, Comment)
+- [ ] Test suite for the REST API endpoints
+- [ ] Tests for the tracking system
+- [ ] Configure CI for automated testing
+
+## Code Quality
+
+- [ ] Reduce duplication in admin script/style enqueuing — reusable method in `Admin.php`
+- [ ] Constants cleanup in `content-forge.php` — remove duplicates, document what stays
+
+## Conventions
+
+- Content generation is custom-built. We do not use the Faker library.
