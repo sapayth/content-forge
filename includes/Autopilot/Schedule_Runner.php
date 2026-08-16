@@ -12,6 +12,7 @@ use ContentForge\Autopilot\Topic\Duplicate_Guard;
 use ContentForge\Autopilot\Notifications\Admin_Notices;
 use ContentForge\Autopilot\Notifications\Email_Notifier;
 use ContentForge\Generator\AI_Content_Generator;
+use ContentForge\Generator\Image;
 use ContentForge\Settings\AI_Settings_Manager;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -237,6 +238,12 @@ class Schedule_Runner {
 
 				$created_post_ids[] = (int) $post_id;
 
+				// Featured image is best-effort: a failure here never costs us the post.
+				$image_error = $this->attach_featured_image( $current_schedule, (int) $post_id );
+				if ( is_wp_error( $image_error ) ) {
+					$errors[] = $image_error->get_error_message();
+				}
+
 				/**
 				 * Fires after a post has been successfully created.
 				 *
@@ -422,6 +429,97 @@ class Schedule_Runner {
 			return $post_id;
 		}
 		return (int) $post_id;
+	}
+
+	/**
+	 * Attach a featured image to a freshly created post.
+	 *
+	 * Best-effort by design: every failure path returns a WP_Error the caller
+	 * records against the run, but the post itself is already saved and stays.
+	 *
+	 * @since 1.8.0
+	 *
+	 * @param Schedule $schedule Schedule.
+	 * @param int      $post_id  Post ID.
+	 * @return true|WP_Error True when an image was attached or none was asked for.
+	 */
+	protected function attach_featured_image( Schedule $schedule, $post_id ) {
+		$source = (string) $schedule->config_get( 'targeting.featured_image.source', 'none' );
+
+		if ( 'none' === $source ) {
+			return true;
+		}
+
+		$title = get_the_title( $post_id );
+		$image = new Image( $schedule->created_by() );
+
+		if ( 'ai' === $source ) {
+			$prompt = sprintf(
+				/* translators: %s: post title. */
+				__( 'Editorial photograph illustrating an article titled "%s". No text, no watermarks.', 'content-forge' ),
+				$title
+			);
+
+			/**
+			 * Filter the prompt used for Autopilot featured images.
+			 *
+			 * @since 1.8.0
+			 *
+			 * @param string   $prompt   Image prompt.
+			 * @param int      $post_id  Post ID.
+			 * @param Schedule $schedule Schedule.
+			 */
+			$prompt = (string) apply_filters( 'cforge_autopilot_image_prompt', $prompt, $post_id, $schedule );
+
+			$attachment_id = $image->generate_from_ai( sanitize_text_field( $prompt ), $title );
+
+			// No image model on this provider, or the call failed: fall back to a
+			// placeholder rather than leaving the post bare.
+			if ( is_wp_error( $attachment_id ) ) {
+				$fallback = $image->generate( 1, [ 'title' => $title, 'sources' => [ 'picsum' ] ] );
+
+				if ( empty( $fallback ) ) {
+					return $attachment_id;
+				}
+
+				set_post_thumbnail( $post_id, (int) $fallback[0] );
+
+				// A provider that simply has no image model (or no key) is a standing
+				// configuration fact the schedule form already warns about. Reporting it
+				// every run would mark every run PARTIAL forever and train the user to
+				// ignore the status. Only transient failures — API errors, timeouts,
+				// content-policy refusals — are worth recording.
+				$structural = [ 'cforge_no_image_support', 'cforge_no_api_key' ];
+
+				if ( in_array( $attachment_id->get_error_code(), $structural, true ) ) {
+					return true;
+				}
+
+				return new WP_Error(
+					'cforge_image_fallback',
+					sprintf(
+						/* translators: %s: original error message. */
+						__( 'AI image unavailable (%s) — used a placeholder instead.', 'content-forge' ),
+						$attachment_id->get_error_message()
+					)
+				);
+			}
+
+			set_post_thumbnail( $post_id, (int) $attachment_id );
+
+			return true;
+		}
+
+		// Placeholder source.
+		$ids = $image->generate( 1, [ 'title' => $title, 'sources' => [ 'picsum', 'placehold' ] ] );
+
+		if ( empty( $ids ) ) {
+			return new WP_Error( 'cforge_image_failed', __( 'Could not generate a placeholder featured image.', 'content-forge' ) );
+		}
+
+		set_post_thumbnail( $post_id, (int) $ids[0] );
+
+		return true;
 	}
 
 	/**

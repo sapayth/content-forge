@@ -354,6 +354,8 @@ class Admin {
                     'authors'            => self::get_authors_for_select(),
                     'post_types'         => self::get_autopilot_post_types(),
                     'ai_configured'      => \ContentForge\Settings\AI_Settings_Manager::is_configured(),
+                    'ai_provider'        => \ContentForge\Settings\AI_Settings_Manager::get_active_provider(),
+                    'ai_image_providers' => \ContentForge\Settings\AI_Settings_Manager::get_image_providers(),
                     'site_timezone'      => wp_timezone_string(),
                     'autopilot_enabled'  => \ContentForge\Autopilot\Plugin::is_enabled(),
                     'settings_url'       => admin_url( 'admin.php?page=cforge-settings' ),

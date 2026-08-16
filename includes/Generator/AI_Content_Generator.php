@@ -85,6 +85,23 @@ class AI_Content_Generator {
 	 * @return AI_Provider_Base Provider instance.
 	 */
 	protected function create_provider( string $provider, string $model, string $api_key ) {
+		return self::make_provider( $provider, $model, $api_key );
+	}
+
+	/**
+	 * Create a provider instance without constructing a generator.
+	 *
+	 * Same mapping as create_provider(), reachable from callers that only need a
+	 * provider adapter (e.g. image generation).
+	 *
+	 * @since 1.8.0
+	 *
+	 * @param string $provider Provider slug.
+	 * @param string $model    Model slug.
+	 * @param string $api_key  API key.
+	 * @return AI_Provider_Base Provider instance.
+	 */
+	public static function make_provider( string $provider, string $model, string $api_key ) {
 		switch ( $provider ) {
 			case AI_Settings_Manager::PROVIDER_OPENAI:
 				return new AI_Provider_OpenAI( $api_key, $model );

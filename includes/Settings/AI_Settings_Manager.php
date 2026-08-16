@@ -65,6 +65,31 @@ class AI_Settings_Manager {
 	}
 
 	/**
+	 * Get the slugs of providers that can generate images.
+	 *
+	 * Asks the provider classes themselves rather than keeping a second list in
+	 * sync — a provider that gains an image endpoint only changes in one place.
+	 *
+	 * @since 1.8.0
+	 *
+	 * @return array List of provider slugs.
+	 */
+	public static function get_image_providers() {
+		$slugs = [];
+
+		foreach ( array_keys( self::get_providers() ) as $slug ) {
+			// Empty key and model: no request is made, we only query capability.
+			$provider = \ContentForge\Generator\AI_Content_Generator::make_provider( $slug, '', '' );
+
+			if ( $provider->supports_images() ) {
+				$slugs[] = $slug;
+			}
+		}
+
+		return $slugs;
+	}
+
+	/**
 	 * Get available models for a provider.
 	 *
 	 * @since 1.2.0

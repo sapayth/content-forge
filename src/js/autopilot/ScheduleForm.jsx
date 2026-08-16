@@ -162,6 +162,9 @@ export default function ScheduleForm({ scheduleId, onCancel, onSaved }) {
     const categories = window.cforge?.categories || [];
     const authors = window.cforge?.authors || [];
     const postTypes = window.cforge?.post_types || [{ value: 'post', label: 'Post' }];
+    const providerSupportsImages = (window.cforge?.ai_image_providers || []).includes(
+        window.cforge?.ai_provider
+    );
 
     return (
         <div>
@@ -261,6 +264,27 @@ export default function ScheduleForm({ scheduleId, onCancel, onSaved }) {
                         ]}
                         onChange={(v) => patch('targeting.author_id', parseInt(v, 10) || 0)}
                     />
+                    <SelectControl
+                        label={__('Featured image', 'content-forge')}
+                        value={config.targeting.featured_image?.source || 'none'}
+                        options={[
+                            { value: 'none', label: __('None', 'content-forge') },
+                            { value: 'placeholder', label: __('Placeholder image', 'content-forge') },
+                            { value: 'ai', label: __('AI-generated from the post title', 'content-forge') },
+                        ]}
+                        onChange={(v) =>
+                            patch('targeting.featured_image', {
+                                ...(config.targeting.featured_image || {}),
+                                source: v,
+                            })
+                        }
+                        help={__('AI images use your own provider credits — roughly one image per generated post.', 'content-forge')}
+                    />
+                    {config.targeting.featured_image?.source === 'ai' && !providerSupportsImages && (
+                        <Notice status="warning" isDismissible={false}>
+                            {__('The active AI provider has no image model. Runs will fall back to a placeholder image.', 'content-forge')}
+                        </Notice>
+                    )}
                 </Section>
 
                 <Section title={__('AI', 'content-forge')}>

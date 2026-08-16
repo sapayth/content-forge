@@ -94,15 +94,85 @@ abstract class AI_Provider_Base {
 	abstract protected function parse_response( array $response );
 
 	/**
+	 * Whether this provider can generate images.
+	 *
+	 * Defaults to false so text-only providers need no implementation. Providers
+	 * with an image endpoint override this and generate_image().
+	 *
+	 * @since 1.8.0
+	 *
+	 * @return bool True if the provider exposes an image model.
+	 */
+	public function supports_images() {
+		return false;
+	}
+
+	/**
+	 * Generate an image and return the path to a local temporary file.
+	 *
+	 * Returning a file path rather than a URL keeps the caller provider-agnostic:
+	 * some providers return a URL, others return base64 image data.
+	 *
+	 * @since 1.8.0
+	 *
+	 * @param string $prompt Image prompt.
+	 * @return string|WP_Error Absolute temp file path, or WP_Error on failure.
+	 */
+	public function generate_image( string $prompt ) {
+		return new WP_Error(
+			'cforge_no_image_support',
+			__( 'This AI provider does not support image generation.', 'content-forge' )
+		);
+	}
+
+	/**
+	 * Persist raw image bytes to a temporary file.
+	 *
+	 * @since 1.8.0
+	 *
+	 * @param string $binary    Raw (already base64-decoded) image bytes.
+	 * @param string $extension File extension without the dot.
+	 * @return string|WP_Error Temp file path, or WP_Error on failure.
+	 */
+	protected function save_image_temp_file( string $binary, string $extension = 'png' ) {
+		if ( '' === $binary ) {
+			return new WP_Error( 'cforge_empty_image', __( 'Provider returned an empty image.', 'content-forge' ) );
+		}
+
+		require_once ABSPATH . 'wp-admin/includes/file.php';
+
+		$tmp_file = wp_tempnam( 'cforge-ai-image.' . $extension );
+
+		if ( ! $tmp_file ) {
+			return new WP_Error( 'cforge_tmpfile_failed', __( 'Could not create a temporary file for the image.', 'content-forge' ) );
+		}
+
+		global $wp_filesystem;
+		if ( ! $wp_filesystem ) {
+			WP_Filesystem();
+		}
+
+		if ( ! $wp_filesystem || ! $wp_filesystem->put_contents( $tmp_file, $binary ) ) {
+			// phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged, WordPress.WP.AlternativeFunctions.unlink_unlink
+			@unlink( $tmp_file );
+			return new WP_Error( 'cforge_tmpfile_failed', __( 'Could not write the generated image to disk.', 'content-forge' ) );
+		}
+
+		return $tmp_file;
+	}
+
+	/**
 	 * Make HTTP request to provider API.
 	 *
 	 * @since 1.2.0
+	 * @since 1.8.0 Added the $endpoint override for non-chat endpoints (e.g. images).
 	 *
-	 * @param array $payload Request payload.
+	 * @param array  $payload  Request payload.
+	 * @param string $endpoint Optional endpoint override. Defaults to get_api_endpoint().
 	 * @return array|WP_Error Response array or WP_Error on failure.
 	 */
-	protected function make_request( array $payload ) {
-		$endpoint = $this->get_api_endpoint();
+	protected function make_request( array $payload, string $endpoint = '' ) {
+		$endpoint = '' !== $endpoint ? $endpoint : $this->get_api_endpoint();
 		$headers  = $this->get_request_headers();
 
 		/**

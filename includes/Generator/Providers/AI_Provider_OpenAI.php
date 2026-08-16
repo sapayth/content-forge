@@ -19,6 +19,14 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class AI_Provider_OpenAI extends AI_Provider_Base {
 	/**
+	 * Image model. Independent of the configured text model — the text model
+	 * the user picked (e.g. gpt-4o) cannot generate images.
+	 *
+	 * @since 1.8.0
+	 */
+	const IMAGE_MODEL = 'gpt-image-1';
+
+	/**
 	 * Get API endpoint URL.
 	 *
 	 * @since 1.2.0
@@ -137,6 +145,61 @@ class AI_Provider_OpenAI extends AI_Provider_Base {
 		}
 
 		return $this->parse_response( $response );
+	}
+
+	/**
+	 * OpenAI exposes an image model.
+	 *
+	 * @since 1.8.0
+	 *
+	 * @return bool
+	 */
+	public function supports_images() {
+		return true;
+	}
+
+	/**
+	 * Generate an image via the images endpoint.
+	 *
+	 * gpt-image-1 always returns base64 data, never a URL.
+	 *
+	 * @since 1.8.0
+	 *
+	 * @param string $prompt Image prompt.
+	 * @return string|WP_Error Temp file path, or WP_Error on failure.
+	 */
+	public function generate_image( string $prompt ) {
+		$payload = [
+			'model'  => self::IMAGE_MODEL,
+			'prompt' => $prompt,
+			'n'      => 1,
+			'size'   => '1024x1024',
+		];
+
+		$response = $this->make_request( $payload, 'https://api.openai.com/v1/images/generations' );
+
+		if ( is_wp_error( $response ) ) {
+			return $response;
+		}
+
+		if ( ! isset( $response['data'][0]['b64_json'] ) ) {
+			return new WP_Error(
+				'cforge_image_parse_failed',
+				__( 'OpenAI returned no image data.', 'content-forge' )
+			);
+		}
+
+		// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_decode
+		$binary = base64_decode( $response['data'][0]['b64_json'], true );
+
+		if ( false === $binary ) {
+			return new WP_Error(
+				'cforge_image_parse_failed',
+				__( 'OpenAI returned malformed image data.', 'content-forge' )
+			);
+		}
+
+		return $this->save_image_temp_file( $binary, 'png' );
 	}
 
 	/**

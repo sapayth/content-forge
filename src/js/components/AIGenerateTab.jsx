@@ -4,6 +4,7 @@ import { SelectControl, TextareaControl, Button, Notice, ToggleControl } from '@
 import apiFetch from '@wordpress/api-fetch';
 import DateRangePicker from './DateRangePicker';
 import AuthorSelect from './AuthorSelect';
+import TaxonomySection from './TaxonomySection';
 
 export default function AIGenerateTab({
     post,
@@ -14,6 +15,7 @@ export default function AIGenerateTab({
     setAuthorMode = () => {},
     authorIds = [],
     setAuthorIds = () => {},
+    taxonomyAssignment = { taxonomies: [], options: {}, setOption: () => {}, payload: {} },
 }) {
     const [isConfigured, setIsConfigured] = useState(false);
     const [contentType, setContentType] = useState('general');
@@ -126,6 +128,9 @@ export default function AIGenerateTab({
                 ...(randomizeDates && dateFrom && dateTo ? { date_from: dateFrom, date_to: dateTo } : {}),
                 ...(authorMode === 'specific' && authorIds.length > 0 ? { author_mode: 'specific', authors: authorIds } : {}),
                 ...(authorMode === 'random' ? { author_mode: 'random' } : {}),
+                ...(Object.keys(taxonomyAssignment.payload || {}).length > 0
+                    ? { taxonomy_options: taxonomyAssignment.payload }
+                    : {}),
             };
 
             const response = await apiFetch({
@@ -311,7 +316,7 @@ export default function AIGenerateTab({
             <div className="cforge-space-y-6">
                 <div className="cforge-flex cforge-gap-4">
                     <div className="cforge-flex-1">
-                        <label className="cforge-block cforge-text-sm cforge-font-medium cforge-text-gray-700 cforge-mb-2">
+                        <label className="cforge-block cforge-text-sm cforge-font-medium cforge-text-text-primary cforge-mb-2">
                             {__('Type', 'content-forge')}
                         </label>
                         <select
@@ -324,7 +329,7 @@ export default function AIGenerateTab({
                         </select>
                     </div>
                     <div className="cforge-flex-1">
-                        <label className="cforge-block cforge-text-sm cforge-font-medium cforge-text-gray-700 cforge-mb-2">
+                        <label className="cforge-block cforge-text-sm cforge-font-medium cforge-text-text-primary cforge-mb-2">
                             {__('Number of Pages/Posts', 'content-forge')}
                         </label>
                         <input
@@ -338,12 +343,12 @@ export default function AIGenerateTab({
                             }}
                             className="cforge-input cforge-w-full"
                         />
-                        <p className="cforge-text-sm cforge-text-gray-500 cforge-mt-1">
+                        <p className="cforge-text-sm cforge-text-text-secondary cforge-mt-1">
                             {__('Maximum 50', 'content-forge')}
                         </p>
                     </div>
                     <div className="cforge-flex-1">
-                        <label className="cforge-block cforge-text-sm cforge-font-medium cforge-text-gray-700 cforge-mb-2">
+                        <label className="cforge-block cforge-text-sm cforge-font-medium cforge-text-text-primary cforge-mb-2">
                             {__('Content Type', 'content-forge')}
                         </label>
                         <SelectControl
@@ -357,7 +362,7 @@ export default function AIGenerateTab({
 
                 <div className="cforge-flex cforge-gap-4">
                     <div className="cforge-flex-1">
-                        <label className="cforge-block cforge-text-sm cforge-font-medium cforge-text-gray-700 cforge-mb-2">
+                        <label className="cforge-block cforge-text-sm cforge-font-medium cforge-text-text-primary cforge-mb-2">
                             {__('Status', 'content-forge')}
                         </label>
                         <select
@@ -373,7 +378,7 @@ export default function AIGenerateTab({
                     </div>
                     {post.post_type === 'page' && (
                         <div className="cforge-flex-1">
-                            <label className="cforge-block cforge-text-sm cforge-font-medium cforge-text-gray-700 cforge-mb-2">
+                            <label className="cforge-block cforge-text-sm cforge-font-medium cforge-text-text-primary cforge-mb-2">
                                 {__('Parent Page', 'content-forge')}
                             </label>
                             <select
@@ -391,7 +396,7 @@ export default function AIGenerateTab({
                 </div>
 
                 <div>
-                    <label className="cforge-block cforge-text-sm cforge-font-medium cforge-text-gray-700 cforge-mb-2">
+                    <label className="cforge-block cforge-text-sm cforge-font-medium cforge-text-text-primary cforge-mb-2">
                         {__('Custom Prompt (Optional)', 'content-forge')}
                     </label>
                     <TextareaControl
@@ -401,7 +406,7 @@ export default function AIGenerateTab({
                         rows={4}
                         className="cforge-w-full"
                     />
-                    <p className="cforge-text-sm cforge-text-gray-500 cforge-mt-1">
+                    <p className="cforge-text-sm cforge-text-text-secondary cforge-mt-1">
                         {__('Provide additional context or instructions to guide the AI generation.', 'content-forge')}
                     </p>
                 </div>
@@ -432,6 +437,10 @@ export default function AIGenerateTab({
                     selected={authorIds}
                     onSelectedChange={setAuthorIds}
                 />
+
+                <div className="cforge-mt-4">
+                    <TaxonomySection {...taxonomyAssignment} />
+                </div>
 
                 <div className="cforge-mt-6">
                     <Button
@@ -468,7 +477,7 @@ export default function AIGenerateTab({
                                     style={{ width: `${progress}%` }}
                                 ></div>
                             </div>
-                            <div className="cforge-text-xs cforge-text-gray-600 cforge-mt-1">{progress}% complete</div>
+                            <div className="cforge-text-xs cforge-text-text-secondary cforge-mt-1">{progress}% complete</div>
                         </div>
 
                         {createdPosts.length > 0 && (
@@ -484,7 +493,7 @@ export default function AIGenerateTab({
                                                 href={`/wp-admin/post.php?post=${post.post_id}&action=edit`}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="cforge-ml-2 cforge-text-blue-600 hover:cforge-text-blue-800"
+                                                className="cforge-ml-2 cforge-text-primary hover:cforge-text-primaryHover"
                                             >
                                                 {__('Edit', 'content-forge')}
                                             </a>
@@ -515,10 +524,10 @@ export default function AIGenerateTab({
                 {post.post_title && post.post_content && !generating && (
                     <div className="cforge-mt-4 cforge-p-4 cforge-bg-gray-50 cforge-rounded">
                         <h3 className="cforge-font-semibold cforge-mb-2">{__('Generated Content', 'content-forge')}</h3>
-                        <p className="cforge-text-sm cforge-text-gray-600 cforge-mb-2">
+                        <p className="cforge-text-sm cforge-text-text-secondary cforge-mb-2">
                             <strong>{__('Title:', 'content-forge')}</strong> {post.post_title}
                         </p>
-                        <div className="cforge-text-sm cforge-text-gray-600">
+                        <div className="cforge-text-sm cforge-text-text-secondary">
                             <strong>{__('Content Preview:', 'content-forge')}</strong>
                             <div className="cforge-mt-2 cforge-max-h-40 cforge-overflow-y-auto" dangerouslySetInnerHTML={{ __html: post.post_content.substring(0, 500) + '...' }} />
                         </div>

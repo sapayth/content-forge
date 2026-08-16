@@ -484,7 +484,8 @@ class Autopilot_Schedules extends CForge_REST_Controller {
 		$merged['targeting']['tag_ids']                 = array_values( array_map( 'intval', (array) ( $merged['targeting']['tag_ids'] ?? [] ) ) );
 		$merged['targeting']['author_id']               = (int) ( $merged['targeting']['author_id'] ?? 0 );
 		$merged['targeting']['ai_suggests_tags']        = (bool) ( $merged['targeting']['ai_suggests_tags'] ?? false );
-		$merged['targeting']['featured_image']['source'] = sanitize_key( $merged['targeting']['featured_image']['source'] ?? 'none' );
+		$image_source                                    = sanitize_key( $merged['targeting']['featured_image']['source'] ?? 'none' );
+		$merged['targeting']['featured_image']['source'] = in_array( $image_source, [ 'none', 'placeholder', 'ai' ], true ) ? $image_source : 'none';
 		$merged['targeting']['featured_image']['url']    = esc_url_raw( (string) ( $merged['targeting']['featured_image']['url'] ?? '' ) );
 
 		$merged['ai']['custom_prompt'] = sanitize_textarea_field( (string) ( $merged['ai']['custom_prompt'] ?? '' ) );

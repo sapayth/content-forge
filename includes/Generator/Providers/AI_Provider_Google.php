@@ -19,6 +19,14 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class AI_Provider_Google extends AI_Provider_Base {
 	/**
+	 * Image model. Independent of the configured text model — the text model
+	 * the user picked (e.g. gemini-2.5-flash) cannot return image parts.
+	 *
+	 * @since 1.8.0
+	 */
+	const IMAGE_MODEL = 'gemini-2.5-flash-image';
+
+	/**
 	 * Get API endpoint URL.
 	 *
 	 * @since 1.2.0
@@ -121,12 +129,14 @@ class AI_Provider_Google extends AI_Provider_Base {
 	 * Override to handle Google's API key in URL.
 	 *
 	 * @since 1.2.0
+	 * @since 1.8.0 Added the $endpoint override for non-chat endpoints (e.g. images).
 	 *
-	 * @param array $payload Request payload.
+	 * @param array  $payload  Request payload.
+	 * @param string $endpoint Optional endpoint override. Defaults to get_api_endpoint().
 	 * @return array|WP_Error Response array or WP_Error on failure.
 	 */
-	public function make_request( array $payload ) {
-		$endpoint = $this->get_api_endpoint();
+	public function make_request( array $payload, string $endpoint = '' ) {
+		$endpoint = '' !== $endpoint ? $endpoint : $this->get_api_endpoint();
 		$headers  = $this->get_request_headers();
 
 		/**
@@ -205,6 +215,78 @@ class AI_Provider_Google extends AI_Provider_Base {
 		}
 
 		return $this->parse_response( $response );
+	}
+
+	/**
+	 * Google exposes an image model.
+	 *
+	 * @since 1.8.0
+	 *
+	 * @return bool
+	 */
+	public function supports_images() {
+		return true;
+	}
+
+	/**
+	 * Generate an image via the Gemini image model.
+	 *
+	 * Gemini returns the image as an inline base64 part rather than a URL.
+	 *
+	 * @since 1.8.0
+	 *
+	 * @param string $prompt Image prompt.
+	 * @return string|WP_Error Temp file path, or WP_Error on failure.
+	 */
+	public function generate_image( string $prompt ) {
+		$endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/'
+			. self::IMAGE_MODEL . ':generateContent?key=' . rawurlencode( $this->api_key );
+
+		$payload = [
+			'contents' => [
+				[
+					'parts' => [
+						[ 'text' => $prompt ],
+					],
+				],
+			],
+		];
+
+		$response = $this->make_request( $payload, $endpoint );
+
+		if ( is_wp_error( $response ) ) {
+			return $response;
+		}
+
+		$parts = $response['candidates'][0]['content']['parts'] ?? [];
+		$data  = '';
+
+		// The response interleaves text and image parts; take the first image.
+		foreach ( $parts as $part ) {
+			if ( ! empty( $part['inlineData']['data'] ) ) {
+				$data = (string) $part['inlineData']['data'];
+				break;
+			}
+		}
+
+		if ( '' === $data ) {
+			return new WP_Error(
+				'cforge_image_parse_failed',
+				__( 'Google returned no image data.', 'content-forge' )
+			);
+		}
+
+		// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_decode
+		$binary = base64_decode( $data, true );
+
+		if ( false === $binary ) {
+			return new WP_Error(
+				'cforge_image_parse_failed',
+				__( 'Google returned malformed image data.', 'content-forge' )
+			);
+		}
+
+		return $this->save_image_temp_file( $binary, 'png' );
 	}
 
 	/**

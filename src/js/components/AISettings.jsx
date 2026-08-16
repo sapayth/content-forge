@@ -275,7 +275,7 @@ export default function AISettings() {
             <div className="cforge-space-y-6">
                 <div className="cforge-grid cforge-grid-cols-1 md:cforge-grid-cols-2 cforge-gap-6">
                     <div>
-                        <label className="cforge-block cforge-text-sm cforge-font-medium cforge-text-gray-700 cforge-mb-2">
+                        <label className="cforge-block cforge-text-sm cforge-font-medium cforge-text-text-primary cforge-mb-2">
                             {__('AI Provider', 'content-forge')}
                         </label>
                         <SelectControl
@@ -287,13 +287,13 @@ export default function AISettings() {
                             }}
                             className="cforge-w-full"
                         />
-                        <p className="cforge-text-sm cforge-text-gray-500 cforge-mt-1">
+                        <p className="cforge-text-sm cforge-text-text-secondary cforge-mt-1">
                             {__('Select the AI service provider you want to use.', 'content-forge')}
                         </p>
                     </div>
 
                     <div>
-                        <label className="cforge-block cforge-text-sm cforge-font-medium cforge-text-gray-700 cforge-mb-2">
+                        <label className="cforge-block cforge-text-sm cforge-font-medium cforge-text-text-primary cforge-mb-2">
                             {__('AI Model', 'content-forge')}
                         </label>
                         <SelectControl
@@ -302,14 +302,14 @@ export default function AISettings() {
                             onChange={setModel}
                             className="cforge-w-full"
                         />
-                        <p className="cforge-text-sm cforge-text-gray-500 cforge-mt-1">
+                        <p className="cforge-text-sm cforge-text-text-secondary cforge-mt-1">
                             {__('Select the AI model to use for content generation.', 'content-forge')}
                         </p>
                     </div>
                 </div>
 
                 <div>
-                    <label className="cforge-block cforge-text-sm cforge-font-medium cforge-text-gray-700 cforge-mb-2">
+                    <label className="cforge-block cforge-text-sm cforge-font-medium cforge-text-text-primary cforge-mb-2">
                         {__('API Key', 'content-forge')}
                     </label>
                     <TextControl
@@ -319,13 +319,13 @@ export default function AISettings() {
                         placeholder={__('Enter your API key', 'content-forge')}
                         className="cforge-w-full"
                     />
-                    <p className="cforge-text-sm cforge-text-gray-500 cforge-mt-1">
+                    <p className="cforge-text-sm cforge-text-text-secondary cforge-mt-1">
                         {__('Enter your AI service API key. Need help finding your API Key?', 'content-forge')}{' '}
                         <a
                             href={getApiKeyUrl()}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="cforge-text-blue-600 hover:cforge-underline"
+                            className="cforge-text-primary hover:cforge-underline"
                         >
                             {__('Get API Key', 'content-forge')}
                         </a>
