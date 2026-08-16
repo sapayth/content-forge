@@ -110,6 +110,30 @@ class Dashboard_Widget {
 	}
 
 	/**
+	 * Autopilot health as data, for callers that render it themselves.
+	 *
+	 * Mirrors what render() prints, minus the markup. The admin Dashboard page
+	 * consumes this over REST.
+	 *
+	 * @since 1.7.0
+	 *
+	 * @return array{enabled:bool,heartbeat:int,stale:bool,minutes_since:int|null,active:int,paused:int}
+	 */
+	public function get_status() {
+		$heartbeat = (int) get_option( Dispatcher::HEARTBEAT_OPTION, 0 );
+		$elapsed   = $heartbeat > 0 ? ( time() - $heartbeat ) : null;
+
+		return [
+			'enabled'       => (bool) Plugin::is_enabled(),
+			'heartbeat'     => $heartbeat,
+			'stale'         => null !== $elapsed && $elapsed > self::STALE_SECONDS,
+			'minutes_since' => null === $elapsed ? null : max( 0, (int) round( $elapsed / 60 ) ),
+			'active'        => $this->count_schedules( 'publish' ),
+			'paused'        => $this->count_schedules( 'private' ),
+		];
+	}
+
+	/**
 	 * Count schedules by post_status.
 	 *
 	 * @param string $status post_status.

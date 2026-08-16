@@ -14,3 +14,9 @@ if ( ! file_exists( $autoload ) ) {
 }
 
 require_once $autoload;
+
+// Minimal stand-in so REST controller classes are loadable outside WordPress.
+// Only their pure helpers are unit tested; nothing here calls into the base.
+if ( ! class_exists( 'WP_REST_Controller' ) ) {
+	class WP_REST_Controller {} // phpcs:ignore
+}

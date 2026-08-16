@@ -38,16 +38,24 @@ class Admin {
             __( 'Content Forge', 'content-forge' ),
             $capability,
             $parent_slug,
-            [ __CLASS__, 'render_pages_posts_page' ],
+            [ __CLASS__, 'render_dashboard_page' ],
             'dashicons-images-alt',
             56
+        );
+        add_submenu_page(
+            $parent_slug,
+            __( 'Dashboard', 'content-forge' ),
+            __( 'Dashboard', 'content-forge' ),
+            $capability,
+            $parent_slug,
+            [ __CLASS__, 'render_dashboard_page' ]
         );
         add_submenu_page(
             $parent_slug,
             __( 'Pages/Posts', 'content-forge' ),
             __( 'Pages/Posts', 'content-forge' ),
             $capability,
-            $parent_slug,
+            'cforge-pages-posts',
             [ __CLASS__, 'render_pages_posts_page' ]
         );
         add_submenu_page(
@@ -100,6 +108,13 @@ class Admin {
             'cforge-settings',
             [ __CLASS__, 'render_settings_page' ]
         );
+    }
+
+    /**
+     * Render the Dashboard React app root div.
+     */
+    public static function render_dashboard_page() {
+        echo '<div id="cforge-dashboard-app" style="margin-left: -20px"></div>';
     }
 
     /**
@@ -192,6 +207,31 @@ class Admin {
     public static function enqueue_assets( $hook ) {
         $page_configs = [
             'toplevel_page_cforge'                 => [
+                'script_handle' => 'cforge-dashboard-app',
+                'script_file'   => 'dashboard.js',
+                'style_handle'  => 'cforge-dashboard-style',
+                'style_file'    => 'dashboard.css',
+                'localize_data' => [
+                    'apiUrl'            => esc_url_raw( rest_url( 'cforge/v1/' ) ),
+                    'rest_nonce'        => wp_create_nonce( 'wp_rest' ),
+                    'ajax_url'          => admin_url( 'admin-ajax.php' ),
+                    'ajax_nonce'        => wp_create_nonce( 'cforge_telemetry' ),
+                    'telemetry_enabled' => Telemetry_Manager::is_tracking_allowed(),
+                    'pluginVersion'     => CFORGE_VERSION,
+                    'featureRequestUrl' => CFORGE_FEATURE_REQUEST_URL,
+                    'canInstallPlugins' => current_user_can( 'install_plugins' ) && current_user_can( 'activate_plugins' ),
+                    'pages'             => [
+                        'pagesPosts' => admin_url( 'admin.php?page=cforge-pages-posts' ),
+                        'cpt'        => admin_url( 'admin.php?page=cforge-cpt' ),
+                        'users'      => admin_url( 'admin.php?page=cforge-users' ),
+                        'comments'   => admin_url( 'admin.php?page=cforge-comments' ),
+                        'taxonomies' => admin_url( 'admin.php?page=cforge-taxonomies' ),
+                        'autopilot'  => admin_url( 'admin.php?page=cforge-autopilot' ),
+                        'settings'   => admin_url( 'admin.php?page=cforge-settings' ),
+                    ],
+                ],
+            ],
+            'content-forge_page_cforge-pages-posts' => [
                 'script_handle' => 'cforge-admin-app',
                 'script_file'   => 'pagesPosts.js',
                 'style_handle'  => 'cforge-admin-style',

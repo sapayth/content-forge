@@ -8,6 +8,7 @@
 
 namespace ContentForge;
 
+use ContentForge\Api\Dashboard;
 use ContentForge\Api\Post;
 use ContentForge\Api\Comment;
 use ContentForge\Api\User;
@@ -28,6 +29,7 @@ class Api {
 	 */
 	public function __construct()
 	{
+		$this->container['dashboard']         = new Dashboard();
 		$this->container['post']              = new Post();
 		$this->container['comment']           = new Comment();
 		$this->container['user']              = new User();
