@@ -475,7 +475,10 @@ class Comment extends CForge_REST_Controller {
                 'status'         => wp_get_comment_status( $comment_id ),
                 'date'           => $comment->comment_date,
                 'parent'         => (int) $comment->comment_parent,
-                'edit_link'      => admin_url( 'comment.php?action=editcomment&c=' . $comment_id ),
+                'edit_link'      => current_user_can( 'edit_comment', $comment_id )
+                    ? admin_url( 'comment.php?action=editcomment&c=' . $comment_id )
+                    : '',
+                'permalink'      => esc_url_raw( (string) get_comment_link( $comment ) ),
             ];
         }
         return $formatted_items;

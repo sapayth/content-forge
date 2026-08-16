@@ -298,6 +298,11 @@ class User extends CForge_REST_Controller {
                 'user_login' => $user->user_login,
                 'user_email' => $user->user_email,
                 'role'       => $role,
+                'edit_link'  => current_user_can( 'edit_user', $user->ID )
+                    ? esc_url_raw( get_edit_user_link( $user->ID ) )
+                    : '',
+                // The public view of a user is their author archive.
+                'permalink'  => esc_url_raw( get_author_posts_url( $user->ID ) ),
             ];
         }
         return $items;

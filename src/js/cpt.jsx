@@ -8,6 +8,10 @@ import ListView from './components/ListView';
 import MultiSelect from './components/MultiSelect';
 import DateRangePicker from './components/DateRangePicker';
 import AuthorSelect from './components/AuthorSelect';
+import TaxonomySection, { useTaxonomyAssignment } from './components/TaxonomySection';
+import Button from './components/Button';
+import Field, { errorClass } from './components/Field';
+import Notice from './components/Notice';
 
 const STOCK_STATUSES = [
 	{ value: 'instock', label: 'In stock' },
@@ -54,6 +58,7 @@ function AddNewView({ onCancel, onSuccess }) {
 	const [dateFrom, setDateFrom] = useState('');
 	const [dateTo, setDateTo] = useState('');
 	const [authorMode, setAuthorMode] = useState('me');
+	const taxonomyAssignment = useTaxonomyAssignment(form.post_type);
 	const [authorIds, setAuthorIds] = useState([]);
 
 
@@ -159,6 +164,10 @@ function AddNewView({ onCancel, onSuccess }) {
 			payload.author_mode = 'random';
 		}
 
+		if (Object.keys(taxonomyAssignment.payload).length > 0) {
+			payload.taxonomy_options = taxonomyAssignment.payload;
+		}
+
 		if (form.post_type === 'product' && woocommerceActive) {
 			const po = form.product_options;
 			payload.product_options = {
@@ -213,7 +222,6 @@ function AddNewView({ onCancel, onSuccess }) {
 		}
 	};
 
-	const errorClass = (field) => (errors[field] ? 'cforge-border-red-500 cforge-outline-red-500' : '');
 	const isProduct = form.post_type === 'product' && woocommerceActive;
 
 	if (!postTypes.length) {
@@ -226,13 +234,9 @@ function AddNewView({ onCancel, onSuccess }) {
 					<p className="cforge-text-gray-400 cforge-text-sm cforge-mb-4">
 						{__('Install and activate a supported plugin to generate custom post type content. Supported plugins: WooCommerce, weDocs, Easy Digital Downloads, WP User Frontend, The Events Calendar.', 'content-forge')}
 					</p>
-					<button
-						type="button"
-						className="cforge-bg-gray-200 cforge-text-gray-700 cforge-px-4 cforge-py-2 cforge-rounded cforge-font-semibold hover:cforge-bg-gray-300"
-						onClick={onCancel}
-					>
+					<Button variant="secondary" onClick={onCancel}>
 						{__('Go Back', 'content-forge')}
-					</button>
+					</Button>
 				</div>
 			</div>
 		);
@@ -241,22 +245,17 @@ function AddNewView({ onCancel, onSuccess }) {
 	return (
 		<div className="cforge-w-full cforge-bg-white cforge-rounded cforge-p-6 cforge-relative cforge-max-w-2xl">
 			{notice && (
-				<div
-					className={`cforge-mb-4 cforge-p-3 cforge-rounded cforge-text-white ${
-						notice.status === 'success' ? 'cforge-bg-success' : 'cforge-bg-error'
-					}`}
-				>
-					{notice.message}
-				</div>
+				<Notice status={notice.status}>{notice.message}</Notice>
 			)}
 			<form onSubmit={handleSubmit}>
 				<div className="cforge-mt-6 cforge-space-y-4">
-					<div>
-						<label className="cforge-block cforge-mb-1 cforge-font-medium">
-							{__('Post type', 'content-forge')}
-						</label>
-						<select
-							className={`cforge-input cforge-w-full ${errorClass('post_type')}`}
+					<Field
+						label={__('Post type', 'content-forge')}
+						htmlFor="cforge-cpt-post-type"
+						error={errors.post_type}
+					>
+						<select id="cforge-cpt-post-type"
+							className={`cforge-input cforge-w-full ${errorClass(errors.post_type)}`}
 							value={form.post_type}
 							onChange={(e) => setForm({ ...form, post_type: e.target.value })}
 						>
@@ -266,32 +265,27 @@ function AddNewView({ onCancel, onSuccess }) {
 								</option>
 							))}
 						</select>
-						{errors.post_type && (
-							<p className="cforge-text-red-500 cforge-text-sm cforge-mt-1">{errors.post_type}</p>
-						)}
-					</div>
+					</Field>
 					{!(form.post_type === 'docs' && wedocsActive) && (
-						<div>
-							<label className="cforge-block cforge-mb-1 cforge-font-medium">
-								{__('Number to generate', 'content-forge')}
-							</label>
-							<input
+						<Field
+							label={__('Number to generate', 'content-forge')}
+							htmlFor="cforge-cpt-number-to-generate"
+							error={errors.post_number}
+						>
+							<input id="cforge-cpt-number-to-generate"
 								type="number"
 								min="1"
-								className={`cforge-input ${errorClass('post_number')}`}
+								className={`cforge-input ${errorClass(errors.post_number)}`}
 								value={form.post_number}
 								onChange={(e) => setForm({ ...form, post_number: e.target.value })}
 							/>
-							{errors.post_number && (
-								<p className="cforge-text-red-500 cforge-text-sm cforge-mt-1">{errors.post_number}</p>
-							)}
-						</div>
+						</Field>
 					)}
-					<div>
-						<label className="cforge-block cforge-mb-1 cforge-font-medium">
-							{__('Status', 'content-forge')}
-						</label>
-						<select
+					<Field
+						label={__('Status', 'content-forge')}
+						htmlFor="cforge-cpt-status"
+					>
+						<select id="cforge-cpt-status"
 							className="cforge-input cforge-w-full"
 							value={form.post_status}
 							onChange={(e) => setForm({ ...form, post_status: e.target.value })}
@@ -300,7 +294,7 @@ function AddNewView({ onCancel, onSuccess }) {
 							<option value="draft">{__('Draft', 'content-forge')}</option>
 							<option value="pending">{__('Pending', 'content-forge')}</option>
 						</select>
-					</div>
+					</Field>
 
 					<div>
 						<AuthorSelect
@@ -310,6 +304,10 @@ function AddNewView({ onCancel, onSuccess }) {
 							selected={authorIds}
 							onSelectedChange={setAuthorIds}
 						/>
+					</div>
+
+					<div>
+						<TaxonomySection {...taxonomyAssignment} />
 					</div>
 
 					{form.post_type === 'docs' && wedocsActive && (
@@ -329,11 +327,11 @@ function AddNewView({ onCancel, onSuccess }) {
 									{__('Learn more', 'content-forge')}
 								</a>
 							</p>
-							<div>
-								<label className="cforge-block cforge-mb-1 cforge-font-medium">
-									{__('Generation mode', 'content-forge')}
-								</label>
-								<select
+							<Field
+								label={__('Generation mode', 'content-forge')}
+								htmlFor="cforge-cpt-generation-mode"
+							>
+								<select id="cforge-cpt-generation-mode"
 									className="cforge-input cforge-w-full"
 									value={form.docs_options.generation_mode}
 									onChange={(e) =>
@@ -349,7 +347,7 @@ function AddNewView({ onCancel, onSuccess }) {
 									<option value="random">{__('Generate Randomly', 'content-forge')}</option>
 									<option value="manual">{__('Generate Manually', 'content-forge')}</option>
 								</select>
-							</div>
+							</Field>
 
 							{form.docs_options.generation_mode === 'random' && (
 								<p className="cforge-text-sm cforge-text-secondary cforge-m-0">
@@ -371,7 +369,7 @@ function AddNewView({ onCancel, onSuccess }) {
 												<input
 													type="number"
 													min={idx === 0 ? 1 : 0}
-													className={`cforge-input cforge-w-24 ${idx === 0 && errors.docs_documentation ? 'cforge-border-red-500 cforge-outline-red-500' : ''}`}
+													className={`cforge-input cforge-w-24 ${idx === 0 && errors.docs_documentation ? 'cforge-border-error cforge-outline-error' : ''}`}
 													value={form.docs_options.level_counts?.[idx] || 0}
 													onChange={(e) => {
 														const val = parseInt(e.target.value, 10);
@@ -391,7 +389,7 @@ function AddNewView({ onCancel, onSuccess }) {
 										{__('Total:', 'content-forge')} {manualTotal}
 									</p>
 									{(errors.docs_documentation || errors.docs_total) && (
-										<p className="cforge-text-sm cforge-text-red-500 cforge-m-0">
+										<p className="cforge-text-sm cforge-text-error cforge-m-0">
 											{errors.docs_documentation || errors.docs_total}
 										</p>
 									)}
@@ -425,15 +423,16 @@ function AddNewView({ onCancel, onSuccess }) {
 								{__('WooCommerce product settings', 'content-forge')}
 							</h3>
 							<div className="cforge-grid cforge-grid-cols-2 cforge-gap-4">
-								<div>
-									<label className="cforge-block cforge-mb-1 cforge-font-medium">
-										{__('Price min', 'content-forge')}
-									</label>
-									<input
+								<Field
+									label={__('Price min', 'content-forge')}
+									htmlFor="cforge-cpt-price-min"
+									error={errors.price_min}
+								>
+									<input id="cforge-cpt-price-min"
 										type="number"
 										step="0.01"
 										min="0"
-										className={`cforge-input cforge-w-full ${errorClass('price_min')}`}
+										className={`cforge-input cforge-w-full ${errorClass(errors.price_min)}`}
 										value={form.product_options.price_min}
 										onChange={(e) =>
 											setForm({
@@ -445,19 +444,17 @@ function AddNewView({ onCancel, onSuccess }) {
 											})
 										}
 									/>
-									{errors.price_min && (
-										<p className="cforge-text-red-500 cforge-text-sm cforge-mt-1">{errors.price_min}</p>
-									)}
-								</div>
-								<div>
-									<label className="cforge-block cforge-mb-1 cforge-font-medium">
-										{__('Price max', 'content-forge')}
-									</label>
-									<input
+								</Field>
+								<Field
+									label={__('Price max', 'content-forge')}
+									htmlFor="cforge-cpt-price-max"
+									error={errors.price_max}
+								>
+									<input id="cforge-cpt-price-max"
 										type="number"
 										step="0.01"
 										min="0"
-										className={`cforge-input cforge-w-full ${errorClass('price_max')}`}
+										className={`cforge-input cforge-w-full ${errorClass(errors.price_max)}`}
 										value={form.product_options.price_max}
 										onChange={(e) =>
 											setForm({
@@ -469,17 +466,14 @@ function AddNewView({ onCancel, onSuccess }) {
 											})
 										}
 									/>
-									{errors.price_max && (
-										<p className="cforge-text-red-500 cforge-text-sm cforge-mt-1">{errors.price_max}</p>
-									)}
-								</div>
+								</Field>
 							</div>
 							<div className="cforge-grid cforge-grid-cols-2 cforge-gap-4">
-								<div>
-									<label className="cforge-block cforge-mb-1 cforge-font-medium">
-										{__('Sale price min (optional)', 'content-forge')}
-									</label>
-									<input
+								<Field
+									label={__('Sale price min (optional)', 'content-forge')}
+									htmlFor="cforge-cpt-sale-price-min-optional"
+								>
+									<input id="cforge-cpt-sale-price-min-optional"
 										type="number"
 										step="0.01"
 										min="0"
@@ -496,12 +490,12 @@ function AddNewView({ onCancel, onSuccess }) {
 											})
 										}
 									/>
-								</div>
-								<div>
-									<label className="cforge-block cforge-mb-1 cforge-font-medium">
-										{__('Sale price max (optional)', 'content-forge')}
-									</label>
-									<input
+								</Field>
+								<Field
+									label={__('Sale price max (optional)', 'content-forge')}
+									htmlFor="cforge-cpt-sale-price-max-optional"
+								>
+									<input id="cforge-cpt-sale-price-max-optional"
 										type="number"
 										step="0.01"
 										min="0"
@@ -518,7 +512,7 @@ function AddNewView({ onCancel, onSuccess }) {
 											})
 										}
 									/>
-								</div>
+								</Field>
 							</div>
 							<div className="cforge-flex cforge-items-center cforge-gap-2">
 								<input
@@ -540,11 +534,11 @@ function AddNewView({ onCancel, onSuccess }) {
 								</label>
 							</div>
 							{form.product_options.generate_sku && (
-								<div>
-									<label className="cforge-block cforge-mb-1 cforge-font-medium">
-										{__('SKU prefix', 'content-forge')}
-									</label>
-									<input
+								<Field
+									label={__('SKU prefix', 'content-forge')}
+									htmlFor="cforge-cpt-sku-prefix"
+								>
+									<input id="cforge-cpt-sku-prefix"
 										type="text"
 										className="cforge-input cforge-w-full cforge-max-w-xs"
 										value={form.product_options.sku_prefix}
@@ -558,7 +552,7 @@ function AddNewView({ onCancel, onSuccess }) {
 											})
 										}
 									/>
-								</div>
+								</Field>
 							)}
 							<div>
 								<MultiSelect
@@ -577,28 +571,19 @@ function AddNewView({ onCancel, onSuccess }) {
 									placeholder={__('Select one or more...', 'content-forge')}
 								/>
 								{errors.stock_status && (
-									<p className="cforge-text-red-500 cforge-text-sm cforge-mt-1">{errors.stock_status}</p>
+									<p className="cforge-text-error cforge-text-sm cforge-mt-1">{errors.stock_status}</p>
 								)}
 							</div>
 						</div>
 					)}
 				</div>
 				<div className="cforge-flex cforge-justify-end cforge-mt-6 cforge-gap-2">
-					<button
-						type="button"
-						className="cforge-bg-gray-200 cforge-text-gray-700 cforge-px-4 cforge-py-2 cforge-rounded cforge-font-semibold hover:cforge-bg-gray-300"
-						onClick={onCancel}
-						disabled={submitting}
-					>
-						{__('Cancel', 'content-forge')}
-					</button>
-					<button
-						type="submit"
-						className="cforge-bg-primary cforge-text-white cforge-px-4 cforge-py-2 cforge-rounded cforge-font-semibold hover:cforge-bg-primaryHover"
-						disabled={submitting}
-					>
-						{submitting ? __('Generating...', 'content-forge') : __('Generate', 'content-forge')}
-					</button>
+						<Button variant="secondary" onClick={onCancel} disabled={submitting}>
+							{__('Cancel', 'content-forge')}
+						</Button>
+						<Button type="submit" disabled={submitting}>
+							{submitting ? __('Generating...', 'content-forge') : __('Generate', 'content-forge')}
+						</Button>
 				</div>
 			</form>
 		</div>
@@ -752,15 +737,14 @@ function CptApp() {
 				{view === 'list' ? (
 					<>
 						{notice && (
-							<div className={`cforge-mb-4 cforge-p-3 cforge-rounded cforge-text-white ${notice.status === 'success' ? 'cforge-bg-green-500' : 'cforge-bg-red-500'}`}>
-								{notice.message}
-							</div>
+							<Notice status={notice.status}>{notice.message}</Notice>
 						)}
 						<ListView
 							items={items}
 							loading={loading}
 							error={error}
 							page={page}
+							total={total}
 							totalPages={totalPages}
 							columns={[
 								{ key: 'title', label: __('Title', 'content-forge') },
@@ -780,26 +764,10 @@ function CptApp() {
 									>
 										{item.title}
 									</td>
-									<td className="cforge-whitespace-nowrap cforge-px-3 cforge-py-4 cforge-text-sm cforge-text-gray-500">{item.author}</td>
-									<td className="cforge-whitespace-nowrap cforge-px-3 cforge-py-4 cforge-text-sm cforge-text-gray-500">{item.type}</td>
-									<td className="cforge-whitespace-nowrap cforge-px-3 cforge-py-4 cforge-text-sm cforge-text-gray-500">{item.date}</td>
+									<td>{item.author}</td>
+									<td className="cforge-whitespace-nowrap">{item.type}</td>
+									<td className="cforge-whitespace-nowrap">{item.date}</td>
 								</>
-							)}
-							actions={(item, onDelete, deletingItem, itemId) => (
-								<button
-									onClick={() => onDelete(itemId)}
-									disabled={deletingItem === itemId}
-									className="cforge-text-red-600 hover:cforge-text-red-800 cforge-p-1 cforge-rounded hover:cforge-bg-red-50"
-									title={__('Delete', 'content-forge')}
-								>
-									{deletingItem === itemId ? (
-										<span className="cforge-text-xs">{__('...', 'content-forge')}</span>
-									) : (
-										<svg className="cforge-w-4 cforge-h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-											<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-										</svg>
-									)}
-								</button>
 							)}
 							onAddNew={() => setView('add')}
 							onPageChange={handlePageChange}

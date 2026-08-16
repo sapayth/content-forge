@@ -8,10 +8,46 @@ import ListView from './components/ListView';
 import AIGenerateTab from './components/AIGenerateTab';
 import DateRangePicker from './components/DateRangePicker';
 import AuthorSelect from './components/AuthorSelect';
+import TaxonomySection, { useTaxonomyAssignment } from './components/TaxonomySection';
+import Button from './components/Button';
+import Field, { errorClass } from './components/Field';
+import Notice from './components/Notice';
 
 const allowedPostTypes = ['post', 'page'];
-const allowedPostStatuses = ['publish', 'pending', 'draft', 'private'];
+const allowedPostStatuses = ['publish', 'pending', 'draft', 'private', 'future'];
 const allowedCommentStatuses = ['closed', 'open'];
+
+/**
+ * Build the value a datetime-local input expects ("YYYY-MM-DDTHH:mm"),
+ * defaulting a new schedule to an hour from now.
+ */
+function defaultScheduleDate() {
+  const pad = (n) => String(n).padStart(2, '0');
+  const d = new Date(Date.now() + 60 * 60 * 1000);
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+/**
+ * Publish date/time picker, shown only when the "Scheduled" status is selected.
+ */
+function ScheduleField({ value, error, onChange }) {
+  return (
+    <Field
+      label={__('Publish On', 'content-forge')}
+      htmlFor="cforge-pp-post-date"
+      error={error}
+      hint={__('Uses your site timezone. Posts publish automatically at this time.', 'content-forge')}
+      className="cforge-flex-1"
+    >
+      <input id="cforge-pp-post-date"
+        type="datetime-local"
+        className={`cforge-input ${errorClass(error)}`}
+        value={value || ''}
+        onChange={e => onChange(e.target.value)}
+      />
+    </Field>
+  );
+}
 
 /**
  * Build the author-related payload keys from the selected mode/IDs.
@@ -33,6 +69,7 @@ function AddNewView({ onCancel, onSuccess }) {
     post_number: 1,
     post_type: 'post',
     post_status: 'publish',
+    post_date: '',
     comment_status: 'closed',
     post_parent: '0',
     post_title: '',
@@ -45,6 +82,7 @@ function AddNewView({ onCancel, onSuccess }) {
   const [authorMode, setAuthorMode] = useState('me');
   const [authorIds, setAuthorIds] = useState([]);
   const [randomizeDates, setRandomizeDates] = useState(false);
+  const taxonomyAssignment = useTaxonomyAssignment(post.post_type);
   const today = new Date().toISOString().split('T')[0];
   const [dateFrom, setDateFrom] = useState(today);
   const [dateTo, setDateTo] = useState(today);
@@ -68,10 +106,30 @@ function AddNewView({ onCancel, onSuccess }) {
 
   }, []);
 
+  // Switching to "Scheduled" seeds a date and drops randomized dates, which it replaces.
+  const handleStatusChange = (value) => {
+    if (value === 'future') {
+      setRandomizeDates(false);
+    }
+    setPost({
+      ...post,
+      post_status: value,
+      post_date: value === 'future' && !post.post_date ? defaultScheduleDate() : post.post_date,
+    });
+  };
+
   const validate = () => {
     const newErrors = {};
-    if (!['publish', 'pending', 'draft'].includes(post['post_status'])) {
+    if (!allowedPostStatuses.includes(post['post_status'])) {
       newErrors['post_status'] = __('Invalid status selected', 'content-forge');
+    }
+    if (post['post_status'] === 'future') {
+      const scheduled = new Date(post['post_date']);
+      if (!post['post_date'] || isNaN(scheduled.getTime())) {
+        newErrors['post_date'] = __('Please choose a publish date', 'content-forge');
+      } else if (scheduled.getTime() <= Date.now()) {
+        newErrors['post_date'] = __('Scheduled date must be in the future', 'content-forge');
+      }
     }
     if (!allowedCommentStatuses.includes(post['comment_status'])) {
       newErrors['comment_status'] = __('Invalid comment status selected', 'content-forge');
@@ -132,13 +190,19 @@ function AddNewView({ onCancel, onSuccess }) {
     if (tab === 'auto') {
       payload.generate_excerpt = generateExcerpt;
     }
-    // Add date range options
-    if (randomizeDates && dateFrom && dateTo) {
+    // Add scheduling or date range options (scheduling replaces the range)
+    if (post.post_status === 'future') {
+      payload.post_date = post.post_date;
+    } else if (randomizeDates && dateFrom && dateTo) {
       payload.date_from = dateFrom;
       payload.date_to = dateTo;
     }
     // Add author assignment options
     Object.assign(payload, buildAuthorPayload(authorMode, authorIds));
+    // Add taxonomy term assignment options
+    if (Object.keys(taxonomyAssignment.payload).length > 0) {
+      payload.taxonomy_options = taxonomyAssignment.payload;
+    }
     if (tab === 'auto') {
       payload.post_number = Number(post.post_number);
     } else {
@@ -169,12 +233,11 @@ function AddNewView({ onCancel, onSuccess }) {
     }
   };
 
-  const errorClass = (field) => (errors[field] ? 'cforge-border-red-500 cforge-outline-red-500' : '');
 
   return (
     <div className="cforge-w-full cforge-bg-white cforge-rounded cforge-p-6 cforge-relative">
       {notice && (
-        <div className={`cforge-mb-4 cforge-p-3 cforge-rounded cforge-text-white ${notice.status === 'success' ? 'cforge-bg-green-500' : 'cforge-bg-red-500'}`}>{notice.message}</div>
+        <Notice status={notice.status}>{notice.message}</Notice>
       )}
       <div className="cforge-flex cforge-gap-4">
         <div className="cforge-w-1/3">
@@ -259,62 +322,90 @@ function AddNewView({ onCancel, onSuccess }) {
             {tab === 'auto' ? (
               <>
                 <div className="cforge-flex cforge-gap-4 cforge-mb-4">
-                  <div className="cforge-flex-1">
-                    <label className="cforge-block cforge-mb-1 cforge-font-medium">{__('Type', 'content-forge')}</label>
-                    <select
-                      className={`cforge-input ${errorClass('post_type')}`}
+                  <Field
+                    label={__('Type', 'content-forge')}
+                    htmlFor="cforge-pp-type"
+                    error={errors['post_type']}
+                    className="cforge-flex-1"
+                  >
+                    <select id="cforge-pp-type"
+                      className={`cforge-input ${errorClass(errors['post_type'])}`}
                       value={post['post_type']}
                       onChange={e => setPost({ ...post, post_type: e.target.value })}
                     >
                       <option value="post">{__('Post', 'content-forge')}</option>
                       <option value="page">{__('Page', 'content-forge')}</option>
                     </select>
-                    {errors['post_type'] && <p className="cforge-text-red-500 cforge-text-sm">{errors['post_type']}</p>}
-                  </div>
-                  <div className="cforge-flex-1">
-                    <label className="cforge-block cforge-mb-1 cforge-font-medium">{__('Number of Pages/Posts', 'content-forge')}</label>
-                    <input
+                  </Field>
+                  <Field
+                    label={__('Number of Pages/Posts', 'content-forge')}
+                    htmlFor="cforge-pp-number-of-pages-posts"
+                    error={errors['post_number']}
+                    className="cforge-flex-1"
+                  >
+                    <input id="cforge-pp-number-of-pages-posts"
                       type="number"
                       min="1"
-                      className={`cforge-input ${errorClass('post_number')}`}
+                      className={`cforge-input ${errorClass(errors['post_number'])}`}
                       value={post['post_number']}
                       onChange={e => setPost({ ...post, post_number: e.target.value })}
                     />
-                    {errors['post_number'] && <p className="cforge-text-red-500 cforge-text-sm">{errors['post_number']}</p>}
-                  </div>
+                  </Field>
                 </div>
                 <div className="cforge-flex cforge-gap-4 cforge-mb-4">
-                  <div className="cforge-flex-1">
-                    <label className="cforge-block cforge-mb-1 cforge-font-medium">{__('Pages/Posts Status', 'content-forge')}</label>
-                    <select
-                      className={`cforge-input ${errorClass('post_status')}`}
+                  <Field
+                    label={__('Pages/Posts Status', 'content-forge')}
+                    htmlFor="cforge-pp-pages-posts-status"
+                    error={errors['post_status']}
+                    className="cforge-flex-1"
+                  >
+                    <select id="cforge-pp-pages-posts-status"
+                      className={`cforge-input ${errorClass(errors['post_status'])}`}
                       value={post['post_status']}
-                      onChange={e => setPost({ ...post, post_status: e.target.value })}
+                      onChange={e => handleStatusChange(e.target.value)}
                     >
                       <option value="publish">{__('Publish', 'content-forge')}</option>
                       <option value="pending">{__('Pending', 'content-forge')}</option>
                       <option value="draft">{__('Draft', 'content-forge')}</option>
+                      <option value="private">{__('Private', 'content-forge')}</option>
+                      <option value="future">{__('Scheduled', 'content-forge')}</option>
                     </select>
-                    {errors['post_status'] && <p className="cforge-text-red-500 cforge-text-sm">{errors['post_status']}</p>}
-                  </div>
-                  <div className="cforge-flex-1">
-                    <label className="cforge-block cforge-mb-1 cforge-font-medium">{__('Comment Status', 'content-forge')}</label>
-                    <select
-                      className={`cforge-input ${errorClass('comment_status')}`}
+                  </Field>
+                  <Field
+                    label={__('Comment Status', 'content-forge')}
+                    htmlFor="cforge-pp-comment-status"
+                    error={errors['comment_status']}
+                    className="cforge-flex-1"
+                  >
+                    <select id="cforge-pp-comment-status"
+                      className={`cforge-input ${errorClass(errors['comment_status'])}`}
                       value={post['comment_status']}
                       onChange={e => setPost({ ...post, comment_status: e.target.value })}
                     >
                       <option value="closed">{__('Closed', 'content-forge')}</option>
                       <option value="open">{__('Open', 'content-forge')}</option>
                     </select>
-                    {errors['comment_status'] && <p className="cforge-text-red-500 cforge-text-sm">{errors['comment_status']}</p>}
-                  </div>
+                  </Field>
                 </div>
+                {post.post_status === 'future' && (
+                  <div className="cforge-flex cforge-gap-4 cforge-mb-4">
+                    <ScheduleField
+                      value={post.post_date}
+                      error={errors['post_date']}
+                      onChange={value => setPost({ ...post, post_date: value })}
+                    />
+                    <div className="cforge-flex-1" />
+                  </div>
+                )}
                 {post.post_type === 'page' && (
-                  <div className="cforge-mb-4">
-                    <label className="cforge-block cforge-mb-1 cforge-font-medium">{__('Parent Page', 'content-forge')}</label>
-                    <select
-                      className={`cforge-input ${errorClass('post_parent')}`}
+                  <Field
+                    label={__('Parent Page', 'content-forge')}
+                    htmlFor="cforge-pp-parent-page"
+                    error={errors['post_parent']}
+                    className="cforge-mb-4"
+                  >
+                    <select id="cforge-pp-parent-page"
+                      className={`cforge-input ${errorClass(errors['post_parent'])}`}
                       value={post['post_parent']}
                       onChange={e => setPost({ ...post, post_parent: e.target.value })}
                     >
@@ -323,8 +414,7 @@ function AddNewView({ onCancel, onSuccess }) {
                         <option key={page.id} value={page.id}>{page.title.rendered}</option>
                       ))}
                     </select>
-                    {errors['post_parent'] && <p className="cforge-text-red-500 cforge-text-sm">{errors['post_parent']}</p>}
-                  </div>
+                  </Field>
                 )}
                 <div className="cforge-mb-4 cforge-border cforge-border-gray-200 cforge-rounded-lg cforge-p-4 cforge-bg-gray-50">
                   <div className="cforge-flex cforge-gap-6">
@@ -348,7 +438,10 @@ function AddNewView({ onCancel, onSuccess }) {
                         label={__('Randomize Post Dates', 'content-forge')}
                         checked={randomizeDates}
                         onChange={setRandomizeDates}
-                        help={__('Random date within a range', 'content-forge')}
+                        disabled={post.post_status === 'future'}
+                        help={post.post_status === 'future'
+                          ? __('Unavailable for scheduled posts', 'content-forge')
+                          : __('Random date within a range', 'content-forge')}
                       />
                     </div>
                   </div>
@@ -406,54 +499,81 @@ function AddNewView({ onCancel, onSuccess }) {
                     onSelectedChange={setAuthorIds}
                   />
                 </div>
+                <div className="cforge-mb-4">
+                  <TaxonomySection {...taxonomyAssignment} />
+                </div>
               </>
             ) : tab === 'manual' ? (
               <>
                 <div className="cforge-flex cforge-gap-4 cforge-mb-4">
-                  <div className="cforge-flex-1">
-                    <label className="cforge-block cforge-mb-1 cforge-font-medium">{__('Type', 'content-forge')}</label>
-                    <select
-                      className={`cforge-input ${errorClass('post_type')}`}
+                  <Field
+                    label={__('Type', 'content-forge')}
+                    htmlFor="cforge-pp-type"
+                    error={errors['post_type']}
+                    className="cforge-flex-1"
+                  >
+                    <select id="cforge-pp-type"
+                      className={`cforge-input ${errorClass(errors['post_type'])}`}
                       value={post['post_type']}
                       onChange={e => setPost({ ...post, post_type: e.target.value })}
                     >
                       <option value="post">{__('Post', 'content-forge')}</option>
                       <option value="page">{__('Page', 'content-forge')}</option>
                     </select>
-                    {errors['post_type'] && <p className="cforge-text-red-500 cforge-text-sm">{errors['post_type']}</p>}
-                  </div>
-                  <div className="cforge-flex-1">
-                    <label className="cforge-block cforge-mb-1 cforge-font-medium">{__('Pages/Posts Status', 'content-forge')}</label>
-                    <select
-                      className={`cforge-input ${errorClass('post_status')}`}
+                  </Field>
+                  <Field
+                    label={__('Pages/Posts Status', 'content-forge')}
+                    htmlFor="cforge-pp-pages-posts-status"
+                    error={errors['post_status']}
+                    className="cforge-flex-1"
+                  >
+                    <select id="cforge-pp-pages-posts-status"
+                      className={`cforge-input ${errorClass(errors['post_status'])}`}
                       value={post['post_status']}
-                      onChange={e => setPost({ ...post, post_status: e.target.value })}
+                      onChange={e => handleStatusChange(e.target.value)}
                     >
                       <option value="publish">{__('Publish', 'content-forge')}</option>
                       <option value="pending">{__('Pending', 'content-forge')}</option>
                       <option value="draft">{__('Draft', 'content-forge')}</option>
                       <option value="private">{__('Private', 'content-forge')}</option>
+                      <option value="future">{__('Scheduled', 'content-forge')}</option>
                     </select>
-                    {errors['post_status'] && <p className="cforge-text-red-500 cforge-text-sm">{errors['post_status']}</p>}
-                  </div>
-                  <div className="cforge-flex-1">
-                    <label className="cforge-block cforge-mb-1 cforge-font-medium">{__('Comment Status', 'content-forge')}</label>
-                    <select
-                      className={`cforge-input ${errorClass('comment_status')}`}
+                  </Field>
+                  <Field
+                    label={__('Comment Status', 'content-forge')}
+                    htmlFor="cforge-pp-comment-status"
+                    error={errors['comment_status']}
+                    className="cforge-flex-1"
+                  >
+                    <select id="cforge-pp-comment-status"
+                      className={`cforge-input ${errorClass(errors['comment_status'])}`}
                       value={post['comment_status']}
                       onChange={e => setPost({ ...post, comment_status: e.target.value })}
                     >
                       <option value="closed">{__('Closed', 'content-forge')}</option>
                       <option value="open">{__('Open', 'content-forge')}</option>
                     </select>
-                    {errors['comment_status'] && <p className="cforge-text-red-500 cforge-text-sm">{errors['comment_status']}</p>}
-                  </div>
+                  </Field>
                 </div>
+                {post.post_status === 'future' && (
+                  <div className="cforge-flex cforge-gap-4 cforge-mb-4">
+                    <ScheduleField
+                      value={post.post_date}
+                      error={errors['post_date']}
+                      onChange={value => setPost({ ...post, post_date: value })}
+                    />
+                    <div className="cforge-flex-1" />
+                  </div>
+                )}
                 {post.post_type === 'page' && (
-                  <div className="cforge-mb-4">
-                    <label className="cforge-block cforge-mb-1 cforge-font-medium">{__('Parent Page', 'content-forge')}</label>
-                    <select
-                      className={`cforge-input ${errorClass('post_parent')}`}
+                  <Field
+                    label={__('Parent Page', 'content-forge')}
+                    htmlFor="cforge-pp-parent-page"
+                    error={errors['post_parent']}
+                    className="cforge-mb-4"
+                  >
+                    <select id="cforge-pp-parent-page"
+                      className={`cforge-input ${errorClass(errors['post_parent'])}`}
                       value={post['post_parent']}
                       onChange={e => setPost({ ...post, post_parent: e.target.value })}
                     >
@@ -462,36 +582,44 @@ function AddNewView({ onCancel, onSuccess }) {
                         <option key={page.id} value={page.id}>{page.title.rendered}</option>
                       ))}
                     </select>
-                    {errors['post_parent'] && <p className="cforge-text-red-500 cforge-text-sm">{errors['post_parent']}</p>}
-                  </div>
+                  </Field>
                 )}
-                <div className="cforge-mb-4">
-                  <label className="cforge-block cforge-mb-1 cforge-font-medium">{__('Titles (comma separated)', 'content-forge')}</label>
-                  <input
+                <Field
+                  label={__('Titles (comma separated)', 'content-forge')}
+                  htmlFor="cforge-pp-titles-comma-separated"
+                  error={errors['post_title']}
+                  hint={__('eg. Page1, Page2, page3, PAGE4, PAge5', 'content-forge')}
+                  className="cforge-mb-4"
+                >
+                  <input id="cforge-pp-titles-comma-separated"
                     type="text"
-                    className={`cforge-input ${errorClass('post_title')}`}
+                    className={`cforge-input ${errorClass(errors['post_title'])}`}
                     value={post['post_title']}
                     onChange={e => setPost({ ...post, post_title: e.target.value })}
                   />
-                  {errors['post_title'] && <p className="cforge-text-red-500 cforge-text-sm">{errors['post_title']}</p>}
-                  <p className="cforge-text-sm cforge-text-gray-500">{__('eg. Page1, Page2, page3, PAGE4, PAge5', 'content-forge')}</p>
-                </div>
-                <div className="cforge-mb-4">
-                  <label className="cforge-block cforge-mb-1 cforge-font-medium">{__('Page/Post content', 'content-forge')}</label>
-                  <textarea
-                    className={`cforge-input ${errorClass('post_content')}`}
+                </Field>
+                <Field
+                  label={__('Page/Post content', 'content-forge')}
+                  htmlFor="cforge-pp-page-post-content"
+                  error={errors['post_content']}
+                  hint={__('eg. This is the content of the page/post', 'content-forge')}
+                  className="cforge-mb-4"
+                >
+                  <textarea id="cforge-pp-page-post-content"
+                    className={`cforge-input ${errorClass(errors['post_content'])}`}
                     value={post['post_content']}
                     onChange={e => setPost({ ...post, post_content: e.target.value })}
                   />
-                  {errors['post_content'] && <p className="cforge-text-red-500 cforge-text-sm">{errors['post_content']}</p>}
-                  <p className="cforge-text-sm cforge-text-gray-500">{__('eg. This is the content of the page/post', 'content-forge')}</p>
-                </div>
+                </Field>
                 <div className="cforge-mb-4 cforge-border cforge-border-gray-200 cforge-rounded-lg cforge-p-4 cforge-bg-gray-50">
                   <ToggleControl
                     label={__('Randomize Post Dates', 'content-forge')}
                     checked={randomizeDates}
                     onChange={setRandomizeDates}
-                    help={__('Assign a random publish date within a date range to each generated post', 'content-forge')}
+                    disabled={post.post_status === 'future'}
+                    help={post.post_status === 'future'
+                      ? __('Unavailable for scheduled posts', 'content-forge')
+                      : __('Assign a random publish date within a date range to each generated post', 'content-forge')}
                   />
                   {randomizeDates && (
                     <div className="cforge-mt-3">
@@ -513,6 +641,9 @@ function AddNewView({ onCancel, onSuccess }) {
                     onSelectedChange={setAuthorIds}
                   />
                 </div>
+                <div className="cforge-mb-4">
+                  <TaxonomySection {...taxonomyAssignment} />
+                </div>
               </>
             ) : tab === 'ai' ? (
               <AIGenerateTab
@@ -523,6 +654,7 @@ function AddNewView({ onCancel, onSuccess }) {
                 setAuthorMode={setAuthorMode}
                 authorIds={authorIds}
                 setAuthorIds={setAuthorIds}
+                taxonomyAssignment={taxonomyAssignment}
                 onSuccess={() => {
                   // Content generated, user can now submit the form
                 }}
@@ -530,22 +662,13 @@ function AddNewView({ onCancel, onSuccess }) {
             ) : null}
           </div>
           <div className="cforge-flex cforge-justify-end cforge-mt-6 cforge-gap-2">
-            <button
-              type="button"
-              className="cforge-bg-gray-200 cforge-text-gray-700 cforge-px-4 cforge-py-2 cforge-rounded cforge-font-semibold hover:cforge-bg-gray-300"
-              onClick={onCancel}
-              disabled={submitting}
-            >
+            <Button variant="secondary" onClick={onCancel} disabled={submitting}>
               {__('Cancel', 'content-forge')}
-            </button>
+            </Button>
             {tab !== 'ai' && (
-              <button
-                type="submit"
-                className="cforge-bg-primary cforge-text-white cforge-px-4 cforge-py-2 cforge-rounded cforge-font-semibold hover:cforge-bg-primaryHover"
-                disabled={submitting}
-              >
+              <Button type="submit" disabled={submitting}>
                 {submitting ? __('Generating...', 'content-forge') : __('Generate', 'content-forge')}
-              </button>
+              </Button>
             )}
           </div>
         </form>
@@ -707,15 +830,14 @@ function PagesPostsApp() {
       {view === 'list' ? (
         <>
           {notice && (
-            <div className={`cforge-mb-4 cforge-p-3 cforge-rounded cforge-text-white ${notice.status === 'success' ? 'cforge-bg-green-500' : 'cforge-bg-red-500'}`}>
-              {notice.message}
-            </div>
+            <Notice status={notice.status}>{notice.message}</Notice>
           )}
           <ListView
             items={items}
             loading={loading}
             error={error}
             page={page}
+            total={total}
             totalPages={totalPages}
             columns={[
               { key: 'title', label: __('Title', 'content-forge') },
@@ -735,26 +857,10 @@ function PagesPostsApp() {
                 >
                   {item.title}
                 </td>
-                <td className="cforge-whitespace-nowrap cforge-px-3 cforge-py-4 cforge-text-sm cforge-text-gray-500">{item.author}</td>
-                <td className="cforge-whitespace-nowrap cforge-px-3 cforge-py-4 cforge-text-sm cforge-text-gray-500">{item.type}</td>
-                <td className="cforge-whitespace-nowrap cforge-px-3 cforge-py-4 cforge-text-sm cforge-text-gray-500">{item.date}</td>
+                <td>{item.author}</td>
+                <td className="cforge-whitespace-nowrap">{item.type}</td>
+                <td className="cforge-whitespace-nowrap">{item.date}</td>
               </>
-            )}
-            actions={(item, onDelete, deleting, itemId) => (
-              <button
-                onClick={() => onDelete(itemId)}
-                disabled={deleting === itemId}
-                className="cforge-text-red-600 hover:cforge-text-red-800 cforge-p-1 cforge-rounded hover:cforge-bg-red-50"
-                title={__('Delete', 'content-forge')}
-              >
-                {deleting === itemId ? (
-                  <span className="cforge-text-xs">{__('...', 'content-forge')}</span>
-                ) : (
-                  <svg className="cforge-w-4 cforge-h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
-                )}
-              </button>
             )}
             onAddNew={() => setView('add')}
             onPageChange={handlePageChange}

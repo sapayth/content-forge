@@ -4,6 +4,10 @@ import '../css/common.css';
 import Header from './components/Header';
 import apiFetch from '@wordpress/api-fetch';
 import ListView from './components/ListView';
+import Button from './components/Button';
+import Card from './components/Card';
+import Field, { errorClass } from './components/Field';
+import Notice from './components/Notice';
 import { createRoot } from 'react-dom/client';
 
 
@@ -67,38 +71,49 @@ function AddNewView({ onCancel, onSuccess }) {
         }
     };
 
-    const errorClass = (field) => (errors[field] ? 'cforge-border-red-500 cforge-outline-red-500' : '');
-
     return (
-        <div className="cforge-w-full cforge-bg-white cforge-rounded cforge-p-6 cforge-relative">
+        <div className="cforge-w-full cforge-p-6 cforge-relative">
             {notice && (
-                <div className={`cforge-mb-4 cforge-p-3 cforge-rounded cforge-text-white ${notice.status === 'success' ? 'cforge-bg-green-500' : 'cforge-bg-red-500'}`}>{notice.message}</div>
+                <Notice status={notice.status}>{notice.message}</Notice>
             )}
             <div className="cforge-flex cforge-gap-4">
                 <form className="cforge-w-2/3" onSubmit={handleSubmit}>
-                    <div className="cforge-mt-8">
-                        <div className="cforge-mb-4">
-                            <label className="cforge-block cforge-mb-1 cforge-font-medium">
-                                {__('Number of Users', 'content-forge')}
-                            </label>
+                    <Card
+                        title={__('Generate Users', 'content-forge')}
+                        footer={
+                            <>
+                                <Button variant="secondary" onClick={onCancel} disabled={submitting}>
+                                    {__('Cancel', 'content-forge')}
+                                </Button>
+                                <Button type="submit" disabled={submitting}>
+                                    {submitting ? __('Generating...', 'content-forge') : __('Generate Users', 'content-forge')}
+                                </Button>
+                            </>
+                        }
+                    >
+                        <Field
+                            label={__('Number of Users', 'content-forge')}
+                            htmlFor="cforge-user-number"
+                            error={errors['user_number']}
+                        >
                             <input
+                                id="cforge-user-number"
                                 type="number"
                                 min="1"
-                                className={`cforge-input ${errorClass('user_number')}`}
+                                className={`cforge-input ${errorClass(errors['user_number'])}`}
                                 value={user['user_number']}
                                 onChange={e => setUser({ ...user, user_number: e.target.value })}
                             />
-                            {errors['user_number'] && (
-                                <p className="cforge-text-red-500 cforge-text-sm">{errors['user_number']}</p>
-                            )}
-                        </div>
-                        <div className="cforge-mb-4">
-                            <label className="cforge-block cforge-mb-1 cforge-font-medium">
-                                {__('Roles', 'content-forge')}
-                            </label>
+                        </Field>
+                        <Field
+                            label={__('Roles', 'content-forge')}
+                            htmlFor="cforge-user-roles"
+                            error={errors['roles']}
+                        >
                             <select
+                                id="cforge-user-roles"
                                 multiple
-                                className={`cforge-input ${errorClass('roles')}`}
+                                className={`cforge-input ${errorClass(errors['roles'])}`}
                                 value={user['roles']}
                                 onChange={e => {
                                     const selected = Array.from(e.target.selectedOptions).map(opt => opt.value);
@@ -109,28 +124,8 @@ function AddNewView({ onCancel, onSuccess }) {
                                     <option key={role} value={role}>{label}</option>
                                 ))}
                             </select>
-                            {errors['roles'] && (
-                                <p className="cforge-text-red-500 cforge-text-sm">{errors['roles']}</p>
-                            )}
-                        </div>
-                    </div>
-                    <div className="cforge-flex cforge-justify-end cforge-mt-6 cforge-gap-2">
-                        <button
-                            type="button"
-                            className="cforge-bg-gray-200 cforge-text-gray-700 cforge-px-4 cforge-py-2 cforge-rounded cforge-font-semibold hover:cforge-bg-gray-300"
-                            onClick={onCancel}
-                            disabled={submitting}
-                        >
-                            {__('Cancel', 'content-forge')}
-                        </button>
-                        <button
-                            type="submit"
-                            className="cforge-bg-primary cforge-text-white cforge-px-4 cforge-py-2 cforge-rounded cforge-font-semibold hover:cforge-bg-primaryHover"
-                            disabled={submitting}
-                        >
-                            {submitting ? __('Generating...', 'content-forge') : __('Generate Users', 'content-forge')}
-                        </button>
-                    </div>
+                        </Field>
+                    </Card>
                 </form>
             </div>
         </div>
@@ -291,15 +286,14 @@ function UsersApp() {
             {view === 'list' && (
                 <>
                     {notice && (
-                        <div className={`cforge-mb-4 cforge-p-3 cforge-rounded cforge-text-white ${notice.status === 'success' ? 'cforge-bg-green-500' : 'cforge-bg-red-500'}`}>
-                            {notice.message}
-                        </div>
+                        <Notice status={notice.status}>{notice.message}</Notice>
                     )}
                     <ListView
                     items={items}
                     loading={loading}
                     error={error}
                     page={page}
+                    total={total}
                     totalPages={totalPages}
                     columns={[
                         { key: 'username', label: __('Username', 'content-forge') },
@@ -308,32 +302,16 @@ function UsersApp() {
                     ]}
                     renderRow={(item) => (
                         <>
-                            <td className="cforge-whitespace-nowrap cforge-py-4 cforge-pl-4 cforge-pr-3 cforge-text-sm cforge-font-medium cforge-text-gray-900 sm:cforge-pl-6">
+                            <td>
                                 {item.user_login}
                             </td>
-                            <td className="cforge-whitespace-nowrap cforge-px-3 cforge-py-4 cforge-text-sm cforge-text-gray-500">
+                            <td>
                                 {item.user_email}
                             </td>
-                            <td className="cforge-whitespace-nowrap cforge-px-3 cforge-py-4 cforge-text-sm cforge-text-gray-500">
+                            <td className="cforge-whitespace-nowrap">
                                 {item.role}
                             </td>
                         </>
-                    )}
-                    actions={(item, onDelete, deleting, itemId) => (
-                        <button
-                            onClick={() => onDelete(itemId)}
-                            disabled={deleting === itemId}
-                            className="cforge-text-indigo-600 hover:cforge-text-indigo-900"
-                            title={__('Delete', 'content-forge')}
-                        >
-                            {deleting === itemId ? (
-                                <span className="cforge-text-xs">{__('...', 'content-forge')}</span>
-                            ) : (
-                                <svg className="cforge-w-4 cforge-h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                </svg>
-                            )}
-                        </button>
                     )}
                     onAddNew={() => setView('add')}
                     onPageChange={handlePageChange}

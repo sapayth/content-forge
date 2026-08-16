@@ -4,6 +4,10 @@ import '../css/common.css';
 import Header from './components/Header';
 import apiFetch from '@wordpress/api-fetch';
 import ListView from './components/ListView';
+import Button from './components/Button';
+import Card from './components/Card';
+import Field, { errorClass } from './components/Field';
+import Notice from './components/Notice';
 
 
 function AddNewView({ onCancel, onSuccess }) {
@@ -72,22 +76,34 @@ function AddNewView({ onCancel, onSuccess }) {
         }
     };
 
-    const errorClass = (field) => (errors[field] ? 'cforge-border-red-500 cforge-outline-red-500' : '');
-
     return (
-        <div className="cforge-w-full cforge-bg-white cforge-rounded cforge-p-6 cforge-relative">
+        <div className="cforge-w-full cforge-p-6 cforge-relative">
             {notice && (
-                <div className={`cforge-mb-4 cforge-p-3 cforge-rounded cforge-text-white ${notice.status === 'success' ? 'cforge-bg-green-500' : 'cforge-bg-red-500'}`}>{notice.message}</div>
+                <Notice status={notice.status}>{notice.message}</Notice>
             )}
             <div className="cforge-flex cforge-gap-4">
                 <form className="cforge-w-2/3" onSubmit={handleSubmit}>
-                    <div className="cforge-mt-8">
-                        <div className="cforge-mb-4">
-                            <label className="cforge-block cforge-mb-1 cforge-font-medium">
-                                {__('Select Taxonomy', 'content-forge')}
-                            </label>
+                    <Card
+                        title={__('Generate Terms', 'content-forge')}
+                        footer={
+                            <>
+                                <Button variant="secondary" onClick={onCancel} disabled={submitting}>
+                                    {__('Cancel', 'content-forge')}
+                                </Button>
+                                <Button type="submit" disabled={submitting}>
+                                    {submitting ? __('Generating...', 'content-forge') : __('Generate Terms', 'content-forge')}
+                                </Button>
+                            </>
+                        }
+                    >
+                        <Field
+                            label={__('Select Taxonomy', 'content-forge')}
+                            htmlFor="cforge-taxonomy-type"
+                            error={errors['taxonomy_type']}
+                        >
                             <select
-                                className={`cforge-input ${errorClass('taxonomy_type')}`}
+                                id="cforge-taxonomy-type"
+                                className={`cforge-input ${errorClass(errors['taxonomy_type'])}`}
                                 value={taxonomy['taxonomy_type']}
                                 onChange={e => setTaxonomy({ ...taxonomy, taxonomy_type: e.target.value })}
                             >
@@ -95,44 +111,23 @@ function AddNewView({ onCancel, onSuccess }) {
                                     <option key={tax.value} value={tax.value}>{tax.label}</option>
                                 ))}
                             </select>
-                            {errors['taxonomy_type'] && (
-                                <p className="cforge-text-error cforge-text-sm">{errors['taxonomy_type']}</p>
-                            )}
-                        </div>
-                        <div className="cforge-mb-4">
-                            <label className="cforge-block cforge-mb-1 cforge-font-medium">
-                                {__('Number of Terms', 'content-forge')}
-                            </label>
+                        </Field>
+                        <Field
+                            label={__('Number of Terms', 'content-forge')}
+                            htmlFor="cforge-taxonomy-count"
+                            error={errors['count']}
+                        >
                             <input
+                                id="cforge-taxonomy-count"
                                 type="number"
                                 min="1"
                                 max="100"
-                                className={`cforge-input ${errorClass('count')}`}
+                                className={`cforge-input ${errorClass(errors['count'])}`}
                                 value={taxonomy['count']}
                                 onChange={e => setTaxonomy({ ...taxonomy, count: e.target.value })}
                             />
-                            {errors['count'] && (
-                                <p className="cforge-text-error cforge-text-sm">{errors['count']}</p>
-                            )}
-                        </div>
-                    </div>
-                    <div className="cforge-flex cforge-justify-end cforge-mt-6 cforge-gap-2">
-                        <button
-                            type="button"
-                            className="cforge-bg-tertiary cforge-text-text-primary cforge-px-4 cforge-py-2 cforge-rounded cforge-font-semibold hover:cforge-bg-border"
-                            onClick={onCancel}
-                            disabled={submitting}
-                        >
-                            {__('Cancel', 'content-forge')}
-                        </button>
-                        <button
-                            type="submit"
-                            className="cforge-bg-primary cforge-text-white cforge-px-4 cforge-py-2 cforge-rounded cforge-font-semibold hover:cforge-bg-primaryHover"
-                            disabled={submitting}
-                        >
-                            {submitting ? __('Generating...', 'content-forge') : __('Generate Terms', 'content-forge')}
-                        </button>
-                    </div>
+                        </Field>
+                    </Card>
                 </form>
             </div>
         </div>
@@ -294,15 +289,14 @@ function TaxonomiesApp() {
             {view === 'list' && (
                 <>
                     {notice && (
-                        <div className={`cforge-mb-4 cforge-p-3 cforge-rounded cforge-text-white ${notice.status === 'success' ? 'cforge-bg-green-500' : 'cforge-bg-red-500'}`}>
-                            {notice.message}
-                        </div>
+                        <Notice status={notice.status}>{notice.message}</Notice>
                     )}
                     <ListView
                     items={items}
                     loading={loading}
                     error={error}
                     page={page}
+                    total={total}
                     totalPages={totalPages}
                     columns={[
                         { key: 'title', label: __('Title', 'content-forge') },
@@ -311,32 +305,16 @@ function TaxonomiesApp() {
                     ]}
                     renderRow={(item) => (
                         <>
-                            <td className="cforge-whitespace-nowrap cforge-py-4 cforge-pl-4 cforge-pr-3 cforge-text-sm cforge-font-medium cforge-text-gray-900 sm:cforge-pl-6">
+                            <td>
                                 {item.title}
                             </td>
-                            <td className="cforge-whitespace-nowrap cforge-px-3 cforge-py-4 cforge-text-sm cforge-text-gray-500">
+                            <td className="cforge-whitespace-nowrap">
                                 {item.taxonomy}
                             </td>
-                            <td className="cforge-whitespace-nowrap cforge-px-3 cforge-py-4 cforge-text-sm cforge-text-gray-500">
+                            <td className="cforge-whitespace-nowrap">
                                 {new Date(item.date).toLocaleDateString()}
                             </td>
                         </>
-                    )}
-                    actions={(item, onDelete, deleting, itemId) => (
-                        <button
-                            onClick={() => onDelete(itemId)}
-                            disabled={deleting === itemId}
-                            className="cforge-text-red-600 hover:cforge-text-red-800 cforge-p-1 cforge-rounded hover:cforge-bg-red-50"
-                            title={__('Delete', 'content-forge')}
-                        >
-                            {deleting === itemId ? (
-                                <span className="cforge-text-xs">{__('...', 'content-forge')}</span>
-                            ) : (
-                                <svg className="cforge-w-4 cforge-h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                </svg>
-                            )}
-                        </button>
                     )}
                     onAddNew={() => setView('add')}
                     onPageChange={handlePageChange}

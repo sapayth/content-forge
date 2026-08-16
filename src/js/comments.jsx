@@ -5,6 +5,11 @@ import Header from './components/Header';
 import apiFetch from '@wordpress/api-fetch';
 import MultiSelect from './components/MultiSelect';
 import ListView from './components/ListView';
+import Badge from './components/Badge';
+import Button from './components/Button';
+import Card from './components/Card';
+import Field, { errorClass } from './components/Field';
+import Notice from './components/Notice';
 import { createRoot } from 'react-dom/client';
 
 
@@ -76,32 +81,41 @@ function AddNewView({ onCancel, onSuccess }) {
     }
   };
 
-  const errorClass = (field) => (errors[field] ? 'cforge-border-red-500 cforge-outline-red-500' : '');
-
   return (
-    <div className="cforge-w-full cforge-bg-white cforge-rounded cforge-p-6 cforge-relative">
+    <div className="cforge-w-full cforge-p-6 cforge-relative">
       {notice && (
-        <div className={`cforge-mb-4 cforge-p-3 cforge-rounded cforge-text-white ${notice.status === 'success' ? 'cforge-bg-success' : 'cforge-bg-error'}`}>{notice.message}</div>
+        <Notice status={notice.status}>{notice.message}</Notice>
       )}
       <div className="cforge-flex cforge-gap-4">
         <form className="cforge-w-2/3" onSubmit={handleSubmit}>
-          <div className="cforge-mt-8">
-            <div className="cforge-mb-4">
-              <label className="cforge-block cforge-mb-1 cforge-font-medium">
-                {__('Number of Comments', 'content-forge')}
-              </label>
+          <Card
+            title={__('Generate Comments', 'content-forge')}
+            footer={
+              <>
+                <Button variant="secondary" onClick={onCancel} disabled={submitting}>
+                  {__('Cancel', 'content-forge')}
+                </Button>
+                <Button type="submit" disabled={submitting}>
+                  {submitting ? __('Generating...', 'content-forge') : __('Generate Comments', 'content-forge')}
+                </Button>
+              </>
+            }
+          >
+            <Field
+              label={__('Number of Comments', 'content-forge')}
+              htmlFor="cforge-comment-number"
+              error={errors['comment_number']}
+            >
               <input
+                id="cforge-comment-number"
                 type="number"
                 min="1"
-                className={`cforge-input ${errorClass('comment_number')}`}
+                className={`cforge-input ${errorClass(errors['comment_number'])}`}
                 value={comment['comment_number']}
                 onChange={e => setComment({ ...comment, comment_number: e.target.value })}
               />
-              {errors['comment_number'] && (
-                <p className="cforge-text-error cforge-text-sm">{errors['comment_number']}</p>
-              )}
-            </div>
-            <div className="cforge-mb-4">
+            </Field>
+            <Field error={errors['post_types']}>
               <MultiSelect
                 options={postTypes}
                 value={comment['post_types']}
@@ -109,16 +123,15 @@ function AddNewView({ onCancel, onSuccess }) {
                 label={__('Target Post Types', 'content-forge')}
                 placeholder={__('Select post types...', 'content-forge')}
               />
-              {errors['post_types'] && (
-                <p className="cforge-text-error cforge-text-sm">{errors['post_types']}</p>
-              )}
-            </div>
-            <div className="cforge-mb-4">
-              <label className="cforge-block cforge-mb-1 cforge-font-medium">
-                {__('Comment Status', 'content-forge')}
-              </label>
+            </Field>
+            <Field
+              label={__('Comment Status', 'content-forge')}
+              htmlFor="cforge-comment-status"
+              error={errors['comment_status']}
+            >
               <select
-                className={`cforge-input ${errorClass('comment_status')}`}
+                id="cforge-comment-status"
+                className={`cforge-input ${errorClass(errors['comment_status'])}`}
                 value={comment['comment_status']}
                 onChange={e => setComment({ ...comment, comment_status: e.target.value })}
               >
@@ -126,28 +139,8 @@ function AddNewView({ onCancel, onSuccess }) {
                 <option value="0">{__('Pending', 'content-forge')}</option>
                 <option value="spam">{__('Spam', 'content-forge')}</option>
               </select>
-              {errors['comment_status'] && (
-                <p className="cforge-text-error cforge-text-sm">{errors['comment_status']}</p>
-              )}
-            </div>
-          </div>
-          <div className="cforge-flex cforge-justify-end cforge-mt-6 cforge-gap-2">
-            <button
-              type="button"
-              className="cforge-bg-tertiary cforge-text-text-primary cforge-px-4 cforge-py-2 cforge-rounded cforge-font-semibold hover:cforge-bg-border"
-              onClick={onCancel}
-              disabled={submitting}
-            >
-              {__('Cancel', 'content-forge')}
-            </button>
-            <button
-              type="submit"
-              className="cforge-bg-primary cforge-text-white cforge-px-4 cforge-py-2 cforge-rounded cforge-font-semibold hover:cforge-bg-primaryHover"
-              disabled={submitting}
-            >
-              {submitting ? __('Generating...', 'content-forge') : __('Generate Comments', 'content-forge')}
-            </button>
-          </div>
+            </Field>
+          </Card>
         </form>
       </div>
     </div>
@@ -309,15 +302,14 @@ function CommentsApp() {
       {view === 'list' && (
         <>
           {notice && (
-            <div className={`cforge-mb-4 cforge-p-3 cforge-rounded cforge-text-white ${notice.status === 'success' ? 'cforge-bg-success' : 'cforge-bg-error'}`}>
-              {notice.message}
-            </div>
+            <Notice status={notice.status}>{notice.message}</Notice>
           )}
           <ListView
           items={items}
           loading={loading}
           error={error}
           page={page}
+          total={total}
           totalPages={totalPages}
           columns={[
             { key: 'content', label: __('Content', 'content-forge') },
@@ -328,22 +320,22 @@ function CommentsApp() {
           ]}
           renderRow={(item) => (
             <>
-              <td className="cforge-whitespace-nowrap cforge-py-4 cforge-pl-4 cforge-pr-3 cforge-text-sm cforge-text-gray-900 sm:cforge-pl-6">
+              <td>
                 <div className="cforge-max-w-xs cforge-truncate" title={item.content}>
                   {item.content}
                 </div>
               </td>
-              <td className="cforge-whitespace-nowrap cforge-px-3 cforge-py-4 cforge-text-sm cforge-text-gray-500">
+              <td>
                 <div>
                   <div className="cforge-font-medium">{item.author_name}</div>
-                  <div className="cforge-text-sm cforge-text-gray-400">{item.author_email}</div>
+                  <div className="cforge-text-sm cforge-text-text-secondary">{item.author_email}</div>
                 </div>
               </td>
-              <td className="cforge-whitespace-nowrap cforge-px-3 cforge-py-4 cforge-text-sm cforge-text-gray-500">
+              <td>
                 {item.post_edit_link ? (
                   <a
                     href={item.post_edit_link}
-                    className="cforge-text-indigo-600 hover:cforge-text-indigo-900"
+                    className="cforge-text-error hover:cforge-text-errorHover"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
@@ -353,34 +345,18 @@ function CommentsApp() {
                   item.post_title
                 )}
               </td>
-              <td className="cforge-whitespace-nowrap cforge-px-3 cforge-py-4 cforge-text-sm cforge-text-gray-500">
-                <span className={`cforge-px-2 cforge-py-1 cforge-rounded cforge-text-xs ${item.status === 'approved' ? 'cforge-bg-success cforge-text-white' :
-                  item.status === 'unapproved' ? 'cforge-bg-warning cforge-text-white' :
-                    'cforge-bg-error cforge-text-white'
-                }`}>
+              <td className="cforge-whitespace-nowrap">
+                <Badge
+                  status={item.status === 'approved' ? 'success' : item.status === 'unapproved' ? 'warning' : 'error'}
+                  dot
+                >
                   {item.status}
-                </span>
+                </Badge>
               </td>
-              <td className="cforge-whitespace-nowrap cforge-px-3 cforge-py-4 cforge-text-sm cforge-text-gray-500">
+              <td className="cforge-whitespace-nowrap">
                 {new Date(item.date).toLocaleDateString()}
               </td>
             </>
-          )}
-          actions={(item, onDelete, deleting, itemId) => (
-            <button
-              onClick={() => onDelete(itemId)}
-              disabled={deleting === itemId}
-              className="cforge-text-indigo-600 hover:cforge-text-indigo-900"
-              title={__('Delete', 'content-forge')}
-            >
-              {deleting === itemId ? (
-                <span className="cforge-text-xs">{__('...', 'content-forge')}</span>
-              ) : (
-                <svg className="cforge-w-4 cforge-h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
-              )}
-            </button>
           )}
           onAddNew={() => setView('add')}
           onPageChange={handlePageChange}
