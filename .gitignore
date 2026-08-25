@@ -26,4 +26,4 @@ vendor/
 
 composer.lock
 
-config.bat
+.env
