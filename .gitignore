@@ -35,6 +35,8 @@ phpunit.xml
 
 
 # WordPress Environment
+.env
+.env.local
 
 .wp-env.json
 
@@ -114,4 +116,3 @@ desktop.ini
 
 # yarn.lock
 
-config.bat
