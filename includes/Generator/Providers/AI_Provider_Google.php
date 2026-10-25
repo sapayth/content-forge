@@ -74,7 +74,7 @@ class AI_Provider_Google extends AI_Provider_Base {
 		$prompt = $params['prompt'] ?? '';
 
 		return [
-			'contents' => [
+			'contents'         => [
 				[
 					'parts' => [
 						[
@@ -82,6 +82,11 @@ class AI_Provider_Google extends AI_Provider_Base {
 						],
 					],
 				],
+			],
+			// JSON mode: without it, block attributes like {"level":2} come back with unescaped quotes,
+			// the reply fails to parse, and the post's title becomes "{".
+			'generationConfig' => [
+				'responseMimeType' => 'application/json',
 			],
 		];
 	}
