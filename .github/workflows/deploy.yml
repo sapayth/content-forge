@@ -1,5 +1,5 @@
 # DESCRIPTION: Deploy Content Forge to the WordPress.org SVN repository.
-# Triggered on push of a version tag (e.g. v1.6.0). Deploys only after CI passes.
+# Triggered on push of a version tag (e.g. v1.6.0) that is on main. Deploys only after CI passes.
 
 name: Deploy to WordPress.org
 
@@ -27,6 +27,19 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          # Full history, so the check below can see whether the tag is on main.
+          fetch-depth: 0
+
+      # main only takes reviewed, CI-passing PRs. A tag on any other commit could ship
+      # code that never went through that, so refuse it before anything from the repo runs.
+      - name: Verify the tag points at a commit on main
+        run: |
+          git fetch --no-tags origin main
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" FETCH_HEAD; then
+            echo "::error::Tag $GITHUB_REF_NAME points at $GITHUB_SHA, which is not on main. Refusing to deploy."
+            exit 1
+          fi
 
       - name: Set up Node
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
