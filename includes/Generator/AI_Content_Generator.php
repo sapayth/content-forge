@@ -415,7 +415,7 @@ class AI_Content_Generator {
 				$blocks[] = "<!-- wp:heading {\"level\":{$level}} -->\n<h{$level}>{$text}</h{$level}>\n<!-- /wp:heading -->";
 			} elseif ( preg_match( '/^<h([1-6])>(.*?)<\/h[1-6]>/', $para, $matches ) ) {
 				$level    = $matches[1];
-				$text     = strip_tags( $para );
+				$text     = wp_strip_all_tags( $para );
 				$blocks[] = "<!-- wp:heading {\"level\":{$level}} -->\n<h{$level}>{$text}</h{$level}>\n<!-- /wp:heading -->";
 			} else {
 				// Regular paragraph.

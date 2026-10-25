@@ -33,3 +33,5 @@ webpack.config.js
 artifacts
 .wp-env.json
 playwright.howto.config.js
+.distignore
+playwright.config.js

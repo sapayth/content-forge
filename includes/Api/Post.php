@@ -664,20 +664,20 @@ class Post extends CForge_REST_Controller {
      */
     private function generate_realistic_docs_counts() {
         // 3-5 documentation roots
-        $docs_count = rand( 3, 5 );
+        $docs_count = wp_rand( 3, 5 );
 
         // 2-4 sections per doc
-        $sections_count = $docs_count * rand( 2, 4 );
+        $sections_count = $docs_count * wp_rand( 2, 4 );
 
         // Articles distributed somewhat randomly across sections
         // Total articles: roughly 15-30
-        $articles_count = rand( 15, 30 );
+        $articles_count = wp_rand( 15, 30 );
 
         // Some nested articles (10-30% of articles)
-        $nested_count = rand( (int) ( $articles_count * 0.1 ), (int) ( $articles_count * 0.3 ) );
+        $nested_count = wp_rand( (int) ( $articles_count * 0.1 ), (int) ( $articles_count * 0.3 ) );
 
         // Deeper nesting (optional, 0-10)
-        $deeper_count = rand( 0, 10 );
+        $deeper_count = wp_rand( 0, 10 );
 
         return [ $docs_count, $sections_count, $articles_count, $nested_count, $deeper_count ];
     }

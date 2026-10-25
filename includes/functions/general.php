@@ -6,6 +6,10 @@
  * @since   1.0.0
  */
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * Get post types allowed for Content Forge generation (bulk create, list, delete).
  * Supported: WeDocs (docs), WooCommerce (product), EDD (download),

@@ -60,7 +60,7 @@ final class ContentForge {
         $this->define( 'CFORGE_DBNAME', 'cforge' );
         $this->define( 'CFORGE_TELEMETRY_TOKEN', '08e72000-a2d4-4316-85c0-d05f11d7725e' );
         $this->define( 'CFORGE_FEATURE_REQUEST_URL', 'https://content-forge.canny.io/feature-requests' );
-        $this->define( 'CFORGE_REVIEW_URL', 'https://wordpress.org/support/plugin/content-forge/reviews/?filter=5#new-post' );
+        $this->define( 'CFORGE_REVIEW_URL', 'https://wordpress.org/support/plugin/content-forge/reviews/#new-post' );
     }
 
     /**
