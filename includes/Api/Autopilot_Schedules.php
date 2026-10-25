@@ -433,9 +433,9 @@ class Autopilot_Schedules extends CForge_REST_Controller {
 		}
 
 		if ( function_exists( 'as_enqueue_async_action' ) ) {
-			as_enqueue_async_action( Dispatcher::RUN_HOOK, [ $schedule->id(), $run_id ], 'cforge_autopilot_runs' );
+			as_enqueue_async_action( Dispatcher::RUN_HOOK, [ $schedule->id(), $run_id, true ], 'cforge_autopilot_runs' );
 		} elseif ( function_exists( 'as_schedule_single_action' ) ) {
-			as_schedule_single_action( time(), Dispatcher::RUN_HOOK, [ $schedule->id(), $run_id ], 'cforge_autopilot_runs' );
+			as_schedule_single_action( time(), Dispatcher::RUN_HOOK, [ $schedule->id(), $run_id, true ], 'cforge_autopilot_runs' );
 		}
 
 		return new WP_REST_Response( [ 'run_id' => $run_id ], 202 );

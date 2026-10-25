@@ -225,7 +225,7 @@ function ScheduleCard({
                         </div>
                         <p className="cforge-text-sm cforge-text-gray-600 cforge-m-0">
                             {formatCadence(freq)}
-                            {targeting.category_id ? ` · ${__('Category', 'content-forge')} #${targeting.category_id}` : ''}
+                            {targeting.category_id ? ` · ${__('Category', 'content-forge')}: ${categoryName(targeting.category_id)}` : ''}
                         </p>
                     </div>
                 </div>
@@ -294,4 +294,10 @@ function dayName(iso) {
         __('Sun', 'content-forge'),
     ];
     return labels[(iso - 1) % 7] || iso;
+}
+
+// The category's name from the list the page was given; its ID only if it has since been deleted.
+function categoryName(id) {
+    const match = (window.cforge?.categories || []).find((c) => String(c.value) === String(id));
+    return match ? match.label : `#${id}`;
 }

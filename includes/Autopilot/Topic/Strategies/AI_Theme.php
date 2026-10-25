@@ -48,6 +48,22 @@ class AI_Theme {
 			return '';
 		}
 
+		return $this->propose( $theme, $this->fetch_recent_titles( (int) $schedule->config_get( 'targeting.category_id', 0 ) ) );
+	}
+
+	/**
+	 * Ask the AI provider for one topic on a theme.
+	 *
+	 * Goes to the provider directly with just the topic request: wrapped in the blog-post
+	 * prompt, smaller models followed that prompt's generic keywords and wandered off the theme.
+	 *
+	 * @since 1.7.1
+	 *
+	 * @param string $theme         Theme.
+	 * @param array  $recent_titles Titles to avoid.
+	 * @return string Topic, or '' on failure.
+	 */
+	public function propose( $theme, array $recent_titles ) {
 		$provider = AI_Settings_Manager::get_active_provider();
 		$model    = AI_Settings_Manager::get_active_model();
 		$api_key  = AI_Settings_Manager::get_api_key( $provider );
@@ -55,17 +71,18 @@ class AI_Theme {
 			return '';
 		}
 
-		$recent_titles = $this->fetch_recent_titles( (int) $schedule->config_get( 'targeting.category_id', 0 ) );
-		$prompt        = $this->build_prompt( $theme, $recent_titles );
-
-		$generator = new AI_Content_Generator( $provider, $model, $api_key, 'classic' );
-		$result    = $generator->generate( 'general', $prompt );
+		$result = AI_Content_Generator::make_provider( $provider, $model, $api_key )->generate(
+			[
+				'prompt'       => $this->build_prompt( $theme, $recent_titles ),
+				'content_type' => 'general',
+				'editor_type'  => 'classic',
+			]
+		);
 
 		if ( is_wp_error( $result ) || empty( $result['title'] ) ) {
 			return '';
 		}
 
-		// AI returns full title-and-body; we only want the title as the next topic.
 		return $this->normalize_topic( (string) $result['title'] );
 	}
 
@@ -84,7 +101,8 @@ class AI_Theme {
 
 		return sprintf(
 			"Propose ONE fresh, SEO-friendly blog post topic on the theme: \"%s\".%s\n\n" .
-			"Reply with the topic only — a single short title under 60 characters. No quotes, no numbering, no commentary.",
+			'Reply with JSON: the topic as "title" (a single short title under 60 characters, no quotes, no numbering) ' .
+			'and an empty string as "content".',
 			$theme,
 			$avoid
 		);

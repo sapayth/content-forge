@@ -84,7 +84,7 @@ class Schedule_Runner {
 	 * @return void
 	 */
 	public function register() {
-		add_action( self::HOOK, [ $this, 'handle' ], 10, 2 );
+		add_action( self::HOOK, [ $this, 'handle' ], 10, 3 );
 	}
 
 	/**
@@ -92,11 +92,14 @@ class Schedule_Runner {
 	 *
 	 * @since 1.5.0
 	 *
-	 * @param int $schedule_id Schedule ID.
-	 * @param int $run_id      Run row ID.
+	 * @since 1.7.1 Added $manual.
+	 *
+	 * @param int  $schedule_id Schedule ID.
+	 * @param int  $run_id      Run row ID.
+	 * @param bool $manual      True for Run now and Retry, which also run a draft or paused schedule.
 	 * @return void
 	 */
-	public function handle( $schedule_id, $run_id ) {
+	public function handle( $schedule_id, $run_id, $manual = false ) {
 		$schedule = $this->schedules->find( (int) $schedule_id );
 		if ( ! $schedule ) {
 			$this->runs->update(
@@ -110,7 +113,9 @@ class Schedule_Runner {
 			return;
 		}
 
-		if ( $schedule->status() !== 'active' ) {
+		// A scheduled run needs an active schedule; Run now and Retry also work while it's a draft or paused.
+		$runnable = $manual ? [ 'active', 'draft', 'paused', 'auto_paused' ] : [ 'active' ];
+		if ( ! in_array( $schedule->status(), $runnable, true ) ) {
 			$this->runs->update(
 				(int) $run_id,
 				[
@@ -287,7 +292,8 @@ class Schedule_Runner {
 		$threshold = (int) $schedule->config_get( 'safety.auto_pause_after_failures', 3 );
 		if ( $threshold > 0 ) {
 			$current = $this->schedules->find( $schedule->id() );
-			if ( $current && $current->failure_streak() >= $threshold ) {
+			// Only an active schedule is paused; a failed test run leaves a draft or paused one as it was.
+			if ( $current && $current->status() === 'active' && $current->failure_streak() >= $threshold ) {
 				$this->schedules->auto_pause( $schedule->id(), 'consecutive_failures' );
 
 				$this->record_auto_pause_notification( $current, 'consecutive_failures' );
@@ -406,10 +412,11 @@ class Schedule_Runner {
 		$editor_type = function_exists( 'cforge_detect_editor_type' ) ? cforge_detect_editor_type( $post_type ) : 'block';
 
 		$custom_prompt = trim( (string) $schedule->config_get( 'ai.custom_prompt', '' ) );
-		$prompt        = trim( $topic . ( $custom_prompt !== '' ? "\n\n" . $custom_prompt : '' ) );
 
 		$generator = new AI_Content_Generator( $provider, $model, $api_key, $editor_type );
-		return $generator->generate( 'general', $prompt );
+		$generator->set_style( (string) $schedule->config_get( 'ai.tone', '' ), (string) $schedule->config_get( 'ai.length', '' ) );
+		$generator->set_topic( (string) $topic );
+		return $generator->generate( 'general', $custom_prompt );
 	}
 
 	/**
@@ -565,6 +572,10 @@ class Schedule_Runner {
 				'error_message' => $message,
 			]
 		);
+		// A test run on a draft or paused schedule only fails; there's nothing running to pause.
+		if ( $schedule->status() !== 'active' ) {
+			return;
+		}
 		$this->schedules->auto_pause( $schedule->id(), $reason );
 		$this->record_auto_pause_notification( $schedule, $reason );
 		do_action( 'cforge_autopilot_schedule_auto_paused', $schedule, $reason );

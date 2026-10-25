@@ -48,6 +48,38 @@ class AI_Content_Generator {
     protected string $model;
 
 	/**
+	 * Words each Autopilot length setting asks for.
+	 *
+	 * @since 1.7.1
+	 */
+	const LENGTH_WORDS = [
+		'short'  => 300,
+		'medium' => 800,
+		'long'   => 1500,
+	];
+
+	/**
+	 * Tone to write in; empty leaves it to the model.
+	 *
+	 * @var string
+	 */
+	protected string $tone = '';
+
+	/**
+	 * Approximate word count; 0 keeps the default "minimum 500 words".
+	 *
+	 * @var int
+	 */
+	protected int $words = 0;
+
+	/**
+	 * The post's subject (Autopilot's topic); empty when the subject comes from the custom prompt.
+	 *
+	 * @var string
+	 */
+	protected string $topic = '';
+
+	/**
 	 * Constructor.
 	 *
 	 * @since 1.2.0
@@ -73,6 +105,35 @@ class AI_Content_Generator {
     protected function get_model() {
         return $this->model;
     }
+
+	/**
+	 * Set the tone and approximate length (Autopilot's AI settings).
+	 *
+	 * @since 1.7.1
+	 *
+	 * @param string $tone   Tone, e.g. "casual"; empty for none.
+	 * @param string $length A LENGTH_WORDS key; anything else keeps the default length.
+	 * @return void
+	 */
+	public function set_style( string $tone, string $length ) {
+		$this->tone  = $tone;
+		$this->words = self::LENGTH_WORDS[ $length ] ?? 0;
+	}
+
+	/**
+	 * Set the post's subject.
+	 *
+	 * With a topic, the prompt names it as the subject and leaves out the content type's
+	 * generic keywords ("article, blog, writing, ..."), which otherwise leak into the text.
+	 *
+	 * @since 1.7.1
+	 *
+	 * @param string $topic Topic, e.g. "Starting a herb garden on your windowsill".
+	 * @return void
+	 */
+	public function set_topic( string $topic ) {
+		$this->topic = trim( $topic );
+	}
 
 	/**
 	 * Create provider instance.
@@ -245,14 +306,21 @@ class AI_Content_Generator {
 		$prompt = sprintf(
 			"Generate a WordPress blog post with the following requirements:\n\n" .
 			"1. Create an engaging, SEO-friendly title (maximum 60 characters)\n" .
-			"2. Write comprehensive content (minimum 500 words)\n\n" .
+			"2. Write %s\n\n" .
 			"Content Type: %s\n" .
 			"Context: %s\n" .
-			"Keywords to consider: %s\n",
+			'%s',
+			$this->words ? sprintf( 'the content in about %d words', $this->words ) : 'comprehensive content (minimum 500 words)',
 			$type_label,
 			$type_context,
-			implode( ', ', $type_keywords )
+			'' !== $this->topic
+				? sprintf( "Topic: %s\nWrite about this topic only.\n", $this->topic )
+				: sprintf( "Keywords to consider: %s\n", implode( ', ', $type_keywords ) )
 		);
+
+		if ( '' !== $this->tone ) {
+			$prompt .= sprintf( "Tone: %s\n", $this->tone );
+		}
 
 		if ( ! empty( $custom_prompt ) ) {
 			$prompt .= "\nAdditional Instructions: " . $custom_prompt . "\n";
