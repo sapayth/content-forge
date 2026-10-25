@@ -53,6 +53,19 @@ final class Dashboard_CountsTest extends TestCase {
 		$this->assertSame( 9, array_sum( $counts ) );
 	}
 
+	public function test_featured_images_are_not_counted_as_cpts() {
+		// Generated featured images are tracked as 'attachment' rows; they belong to their posts.
+		$rows = [
+			[ 'data_type' => 'post', 'total' => 6 ],
+			[ 'data_type' => 'attachment', 'total' => 6 ],
+		];
+
+		$counts = Dashboard::bucket_rows( $rows, self::TAXONOMIES );
+
+		$this->assertSame( 6, $counts['posts'] );
+		$this->assertSame( 0, $counts['cpt'] );
+	}
+
 	public function test_no_rows_yields_all_zeroes() {
 		$counts = Dashboard::bucket_rows( [], self::TAXONOMIES );
 

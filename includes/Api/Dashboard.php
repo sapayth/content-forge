@@ -259,6 +259,9 @@ class Dashboard extends CForge_REST_Controller {
 				$counts['terms'] += $total;
 			} elseif ( in_array( $type, [ 'post', 'page' ], true ) ) {
 				$counts['posts'] += $total;
+			} elseif ( 'attachment' === $type ) {
+				// Generated featured images belong to their posts, not to a tile of their own.
+				continue;
 			} else {
 				// Anything else tracked is a custom post type row.
 				$counts['cpt'] += $total;

@@ -1262,9 +1262,15 @@ class Post extends Generator {
         foreach ( $object_ids as $post_id ) {
             $post      = get_post( $post_id );
             $data_type = ( $post && isset( $post->post_type ) ) ? $post->post_type : 'post';
+            // Read before the post goes: deleting it drops its _thumbnail_id meta.
+            $thumbnail_id = (int) get_post_thumbnail_id( $post_id );
             if ( wp_delete_post( $post_id, true ) ) {
                 ++$deleted;
                 $this->untrack_generated( $post_id, $data_type );
+                // The featured image Content Forge downloaded for this post goes with it; a user's own image stays.
+                if ( $thumbnail_id && $this->is_tracked( $thumbnail_id, 'attachment' ) && wp_delete_attachment( $thumbnail_id, true ) ) {
+                    $this->untrack_generated( $thumbnail_id, 'attachment' );
+                }
             }
         }
 
