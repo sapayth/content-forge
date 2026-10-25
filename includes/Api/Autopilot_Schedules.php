@@ -194,7 +194,7 @@ class Autopilot_Schedules extends CForge_REST_Controller {
 		$name   = sanitize_text_field( (string) $request->get_param( 'name' ) );
 		$config = $request->get_param( 'config' );
 
-		if ( $name === '' ) {
+		if ( '' === $name ) {
 			return new WP_Error( 'cforge_autopilot_name_required', __( 'Name is required', 'content-forge' ), [ 'status' => 400 ] );
 		}
 		$config = $this->sanitize_config( is_array( $config ) ? $config : [] );
@@ -536,7 +536,7 @@ class Autopilot_Schedules extends CForge_REST_Controller {
 		$mode = $config['publishing']['mode'] ?? 'draft';
 		$ack  = ! empty( $config['publishing']['ack_publish_immediately'] );
 
-		if ( $mode === 'publish' && ! $ack ) {
+		if ( 'publish' === $mode && ! $ack ) {
 			return new WP_Error(
 				'cforge_autopilot_publish_ack_required',
 				__( 'Publish-immediately requires explicit acknowledgement.', 'content-forge' ),

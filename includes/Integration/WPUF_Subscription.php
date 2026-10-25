@@ -44,10 +44,10 @@ class WPUF_Subscription {
 		$expiration_number = $is_free ? 0 : ( $is_recurring ? wp_rand( 1, 12 ) : wp_rand( 1, 24 ) );
 		$expiration_period = self::$expiration_periods[ array_rand( self::$expiration_periods ) ];
 		if ( $expiration_number > 0 && in_array( $expiration_period, [ 'week', 'month', 'year' ], true ) ) {
-			if ( $expiration_period === 'year' && $expiration_number > 5 ) {
+			if ( 'year' === $expiration_period && $expiration_number > 5 ) {
 				$expiration_number = 5;
 			}
-			if ( $expiration_period === 'month' && $expiration_number > 24 ) {
+			if ( 'month' === $expiration_period && $expiration_number > 24 ) {
 				$expiration_number = 24;
 			}
 		}

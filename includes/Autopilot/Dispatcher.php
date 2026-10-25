@@ -144,12 +144,12 @@ class Dispatcher {
 	 */
 	protected function stop_condition_reached( Schedule $schedule, DateTimeImmutable $now ) {
 		$cap = $schedule->runs_cap();
-		if ( $cap !== null && $schedule->runs_completed() >= $cap ) {
+		if ( null !== $cap && $schedule->runs_completed() >= $cap ) {
 			return true;
 		}
 
 		$stop_at = $schedule->stop_at();
-		if ( $stop_at !== '' ) {
+		if ( '' !== $stop_at ) {
 			try {
 				$stop = new DateTimeImmutable( $stop_at, new DateTimeZone( 'UTC' ) );
 				if ( $now >= $stop ) {

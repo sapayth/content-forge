@@ -37,14 +37,14 @@ class Email_Notifier {
 	 */
 	public function notify_run_completed( Schedule $schedule, $run, $status ) {
 		$mode = (string) $schedule->config_get( 'notifications.email_mode', 'none' );
-		if ( $mode === 'none' ) {
+		if ( 'none' === $mode ) {
 			return false;
 		}
 
-		$is_failure = ( $status === Run::STATUS_FAILED || $status === Run::STATUS_PARTIAL );
+		$is_failure = ( Run::STATUS_FAILED === $status || Run::STATUS_PARTIAL === $status );
 
 		// 'failure' opt-in only sends for failures/partials.
-		if ( $mode === 'failure' && ! $is_failure ) {
+		if ( 'failure' === $mode && ! $is_failure ) {
 			return false;
 		}
 
@@ -66,7 +66,7 @@ class Email_Notifier {
 	 */
 	public function notify_auto_paused( Schedule $schedule, $reason ) {
 		$mode = (string) $schedule->config_get( 'notifications.email_mode', 'none' );
-		if ( $mode === 'none' ) {
+		if ( 'none' === $mode ) {
 			return false;
 		}
 
@@ -91,7 +91,7 @@ class Email_Notifier {
 	protected function send( Schedule $schedule, $event, $subject, $body, $run ) {
 		$configured = trim( (string) $schedule->config_get( 'notifications.email_to', '' ) );
 
-		$default_to = $configured !== '' && is_email( $configured )
+		$default_to = '' !== $configured && is_email( $configured )
 			? $configured
 			: $this->fallback_recipient( $schedule );
 

@@ -69,12 +69,12 @@ class Run {
 		$instance->schedule_id     = (int) ( $row['schedule_id'] ?? 0 );
 		$instance->status          = (string) ( $row['status'] ?? self::STATUS_QUEUED );
 		$instance->started_at      = (string) ( $row['started_at'] ?? '' );
-		$instance->finished_at     = $row['finished_at'] !== null ? (string) $row['finished_at'] : null;
-		$instance->topic_used      = $row['topic_used'] !== null ? (string) $row['topic_used'] : null;
+		$instance->finished_at     = null !== $row['finished_at'] ? (string) $row['finished_at'] : null;
+		$instance->topic_used      = null !== $row['topic_used'] ? (string) $row['topic_used'] : null;
 		$instance->posts_requested = (int) ( $row['posts_requested'] ?? 1 );
-		$instance->error_message   = $row['error_message'] !== null ? (string) $row['error_message'] : null;
-		$instance->ai_provider     = $row['ai_provider'] !== null ? (string) $row['ai_provider'] : null;
-		$instance->ai_model        = $row['ai_model'] !== null ? (string) $row['ai_model'] : null;
+		$instance->error_message   = null !== $row['error_message'] ? (string) $row['error_message'] : null;
+		$instance->ai_provider     = null !== $row['ai_provider'] ? (string) $row['ai_provider'] : null;
+		$instance->ai_model        = null !== $row['ai_model'] ? (string) $row['ai_model'] : null;
 
 		$decoded                 = is_string( $row['posts_created'] ?? null ) ? json_decode( $row['posts_created'], true ) : [];
 		$instance->posts_created = is_array( $decoded ) ? array_map( 'intval', $decoded ) : [];

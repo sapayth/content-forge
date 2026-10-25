@@ -68,7 +68,7 @@ class Dashboard_Widget {
 				esc_url( admin_url( 'admin.php?page=cforge-settings' ) ),
 				esc_html__( 'Settings page', 'content-forge' )
 			);
-		} elseif ( $heartbeat === 0 ) {
+		} elseif ( 0 === $heartbeat ) {
 			printf(
 				'<p style="color:#b26200;">%s</p>',
 				esc_html__( 'Dispatcher has not run yet. Waiting for the first WP-Cron tick…', 'content-forge' )

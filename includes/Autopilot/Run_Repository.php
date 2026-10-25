@@ -76,7 +76,7 @@ class Run_Repository {
 			[ 'id' => (int) $id ]
 		);
 
-		return $result !== false;
+		return false !== $result;
 	}
 
 	/**

@@ -35,7 +35,7 @@ class Interval implements Frequency {
 		$this->hours = max( 1, (int) $hours );
 
 		$this->start_at_utc = null;
-		if ( is_string( $start_at ) && $start_at !== '' ) {
+		if ( is_string( $start_at ) && '' !== $start_at ) {
 			try {
 				$this->start_at_utc = ( new DateTimeImmutable( $start_at ) )->setTimezone( new DateTimeZone( 'UTC' ) );
 			} catch ( Exception $e ) {
@@ -50,7 +50,7 @@ class Interval implements Frequency {
 	public function next_after( DateTimeImmutable $reference ) {
 		$ref_utc = $reference->setTimezone( new DateTimeZone( 'UTC' ) );
 
-		if ( $this->start_at_utc === null ) {
+		if ( null === $this->start_at_utc ) {
 			return $ref_utc->modify( '+' . $this->hours . ' hour' );
 		}
 

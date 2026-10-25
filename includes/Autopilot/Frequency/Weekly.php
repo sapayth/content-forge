@@ -57,7 +57,7 @@ class Weekly implements Frequency {
 		// Defensive fallback: same time next week, first selected weekday.
 		$first = $this->weekdays[0];
 		$days  = ( 7 + $first - (int) $local->format( 'N' ) ) % 7;
-		$days  = $days === 0 ? 7 : $days;
+		$days  = 0 === $days ? 7 : $days;
 		$next  = $local->modify( '+' . $days . ' day' )->setTime( $hour, $minute, 0 );
 		return $next->setTimezone( new DateTimeZone( 'UTC' ) );
 	}

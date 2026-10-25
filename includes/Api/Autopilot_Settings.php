@@ -84,7 +84,7 @@ class Autopilot_Settings extends CForge_REST_Controller {
 	public function handle_update( WP_REST_Request $request ) {
 		$enabled_param = $request->get_param( 'enabled' );
 
-		if ( $enabled_param !== null ) {
+		if ( null !== $enabled_param ) {
 			update_option( Autopilot_Plugin::FEATURE_FLAG_OPTION, (bool) $enabled_param, false );
 		}
 

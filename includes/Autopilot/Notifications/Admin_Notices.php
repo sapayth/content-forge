@@ -193,7 +193,7 @@ class Admin_Notices {
 			wp_send_json_error( null, 403 );
 		}
 		$id = isset( $_POST['id'] ) ? sanitize_text_field( wp_unslash( $_POST['id'] ) ) : '';
-		if ( $id === '' ) {
+		if ( '' === $id ) {
 			wp_send_json_error( null, 400 );
 		}
 		$this->dismiss( $id );

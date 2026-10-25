@@ -41,7 +41,7 @@ class Preview_Generator {
 		}
 
 		$topic = $this->pick_topic_for_preview( $config );
-		if ( $topic === '' ) {
+		if ( '' === $topic ) {
 			return new WP_Error(
 				'cforge_autopilot_no_topic',
 				__( 'No topic available for preview. Provide at least one topic or a theme.', 'content-forge' ),
@@ -132,7 +132,7 @@ class Preview_Generator {
 	 */
 	protected function resolve_ai_theme_topic( array $config ) {
 		$theme = isset( $config['topic']['theme'] ) ? trim( (string) $config['topic']['theme'] ) : '';
-		if ( $theme === '' ) {
+		if ( '' === $theme ) {
 			return '';
 		}
 

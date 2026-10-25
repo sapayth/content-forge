@@ -257,7 +257,7 @@ class Schedule {
 
 	public function runs_cap() {
 		$value = get_post_meta( $this->id(), self::META_RUNS_CAP, true );
-		return $value === '' ? null : (int) $value;
+		return '' === $value ? null : (int) $value;
 	}
 
 	public function stop_at() {

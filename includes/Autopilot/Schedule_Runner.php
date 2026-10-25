@@ -136,7 +136,7 @@ class Schedule_Runner {
 		// Preflight: target category exists when post_type=post.
 		$category_id = (int) $schedule->config_get( 'targeting.category_id', 0 );
 		$post_type   = (string) $schedule->config_get( 'targeting.post_type', 'post' );
-		if ( $post_type === 'post' && $category_id > 0 && ! get_term( $category_id, 'category' ) ) {
+		if ( 'post' === $post_type && $category_id > 0 && ! get_term( $category_id, 'category' ) ) {
 			$this->fail_and_auto_pause( $schedule, $run_id, 'category_missing', __( 'Target category no longer exists', 'content-forge' ) );
 			return;
 		}
@@ -199,11 +199,11 @@ class Schedule_Runner {
 			}
 
 			$topic = $this->topic_resolver->resolve( $current_schedule );
-			if ( $topic === '' ) {
+			if ( '' === $topic ) {
 				$errors[] = 'No topic available';
 				break;
 			}
-			if ( $topic_used === '' ) {
+			if ( '' === $topic_used ) {
 				$topic_used = $topic;
 			}
 
@@ -218,11 +218,11 @@ class Schedule_Runner {
 				// category, regenerate once. If still duplicate, skip this post (not a failure).
 				if ( $avoid_dupes && $category_id > 0 ) {
 					$proposed_title = isset( $ai_result['title'] ) ? (string) $ai_result['title'] : '';
-					if ( $proposed_title !== '' && $this->duplicate_guard->is_duplicate( $proposed_title, $category_id ) ) {
+					if ( '' !== $proposed_title && $this->duplicate_guard->is_duplicate( $proposed_title, $category_id ) ) {
 						$retry = $this->generate_ai_content( $current_schedule, $topic, $ai_provider, $ai_model );
 						if ( ! is_wp_error( $retry ) ) {
 							$retry_title = isset( $retry['title'] ) ? (string) $retry['title'] : '';
-							if ( $retry_title !== '' && ! $this->duplicate_guard->is_duplicate( $retry_title, $category_id ) ) {
+							if ( '' !== $retry_title && ! $this->duplicate_guard->is_duplicate( $retry_title, $category_id ) ) {
 								$ai_result = $retry;
 							} else {
 								$errors[] = 'Skipped: duplicate topic';
@@ -279,7 +279,7 @@ class Schedule_Runner {
 			]
 		);
 
-		$is_failure = ( $status === Run::STATUS_FAILED );
+		$is_failure = ( Run::STATUS_FAILED === $status );
 
 		$this->schedules->record_run(
 			$schedule->id(),
@@ -552,10 +552,10 @@ class Schedule_Runner {
 	 * @return string
 	 */
 	protected function compute_run_status( $created, $errors, $requested ) {
-		if ( $created === 0 && $errors === 0 ) {
+		if ( 0 === $created && 0 === $errors ) {
 			return Run::STATUS_SKIPPED;
 		}
-		if ( $created === 0 ) {
+		if ( 0 === $created ) {
 			return Run::STATUS_FAILED;
 		}
 		if ( $created < $requested || $errors > 0 ) {

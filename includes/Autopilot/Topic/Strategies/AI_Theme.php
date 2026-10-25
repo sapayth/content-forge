@@ -40,7 +40,7 @@ class AI_Theme {
 	 */
 	public function resolve( Schedule $schedule ) {
 		$theme = trim( (string) $schedule->config_get( 'topic.theme', '' ) );
-		if ( $theme === '' ) {
+		if ( '' === $theme ) {
 			return '';
 		}
 
