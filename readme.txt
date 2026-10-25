@@ -2,7 +2,7 @@
 Contributors: sapayth
 Tags: ai content generator, autopilot, scheduled posts, dummy content, testing
 Requires at least: 5.6
-Tested up to: 7.0
+Tested up to: 7.1
 Requires PHP: 7.4
 Stable tag: 1.7.0
 License: GPLv2 or later
