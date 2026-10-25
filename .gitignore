@@ -41,3 +41,6 @@ release/
 vendor/
 composer.lock
 config.bat
+
+# How-to video footage (tests/howto)
+/artifacts/

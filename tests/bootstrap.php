@@ -20,3 +20,10 @@ require_once $autoload;
 if ( ! class_exists( 'WP_REST_Controller' ) ) {
 	class WP_REST_Controller {} // phpcs:ignore
 }
+
+// Filters pass their value through unchanged, so code that runs a filter can be unit tested.
+if ( ! function_exists( 'apply_filters' ) ) {
+	function apply_filters( $hook_name, $value ) { // phpcs:ignore
+		return $value;
+	}
+}
