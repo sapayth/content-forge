@@ -18,7 +18,11 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class List_Cycle {
 
-	/** @var Schedule_Repository */
+	/**
+	 * Schedule storage, used to persist the cycle position.
+	 *
+	 * @var Schedule_Repository
+	 */
 	protected $repository;
 
 	/**

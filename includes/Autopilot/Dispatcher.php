@@ -24,10 +24,18 @@ class Dispatcher {
 	const LOCK_TRANSIENT   = 'cforge_autopilot_dispatch_lock';
 	const HEARTBEAT_OPTION = 'cforge_autopilot_last_dispatch';
 
-	/** @var Schedule_Repository */
+	/**
+	 * Schedule storage.
+	 *
+	 * @var Schedule_Repository
+	 */
 	protected $schedules;
 
-	/** @var Run_Repository */
+	/**
+	 * Run history storage.
+	 *
+	 * @var Run_Repository
+	 */
 	protected $runs;
 
 	/**

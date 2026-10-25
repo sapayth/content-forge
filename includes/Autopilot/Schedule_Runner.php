@@ -28,25 +28,53 @@ class Schedule_Runner {
 
 	const HOOK = 'cforge_autopilot_run_schedule';
 
-	/** @var Schedule_Repository */
+	/**
+	 * Schedule storage.
+	 *
+	 * @var Schedule_Repository
+	 */
 	protected $schedules;
 
-	/** @var Run_Repository */
+	/**
+	 * Run history storage.
+	 *
+	 * @var Run_Repository
+	 */
 	protected $runs;
 
-	/** @var Topic_Resolver */
+	/**
+	 * Picks the topic for each run.
+	 *
+	 * @var Topic_Resolver
+	 */
 	protected $topic_resolver;
 
-	/** @var Post_Builder */
+	/**
+	 * Creates the posts.
+	 *
+	 * @var Post_Builder
+	 */
 	protected $post_builder;
 
-	/** @var Duplicate_Guard */
+	/**
+	 * Skips titles too close to recent posts.
+	 *
+	 * @var Duplicate_Guard
+	 */
 	protected $duplicate_guard;
 
-	/** @var Admin_Notices */
+	/**
+	 * Raises an admin notice when a schedule is auto-paused.
+	 *
+	 * @var Admin_Notices
+	 */
 	protected $admin_notices;
 
-	/** @var Email_Notifier */
+	/**
+	 * Sends run notification emails.
+	 *
+	 * @var Email_Notifier
+	 */
 	protected $email_notifier;
 
 	/**

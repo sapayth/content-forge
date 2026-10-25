@@ -1,4 +1,6 @@
 <?php
+// DESCRIPTION: Runs cleanup when Content Forge is deactivated.
+// Stops Autopilot's recurring actions and pings telemetry; keeps all data.
 
 namespace ContentForge;
 

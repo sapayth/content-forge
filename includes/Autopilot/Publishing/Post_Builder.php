@@ -21,6 +21,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Post_Builder {
 
 	/**
+	 * Decides the post status for generated posts.
+	 *
 	 * @var Status_Resolver
 	 */
 	protected $status_resolver;

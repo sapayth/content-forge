@@ -24,13 +24,25 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Autopilot_Runs extends CForge_REST_Controller {
 
-	/** @var string */
+	/**
+	 * REST route base, relative to the namespace.
+	 *
+	 * @var string
+	 */
 	protected $base = 'autopilot/schedules';
 
-	/** @var Schedule_Repository */
+	/**
+	 * Schedule storage.
+	 *
+	 * @var Schedule_Repository
+	 */
 	protected $schedules;
 
-	/** @var Run_Repository */
+	/**
+	 * Run history storage.
+	 *
+	 * @var Run_Repository
+	 */
 	protected $runs;
 
 	/**
@@ -42,7 +54,11 @@ class Autopilot_Runs extends CForge_REST_Controller {
 	}
 
 	/**
-	 * @inheritDoc
+	 * Only administrators can manage Autopilot.
+	 *
+	 * @param \WP_REST_Request $request The REST API request object.
+	 *
+	 * @return bool
 	 */
 	public function permission_check( $request ) {
 		return current_user_can( 'manage_options' );

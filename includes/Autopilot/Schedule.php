@@ -247,19 +247,39 @@ class Schedule {
 		return (int) get_post_meta( $this->id(), self::META_RUNS_COMPLETED, true );
 	}
 
+	/**
+	 * Total posts created across all runs.
+	 *
+	 * @return int
+	 */
 	public function posts_created() {
 		return (int) get_post_meta( $this->id(), self::META_POSTS_CREATED, true );
 	}
 
+	/**
+	 * Number of consecutive failed runs.
+	 *
+	 * @return int
+	 */
 	public function failure_streak() {
 		return (int) get_post_meta( $this->id(), self::META_FAILURE_STREAK, true );
 	}
 
+	/**
+	 * Maximum number of runs, or null for no limit.
+	 *
+	 * @return int|null
+	 */
 	public function runs_cap() {
 		$value = get_post_meta( $this->id(), self::META_RUNS_CAP, true );
 		return '' === $value ? null : (int) $value;
 	}
 
+	/**
+	 * UTC datetime after which the schedule stops, or empty.
+	 *
+	 * @return string
+	 */
 	public function stop_at() {
 		$value = get_post_meta( $this->id(), self::META_STOP_AT, true );
 		return is_string( $value ) ? $value : '';

@@ -20,11 +20,19 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Autopilot_Settings extends CForge_REST_Controller {
 
-	/** @var string */
+	/**
+	 * REST route base, relative to the namespace.
+	 *
+	 * @var string
+	 */
 	protected $base = 'autopilot/settings';
 
 	/**
-	 * @inheritDoc
+	 * Only administrators can manage Autopilot.
+	 *
+	 * @param \WP_REST_Request $request The REST API request object.
+	 *
+	 * @return bool
 	 */
 	public function permission_check( $request ) {
 		return current_user_can( 'manage_options' );

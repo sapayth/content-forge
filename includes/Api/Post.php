@@ -343,9 +343,7 @@ class Post extends CForge_REST_Controller {
                 if ( isset( $docs_options['level_counts'] ) && is_array( $docs_options['level_counts'] ) ) {
                     $level_counts = array_map( 'intval', $docs_options['level_counts'] );
                     // Ensure exactly 5 levels
-                    while ( count( $level_counts ) < 5 ) {
-                        $level_counts[] = 0;
-                    }
+                    $level_counts = array_pad( $level_counts, 5, 0 );
                     $level_counts = array_slice( $level_counts, 0, 5 );
                     $post_number  = array_sum( $level_counts );
                 } else {

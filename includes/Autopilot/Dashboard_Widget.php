@@ -80,7 +80,7 @@ class Dashboard_Widget {
 				sprintf(
 					/* translators: %d: number of minutes */
 					esc_html( _n( 'Dispatcher last ran %d minute ago.', 'Dispatcher last ran %d minutes ago.', $mins, 'content-forge' ) ),
-					$mins
+					esc_html( $mins )
 				),
 				esc_html__( 'This usually means WP-Cron is not firing. Check that your site is being visited regularly or that a system cron is hitting wp-cron.php.', 'content-forge' )
 			);

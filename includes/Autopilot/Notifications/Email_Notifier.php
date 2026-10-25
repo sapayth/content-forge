@@ -194,12 +194,15 @@ class Email_Notifier {
 	 * @return string
 	 */
 	protected function build_body( Schedule $schedule, $run, $event, $status ) {
-		$lines   = [];
+		$lines = [];
+		/* translators: %s: autopilot schedule name */
 		$lines[] = sprintf( __( 'Autopilot: %s', 'content-forge' ), $schedule->name() );
+		/* translators: %s: run status */
 		$lines[] = sprintf( __( 'Status: %s', 'content-forge' ), $status );
 
 		if ( $run instanceof Run ) {
 			if ( $run->topic_used ) {
+				/* translators: %s: topic the run generated content for */
 				$lines[] = sprintf( __( 'Topic: %s', 'content-forge' ), $run->topic_used );
 			}
 			if ( is_array( $run->posts_created ) && ! empty( $run->posts_created ) ) {
@@ -210,6 +213,7 @@ class Email_Notifier {
 				);
 			}
 			if ( $run->error_message ) {
+				/* translators: %s: error message */
 				$lines[] = sprintf( __( 'Error: %s', 'content-forge' ), $this->summarize_error( $run->error_message ) );
 			}
 		}
@@ -235,7 +239,9 @@ class Email_Notifier {
 		$reason_label = $this->human_reason( $reason );
 
 		$lines = [
+			/* translators: %s: autopilot schedule name */
 			sprintf( __( 'Autopilot: %s', 'content-forge' ), $schedule->name() ),
+			/* translators: %s: reason the schedule was paused */
 			sprintf( __( 'Reason: %s', 'content-forge' ), $reason_label ),
 			'',
 			__( 'No further runs will fire until you resume the autopilot.', 'content-forge' ),

@@ -18,16 +18,30 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Monthly implements Frequency {
 
-	/** @var string HH:MM */
+	/**
+	 * Time of day to fire.
+	 *
+	 * @var string HH:MM
+	 */
 	protected $time;
 
-	/** @var int 1..31 */
+	/**
+	 * Day of the month to fire on.
+	 *
+	 * @var int 1..31
+	 */
 	protected $day_of_month;
 
-	/** @var DateTimeZone */
+	/**
+	 * Timezone the schedule is defined in.
+	 *
+	 * @var DateTimeZone
+	 */
 	protected $site_timezone;
 
 	/**
+	 * Build a monthly frequency.
+	 *
 	 * @param string            $time          HH:MM site timezone.
 	 * @param int               $day_of_month  Day 1..31. Out-of-range clamps to month end.
 	 * @param DateTimeZone|null $site_timezone Site tz; defaults to wp_timezone().
@@ -35,11 +49,15 @@ class Monthly implements Frequency {
 	public function __construct( $time, $day_of_month, ?DateTimeZone $site_timezone = null ) {
 		$this->time          = $this->normalize_time( $time );
 		$this->day_of_month  = max( 1, min( 31, (int) $day_of_month ) );
-		$this->site_timezone = $site_timezone ?: $this->resolve_site_timezone();
+		$this->site_timezone = $site_timezone ?? $this->resolve_site_timezone();
 	}
 
 	/**
-	 * @inheritDoc
+	 * Compute the next fire time strictly after $reference, returned in UTC.
+	 *
+	 * @param DateTimeImmutable $reference Reference instant (typically "now") in any timezone.
+	 *
+	 * @return DateTimeImmutable Next fire time, expressed in UTC.
 	 */
 	public function next_after( DateTimeImmutable $reference ) {
 		$local                 = $reference->setTimezone( $this->site_timezone );
@@ -84,6 +102,8 @@ class Monthly implements Frequency {
 	}
 
 	/**
+	 * Normalize a time string to HH:MM.
+	 *
 	 * @param string $time Raw.
 	 * @return string
 	 */
@@ -95,6 +115,8 @@ class Monthly implements Frequency {
 	}
 
 	/**
+	 * Resolve the site's timezone.
+	 *
 	 * @return DateTimeZone
 	 */
 	protected function resolve_site_timezone() {

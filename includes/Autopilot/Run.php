@@ -22,37 +22,81 @@ class Run {
 	const STATUS_FAILED  = 'failed';
 	const STATUS_SKIPPED = 'skipped';
 
-	/** @var int */
+	/**
+	 * Run ID.
+	 *
+	 * @var int
+	 */
 	public $id;
 
-	/** @var int */
+	/**
+	 * ID of the schedule this run belongs to.
+	 *
+	 * @var int
+	 */
 	public $schedule_id;
 
-	/** @var string */
+	/**
+	 * Run status, one of the STATUS_* constants.
+	 *
+	 * @var string
+	 */
 	public $status;
 
-	/** @var string */
+	/**
+	 * UTC datetime the run started.
+	 *
+	 * @var string
+	 */
 	public $started_at;
 
-	/** @var string|null */
+	/**
+	 * UTC datetime the run finished, null while running.
+	 *
+	 * @var string|null
+	 */
 	public $finished_at;
 
-	/** @var string|null */
+	/**
+	 * Topic the run generated content for.
+	 *
+	 * @var string|null
+	 */
 	public $topic_used;
 
-	/** @var int[] */
+	/**
+	 * IDs of the posts the run created.
+	 *
+	 * @var int[]
+	 */
 	public $posts_created;
 
-	/** @var int */
+	/**
+	 * Number of posts the run was asked to create.
+	 *
+	 * @var int
+	 */
 	public $posts_requested;
 
-	/** @var string|null */
+	/**
+	 * Error message when the run failed.
+	 *
+	 * @var string|null
+	 */
 	public $error_message;
 
-	/** @var string|null */
+	/**
+	 * AI provider used for the run.
+	 *
+	 * @var string|null
+	 */
 	public $ai_provider;
 
-	/** @var string|null */
+	/**
+	 * AI model used for the run.
+	 *
+	 * @var string|null
+	 */
 	public $ai_model;
 
 	/**
