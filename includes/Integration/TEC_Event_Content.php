@@ -180,8 +180,8 @@ class TEC_Event_Content {
 	 * @return string
 	 */
 	private static function generate_title() {
-		$type = self::$event_types[ array_rand( self::$event_types ) ];
-		$topic = self::$topics[ array_rand( self::$topics ) ];
+		$type    = self::$event_types[ array_rand( self::$event_types ) ];
+		$topic   = self::$topics[ array_rand( self::$topics ) ];
 		$pattern = wp_rand( 0, 2 );
 		if ( 0 === $pattern ) {
 			return $type . ': ' . $topic;
@@ -199,13 +199,13 @@ class TEC_Event_Content {
 	 * @return string
 	 */
 	private static function generate_description() {
-		$intro = '<p>We invite you to this event. Whether you are new to the topic or looking to deepen your knowledge, there will be something for you.</p>';
+		$intro         = '<p>We invite you to this event. Whether you are new to the topic or looking to deepen your knowledge, there will be something for you.</p>';
 		$feature_count = wp_rand( 3, 5 );
 		$keys          = array_rand( self::$features, $feature_count );
 		if ( ! is_array( $keys ) ) {
 			$keys = [ $keys ];
 		}
-		$items = array_map(
+		$items  = array_map(
 			function ( $key ) {
 				return '<li>' . esc_html( self::$features[ $key ] ) . '</li>';
 			},

@@ -29,13 +29,13 @@ class Api {
 	 */
 	public function __construct()
 	{
-		$this->container['dashboard']         = new Dashboard();
-		$this->container['post']              = new Post();
-		$this->container['comment']           = new Comment();
-		$this->container['user']              = new User();
-		$this->container['taxonomy']          = new Taxonomy();
-		$this->container['ai']                = new AI();
-		$this->container['generation_status'] = new Generation_Status();
+		$this->container['dashboard']           = new Dashboard();
+		$this->container['post']                = new Post();
+		$this->container['comment']             = new Comment();
+		$this->container['user']                = new User();
+		$this->container['taxonomy']            = new Taxonomy();
+		$this->container['ai']                  = new AI();
+		$this->container['generation_status']   = new Generation_Status();
 		$this->container['autopilot_schedules'] = new Autopilot_Schedules();
 		$this->container['autopilot_runs']      = new Autopilot_Runs();
 		$this->container['autopilot_settings']  = new Autopilot_Settings();

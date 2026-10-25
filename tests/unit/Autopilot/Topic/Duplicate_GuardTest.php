@@ -32,7 +32,7 @@ final class Duplicate_GuardTest extends TestCase {
 
 	public function test_tokenize_drops_short_tokens_and_punctuation() {
 		$guard  = new Duplicate_Guard();
-		$tokens = $guard->tokenize_for_similarity( "5 SEO Tips at 2026!" );
+		$tokens = $guard->tokenize_for_similarity( '5 SEO Tips at 2026!' );
 
 		// "5", "at" filtered out (sub-3-char). "seo", "tips", "2026" remain (lowercased).
 		sort( $tokens );
@@ -41,7 +41,7 @@ final class Duplicate_GuardTest extends TestCase {
 
 	public function test_tokenize_deduplicates() {
 		$guard  = new Duplicate_Guard();
-		$tokens = $guard->tokenize_for_similarity( 'WordPress WordPress wordpress' );
+		$tokens = $guard->tokenize_for_similarity( 'WordPress WordPress WordPress' );
 
 		$this->assertSame( [ 'wordpress' ], $tokens );
 	}

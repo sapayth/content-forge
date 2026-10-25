@@ -176,7 +176,7 @@ class EDD_Download_Content {
 	 * @return string
 	 */
 	private static function generate_title() {
-		$type = self::$product_types[ array_rand( self::$product_types ) ];
+		$type    = self::$product_types[ array_rand( self::$product_types ) ];
 		$pattern = wp_rand( 0, 2 );
 		if ( 0 === $pattern ) {
 			$adj = self::$adjectives[ array_rand( self::$adjectives ) ];
@@ -197,13 +197,13 @@ class EDD_Download_Content {
 	 * @return string
 	 */
 	private static function generate_description() {
-		$intro = '<p>This digital product is delivered instantly after purchase. Use it in your personal or commercial projects with the included license.</p>';
+		$intro         = '<p>This digital product is delivered instantly after purchase. Use it in your personal or commercial projects with the included license.</p>';
 		$feature_count = wp_rand( 3, 5 );
 		$keys          = array_rand( self::$features, $feature_count );
 		if ( ! is_array( $keys ) ) {
 			$keys = [ $keys ];
 		}
-		$items = array_map(
+		$items  = array_map(
 			function ( $key ) {
 				return '<li>' . esc_html( self::$features[ $key ] ) . '</li>';
 			},

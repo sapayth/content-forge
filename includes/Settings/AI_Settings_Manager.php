@@ -265,7 +265,7 @@ class AI_Settings_Manager {
 				if ( strpos( $model, 'gemini-20-' ) === 0 ) {
 					$fixed_model = str_replace( 'gemini-20-', 'gemini-2.0-', $model );
 				}
-				
+
 				// Fix other common typos if needed
 				elseif ( strpos( $model, 'gemini-25-' ) === 0 ) {
 					$fixed_model = str_replace( 'gemini-25-', 'gemini-2.5-', $model );

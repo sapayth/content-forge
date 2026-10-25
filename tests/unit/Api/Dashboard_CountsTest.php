@@ -21,13 +21,34 @@ final class Dashboard_CountsTest extends TestCase {
 
 	public function test_buckets_each_data_type_into_its_tile() {
 		$rows = [
-			[ 'data_type' => 'post', 'total' => 10 ],
-			[ 'data_type' => 'page', 'total' => 5 ],
-			[ 'data_type' => 'user', 'total' => 3 ],
-			[ 'data_type' => 'comment', 'total' => 7 ],
-			[ 'data_type' => 'category', 'total' => 2 ],
-			[ 'data_type' => 'post_tag', 'total' => 4 ],
-			[ 'data_type' => 'product', 'total' => 6 ],
+			[
+				'data_type' => 'post',
+				'total'     => 10,
+			],
+			[
+				'data_type' => 'page',
+				'total'     => 5,
+			],
+			[
+				'data_type' => 'user',
+				'total'     => 3,
+			],
+			[
+				'data_type' => 'comment',
+				'total'     => 7,
+			],
+			[
+				'data_type' => 'category',
+				'total'     => 2,
+			],
+			[
+				'data_type' => 'post_tag',
+				'total'     => 4,
+			],
+			[
+				'data_type' => 'product',
+				'total'     => 6,
+			],
 		];
 
 		$this->assertSame(
@@ -45,7 +66,12 @@ final class Dashboard_CountsTest extends TestCase {
 	public function test_unknown_post_type_falls_into_the_cpt_tile() {
 		// A CPT whose plugin is deactivated is no longer a registered taxonomy
 		// either, so it must not silently vanish from the totals.
-		$rows = [ [ 'data_type' => 'tribe_events', 'total' => 9 ] ];
+		$rows = [
+			[
+				'data_type' => 'tribe_events',
+				'total'     => 9,
+			],
+		];
 
 		$counts = Dashboard::bucket_rows( $rows, self::TAXONOMIES );
 
@@ -56,8 +82,14 @@ final class Dashboard_CountsTest extends TestCase {
 	public function test_featured_images_are_not_counted_as_cpts() {
 		// Generated featured images are tracked as 'attachment' rows; they belong to their posts.
 		$rows = [
-			[ 'data_type' => 'post', 'total' => 6 ],
-			[ 'data_type' => 'attachment', 'total' => 6 ],
+			[
+				'data_type' => 'post',
+				'total'     => 6,
+			],
+			[
+				'data_type' => 'attachment',
+				'total'     => 6,
+			],
 		];
 
 		$counts = Dashboard::bucket_rows( $rows, self::TAXONOMIES );
@@ -75,7 +107,15 @@ final class Dashboard_CountsTest extends TestCase {
 
 	public function test_string_totals_from_wpdb_are_cast_to_int() {
 		// $wpdb->get_results( ..., ARRAY_A ) returns COUNT(*) as a string.
-		$counts = Dashboard::bucket_rows( [ [ 'data_type' => 'post', 'total' => '12' ] ], self::TAXONOMIES );
+		$counts = Dashboard::bucket_rows(
+			[
+				[
+					'data_type' => 'post',
+					'total'     => '12',
+				],
+			],
+			self::TAXONOMIES
+		);
 
 		$this->assertSame( 12, $counts['posts'] );
 	}

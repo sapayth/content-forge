@@ -19,9 +19,9 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Dispatcher {
 
-	const HOOK            = 'cforge_autopilot_dispatch';
-	const RUN_HOOK        = 'cforge_autopilot_run_schedule';
-	const LOCK_TRANSIENT  = 'cforge_autopilot_dispatch_lock';
+	const HOOK             = 'cforge_autopilot_dispatch';
+	const RUN_HOOK         = 'cforge_autopilot_run_schedule';
+	const LOCK_TRANSIENT   = 'cforge_autopilot_dispatch_lock';
 	const HEARTBEAT_OPTION = 'cforge_autopilot_last_dispatch';
 
 	/** @var Schedule_Repository */

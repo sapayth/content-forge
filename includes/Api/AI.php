@@ -215,11 +215,11 @@ class AI extends CForge_REST_Controller {
 
 		return new \WP_REST_Response(
 			[
-				'provider'      => $provider,
-				'model'         => AI_Settings_Manager::get_active_model(),
-				'is_configured' => AI_Settings_Manager::is_configured(),
-				'providers'     => AI_Settings_Manager::get_providers(),
-				'models'        => AI_Settings_Manager::get_models( $provider ),
+				'provider'        => $provider,
+				'model'           => AI_Settings_Manager::get_active_model(),
+				'is_configured'   => AI_Settings_Manager::is_configured(),
+				'providers'       => AI_Settings_Manager::get_providers(),
+				'models'          => AI_Settings_Manager::get_models( $provider ),
 				// Slugs of providers that expose an image model, so the UI does not
 				// have to hardcode the list.
 				'image_providers' => AI_Settings_Manager::get_image_providers(),

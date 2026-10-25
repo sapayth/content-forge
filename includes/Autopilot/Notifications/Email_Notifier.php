@@ -194,7 +194,7 @@ class Email_Notifier {
 	 * @return string
 	 */
 	protected function build_body( Schedule $schedule, $run, $event, $status ) {
-		$lines = [];
+		$lines   = [];
 		$lines[] = sprintf( __( 'Autopilot: %s', 'content-forge' ), $schedule->name() );
 		$lines[] = sprintf( __( 'Status: %s', 'content-forge' ), $status );
 

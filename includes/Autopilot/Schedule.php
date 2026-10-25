@@ -80,8 +80,8 @@ class Schedule {
 	 */
 	public static function default_config() {
 		return [
-			'schema_version' => 1,
-			'topic'          => [
+			'schema_version'          => 1,
+			'topic'                   => [
 				'mode'         => 'list_cycle',
 				'list'         => [],
 				'queue'        => [],
@@ -91,24 +91,24 @@ class Schedule {
 			],
 			'avoid_recent_duplicates' => true,
 			'targeting'               => [
-				'post_type'         => 'post',
-				'category_id'       => 0,
-				'tag_ids'           => [],
-				'ai_suggests_tags'  => false,
-				'author_id'         => 0,
-				'featured_image'    => [
+				'post_type'        => 'post',
+				'category_id'      => 0,
+				'tag_ids'          => [],
+				'ai_suggests_tags' => false,
+				'author_id'        => 0,
+				'featured_image'   => [
 					'source' => 'none',
 					'url'    => '',
 				],
 			],
-			'ai' => [
+			'ai'                      => [
 				'provider_override' => null,
 				'model_override'    => null,
 				'custom_prompt'     => '',
 				'tone'              => 'professional',
 				'length'            => 'medium',
 			],
-			'frequency' => [
+			'frequency'               => [
 				'mode'           => 'daily',
 				'time'           => '09:00',
 				'weekdays'       => [ 1 ],
@@ -117,20 +117,20 @@ class Schedule {
 				'start_at'       => '',
 				'stagger_hours'  => 0,
 			],
-			'publishing' => [
-				'mode'                   => 'draft',
-				'publish_delay_hours'    => 1,
+			'publishing'              => [
+				'mode'                    => 'draft',
+				'publish_delay_hours'     => 1,
 				'ack_publish_immediately' => false,
 			],
-			'safety' => [
-				'daily_post_cap'             => 5,
-				'auto_pause_after_failures'  => 3,
+			'safety'                  => [
+				'daily_post_cap'            => 5,
+				'auto_pause_after_failures' => 3,
 			],
-			'notifications' => [
+			'notifications'           => [
 				'email_mode' => 'none',
 				'email_to'   => '',
 			],
-			'posts_per_run' => 1,
+			'posts_per_run'           => 1,
 		];
 	}
 

@@ -31,9 +31,9 @@ final class MonthlyTest extends TestCase {
 
 	public function test_clamps_to_last_day_of_short_month() {
 		// Day 31 in February clamps to 28 (or 29 in leap years).
-		$tz       = new DateTimeZone( 'UTC' );
-		$monthly  = new Monthly( '09:00', 31, $tz );
-		$now      = new DateTimeImmutable( '2026-02-01 00:00:00', $tz );
+		$tz      = new DateTimeZone( 'UTC' );
+		$monthly = new Monthly( '09:00', 31, $tz );
+		$now     = new DateTimeImmutable( '2026-02-01 00:00:00', $tz );
 
 		$next = $monthly->next_after( $now );
 

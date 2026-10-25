@@ -41,11 +41,14 @@ class Deactivator {
         ];
 
         // Send a non-blocking request to the telemetry server
-        wp_remote_post( $endpoint, [
-            'timeout'   => 2,
-            'blocking'  => false,
-            'sslverify' => false,
-            'body'      => $body,
-        ] );
+        wp_remote_post(
+            $endpoint,
+            [
+                'timeout'   => 2,
+                'blocking'  => false,
+                'sslverify' => false,
+                'body'      => $body,
+            ]
+        );
     }
 }

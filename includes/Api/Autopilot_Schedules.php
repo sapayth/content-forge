@@ -105,7 +105,7 @@ class Autopilot_Schedules extends CForge_REST_Controller {
 						'required' => true,
 						'enum'     => [ 'pause', 'resume', 'archive' ],
 					],
-					'ids' => [
+					'ids'    => [
 						'required' => true,
 						'type'     => 'array',
 						'items'    => [ 'type' => 'integer' ],
@@ -233,7 +233,10 @@ class Autopilot_Schedules extends CForge_REST_Controller {
 		foreach ( $ids as $id ) {
 			$schedule = $this->schedules->find( $id );
 			if ( ! $schedule ) {
-				$failed[] = [ 'id' => $id, 'error' => 'not_found' ];
+				$failed[] = [
+					'id'    => $id,
+					'error' => 'not_found',
+				];
 				continue;
 			}
 
@@ -256,7 +259,10 @@ class Autopilot_Schedules extends CForge_REST_Controller {
 				}
 				$succeeded[] = $id;
 			} catch ( \Throwable $e ) {
-				$failed[] = [ 'id' => $id, 'error' => $e->getMessage() ];
+				$failed[] = [
+					'id'    => $id,
+					'error' => $e->getMessage(),
+				];
 			}
 		}
 
@@ -451,19 +457,19 @@ class Autopilot_Schedules extends CForge_REST_Controller {
 	 */
 	protected function serialize( Schedule $schedule ) {
 		return [
-			'id'              => $schedule->id(),
-			'name'            => $schedule->name(),
-			'status'          => $schedule->status(),
-			'post_status'     => $schedule->post_status(),
-			'config'          => $schedule->config(),
-			'next_run_at'     => $schedule->next_run_at(),
-			'last_run_at'     => $schedule->last_run_at(),
-			'runs_completed'  => $schedule->runs_completed(),
-			'posts_created'   => $schedule->posts_created(),
-			'failure_streak'  => $schedule->failure_streak(),
-			'runs_cap'        => $schedule->runs_cap(),
-			'stop_at'         => $schedule->stop_at(),
-			'created_by'      => $schedule->created_by(),
+			'id'             => $schedule->id(),
+			'name'           => $schedule->name(),
+			'status'         => $schedule->status(),
+			'post_status'    => $schedule->post_status(),
+			'config'         => $schedule->config(),
+			'next_run_at'    => $schedule->next_run_at(),
+			'last_run_at'    => $schedule->last_run_at(),
+			'runs_completed' => $schedule->runs_completed(),
+			'posts_created'  => $schedule->posts_created(),
+			'failure_streak' => $schedule->failure_streak(),
+			'runs_cap'       => $schedule->runs_cap(),
+			'stop_at'        => $schedule->stop_at(),
+			'created_by'     => $schedule->created_by(),
 		];
 	}
 
@@ -477,13 +483,13 @@ class Autopilot_Schedules extends CForge_REST_Controller {
 		$merged = array_replace_recursive( Schedule::default_config(), $incoming );
 
 		// Type-coerce a handful of fields the UI most commonly fumbles.
-		$merged['posts_per_run']                        = max( 1, min( 5, (int) ( $merged['posts_per_run'] ?? 1 ) ) );
-		$merged['avoid_recent_duplicates']              = (bool) $merged['avoid_recent_duplicates'];
-		$merged['targeting']['post_type']               = sanitize_key( $merged['targeting']['post_type'] ?? 'post' );
-		$merged['targeting']['category_id']             = (int) ( $merged['targeting']['category_id'] ?? 0 );
-		$merged['targeting']['tag_ids']                 = array_values( array_map( 'intval', (array) ( $merged['targeting']['tag_ids'] ?? [] ) ) );
-		$merged['targeting']['author_id']               = (int) ( $merged['targeting']['author_id'] ?? 0 );
-		$merged['targeting']['ai_suggests_tags']        = (bool) ( $merged['targeting']['ai_suggests_tags'] ?? false );
+		$merged['posts_per_run']                         = max( 1, min( 5, (int) ( $merged['posts_per_run'] ?? 1 ) ) );
+		$merged['avoid_recent_duplicates']               = (bool) $merged['avoid_recent_duplicates'];
+		$merged['targeting']['post_type']                = sanitize_key( $merged['targeting']['post_type'] ?? 'post' );
+		$merged['targeting']['category_id']              = (int) ( $merged['targeting']['category_id'] ?? 0 );
+		$merged['targeting']['tag_ids']                  = array_values( array_map( 'intval', (array) ( $merged['targeting']['tag_ids'] ?? [] ) ) );
+		$merged['targeting']['author_id']                = (int) ( $merged['targeting']['author_id'] ?? 0 );
+		$merged['targeting']['ai_suggests_tags']         = (bool) ( $merged['targeting']['ai_suggests_tags'] ?? false );
 		$image_source                                    = sanitize_key( $merged['targeting']['featured_image']['source'] ?? 'none' );
 		$merged['targeting']['featured_image']['source'] = in_array( $image_source, [ 'none', 'placeholder', 'ai' ], true ) ? $image_source : 'none';
 		$merged['targeting']['featured_image']['url']    = esc_url_raw( (string) ( $merged['targeting']['featured_image']['url'] ?? '' ) );
@@ -500,12 +506,12 @@ class Autopilot_Schedules extends CForge_REST_Controller {
 		$merged['frequency']['start_at']       = sanitize_text_field( (string) ( $merged['frequency']['start_at'] ?? '' ) );
 		$merged['frequency']['stagger_hours']  = max( 0, (int) ( $merged['frequency']['stagger_hours'] ?? 0 ) );
 
-		$merged['publishing']['mode']                   = sanitize_key( (string) ( $merged['publishing']['mode'] ?? 'draft' ) );
-		$merged['publishing']['publish_delay_hours']    = max( 0, (int) ( $merged['publishing']['publish_delay_hours'] ?? 1 ) );
+		$merged['publishing']['mode']                    = sanitize_key( (string) ( $merged['publishing']['mode'] ?? 'draft' ) );
+		$merged['publishing']['publish_delay_hours']     = max( 0, (int) ( $merged['publishing']['publish_delay_hours'] ?? 1 ) );
 		$merged['publishing']['ack_publish_immediately'] = (bool) ( $merged['publishing']['ack_publish_immediately'] ?? false );
 
-		$merged['safety']['daily_post_cap']             = max( 1, (int) ( $merged['safety']['daily_post_cap'] ?? 5 ) );
-		$merged['safety']['auto_pause_after_failures']  = max( 1, min( 10, (int) ( $merged['safety']['auto_pause_after_failures'] ?? 3 ) ) );
+		$merged['safety']['daily_post_cap']            = max( 1, (int) ( $merged['safety']['daily_post_cap'] ?? 5 ) );
+		$merged['safety']['auto_pause_after_failures'] = max( 1, min( 10, (int) ( $merged['safety']['auto_pause_after_failures'] ?? 3 ) ) );
 
 		$merged['notifications']['email_mode'] = sanitize_key( (string) ( $merged['notifications']['email_mode'] ?? 'none' ) );
 		$merged['notifications']['email_to']   = sanitize_email( (string) ( $merged['notifications']['email_to'] ?? '' ) );

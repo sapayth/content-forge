@@ -76,8 +76,8 @@ class Run {
 		$instance->ai_provider     = $row['ai_provider'] !== null ? (string) $row['ai_provider'] : null;
 		$instance->ai_model        = $row['ai_model'] !== null ? (string) $row['ai_model'] : null;
 
-		$decoded                   = is_string( $row['posts_created'] ?? null ) ? json_decode( $row['posts_created'], true ) : [];
-		$instance->posts_created   = is_array( $decoded ) ? array_map( 'intval', $decoded ) : [];
+		$decoded                 = is_string( $row['posts_created'] ?? null ) ? json_decode( $row['posts_created'], true ) : [];
+		$instance->posts_created = is_array( $decoded ) ? array_map( 'intval', $decoded ) : [];
 
 		return $instance;
 	}

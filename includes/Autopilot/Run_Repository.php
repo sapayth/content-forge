@@ -219,9 +219,9 @@ class Run_Repository {
 	public function mark_stuck_failed( $stuck_seconds = 1800 ) {
 		global $wpdb;
 
-		$table       = Installer::runs_table();
-		$threshold   = gmdate( 'Y-m-d H:i:s', time() - (int) $stuck_seconds );
-		$now         = gmdate( 'Y-m-d H:i:s' );
+		$table     = Installer::runs_table();
+		$threshold = gmdate( 'Y-m-d H:i:s', time() - (int) $stuck_seconds );
+		$now       = gmdate( 'Y-m-d H:i:s' );
 
 		$updated = $wpdb->query(
 			$wpdb->prepare(

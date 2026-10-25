@@ -122,7 +122,7 @@ class Post extends CForge_REST_Controller {
      * @param \WP_REST_Request $request The REST API request object.
      */
     public function handle_bulk_create( $request ) {
-        $params         = $request->get_json_params();
+        $params = $request->get_json_params();
 
         $post_type      = isset( $params['post_type'] ) ? sanitize_key( $params['post_type'] ) : 'post';
         $post_status    = isset( $params['post_status'] ) ? sanitize_key( $params['post_status'] ) : 'publish';
@@ -336,7 +336,7 @@ class Post extends CForge_REST_Controller {
 
             // For docs in random mode, generate realistic amounts automatically
             if ( $is_hierarchical_docs && 'random' === $generation_mode ) {
-                $post_number = 0; // Will be set based on generated hierarchy
+                $post_number  = 0; // Will be set based on generated hierarchy
                 $level_counts = $this->generate_realistic_docs_counts();
             } elseif ( $is_hierarchical_docs && 'manual' === $generation_mode ) {
                 // Manual mode: validate and use provided level_counts
@@ -347,7 +347,7 @@ class Post extends CForge_REST_Controller {
                         $level_counts[] = 0;
                     }
                     $level_counts = array_slice( $level_counts, 0, 5 );
-                    $post_number = array_sum( $level_counts );
+                    $post_number  = array_sum( $level_counts );
                 } else {
                     return new \WP_REST_Response(
                         [ 'message' => __( 'Level counts required for manual mode.', 'content-forge' ) ],
@@ -378,7 +378,7 @@ class Post extends CForge_REST_Controller {
                 // Level 3: Nested Articles (count is PER article)
                 // Level 4: Deeper Nesting (count is PER nested article)
 
-                $prev_parents  = [];  // Parents from previous level
+                $prev_parents = [];  // Parents from previous level
 
                 foreach ( $level_counts as $level => $per_parent_count ) {
                     if ( $per_parent_count < 1 ) {

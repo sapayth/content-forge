@@ -42,7 +42,7 @@ class Monthly implements Frequency {
 	 * @inheritDoc
 	 */
 	public function next_after( DateTimeImmutable $reference ) {
-		$local = $reference->setTimezone( $this->site_timezone );
+		$local                 = $reference->setTimezone( $this->site_timezone );
 		list( $hour, $minute ) = array_map( 'intval', explode( ':', $this->time ) );
 
 		$candidate = $this->candidate_for_month( $local, (int) $local->format( 'Y' ), (int) $local->format( 'm' ), $hour, $minute );
@@ -52,7 +52,7 @@ class Monthly implements Frequency {
 			$month = (int) $local->format( 'm' ) + 1;
 			if ( $month > 12 ) {
 				$month = 1;
-				$year++;
+				++$year;
 			}
 			$candidate = $this->candidate_for_month( $local, $year, $month, $hour, $minute );
 		}

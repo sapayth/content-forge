@@ -50,10 +50,10 @@ class Dashboard_Widget {
 	 * @return void
 	 */
 	public function render() {
-		$enabled    = Plugin::is_enabled();
-		$heartbeat  = (int) get_option( Dispatcher::HEARTBEAT_OPTION, 0 );
-		$now        = time();
-		$stale      = $heartbeat > 0 && ( $now - $heartbeat ) > self::STALE_SECONDS;
+		$enabled   = Plugin::is_enabled();
+		$heartbeat = (int) get_option( Dispatcher::HEARTBEAT_OPTION, 0 );
+		$now       = time();
+		$stale     = $heartbeat > 0 && ( $now - $heartbeat ) > self::STALE_SECONDS;
 
 		$active_count = $this->count_schedules( 'publish' );
 		$paused_count = $this->count_schedules( 'private' );

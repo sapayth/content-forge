@@ -42,7 +42,7 @@ class Weekly implements Frequency {
 	 * @inheritDoc
 	 */
 	public function next_after( DateTimeImmutable $reference ) {
-		$local = $reference->setTimezone( $this->site_timezone );
+		$local                 = $reference->setTimezone( $this->site_timezone );
 		list( $hour, $minute ) = array_map( 'intval', explode( ':', $this->time ) );
 
 		// Try up to 8 future days; one of them must match.

@@ -313,7 +313,7 @@ class Schedule_Repository {
 			return new \WP_Error( 'cforge_autopilot_not_found', __( 'Schedule not found', 'content-forge' ), [ 'status' => 404 ] );
 		}
 
-		$config         = $source->config();
+		$config                          = $source->config();
 		$config['topic']['list_cursor']  = 0;
 		$config['topic']['queue_cursor'] = 0;
 

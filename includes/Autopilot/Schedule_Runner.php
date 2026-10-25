@@ -186,8 +186,8 @@ class Schedule_Runner {
 		$ai_provider      = AI_Settings_Manager::get_active_provider();
 		$ai_model         = AI_Settings_Manager::get_active_model();
 
-		$avoid_dupes  = (bool) $schedule->config_get( 'avoid_recent_duplicates', true );
-		$category_id  = (int) $schedule->config_get( 'targeting.category_id', 0 );
+		$avoid_dupes = (bool) $schedule->config_get( 'avoid_recent_duplicates', true );
+		$category_id = (int) $schedule->config_get( 'targeting.category_id', 0 );
 
 		for ( $i = 0; $i < $posts_per_run; $i++ ) {
 			// Refresh the schedule between iterations so cursor mutations from the
@@ -483,7 +483,13 @@ class Schedule_Runner {
 			// No image model on this provider, or the call failed: fall back to a
 			// placeholder rather than leaving the post bare.
 			if ( is_wp_error( $attachment_id ) ) {
-				$fallback = $image->generate( 1, [ 'title' => $title, 'sources' => [ 'picsum' ] ] );
+				$fallback = $image->generate(
+					1,
+					[
+						'title'   => $title,
+						'sources' => [ 'picsum' ],
+					]
+				);
 
 				if ( empty( $fallback ) ) {
 					return $attachment_id;
@@ -518,7 +524,13 @@ class Schedule_Runner {
 		}
 
 		// Placeholder source.
-		$ids = $image->generate( 1, [ 'title' => $title, 'sources' => [ 'picsum', 'placehold' ] ] );
+		$ids = $image->generate(
+			1,
+			[
+				'title'   => $title,
+				'sources' => [ 'picsum', 'placehold' ],
+			]
+		);
 
 		if ( empty( $ids ) ) {
 			return new WP_Error( 'cforge_image_failed', __( 'Could not generate a placeholder featured image.', 'content-forge' ) );

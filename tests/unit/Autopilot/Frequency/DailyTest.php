@@ -76,9 +76,9 @@ final class DailyTest extends TestCase {
 	}
 
 	public function test_returns_value_in_utc_regardless_of_input_timezone() {
-		$tz       = new DateTimeZone( 'Asia/Tokyo' );
-		$daily    = new Daily( '09:00', $tz );
-		$now      = new DateTimeImmutable( '2026-05-14 06:00:00', $tz );
+		$tz    = new DateTimeZone( 'Asia/Tokyo' );
+		$daily = new Daily( '09:00', $tz );
+		$now   = new DateTimeImmutable( '2026-05-14 06:00:00', $tz );
 
 		$next = $daily->next_after( $now );
 
