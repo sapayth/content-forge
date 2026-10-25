@@ -54,6 +54,8 @@ function AddNewView({ onCancel, onSuccess }) {
 	const [errors, setErrors] = useState({});
 	const [notice, setNotice] = useState(null);
 	const [submitting, setSubmitting] = useState(false);
+	const [generateImage, setGenerateImage] = useState(false);
+	const [imageSources, setImageSources] = useState({ picsum: true, placehold: false });
 	const [randomizeDates, setRandomizeDates] = useState(false);
 	const [dateFrom, setDateFrom] = useState('');
 	const [dateTo, setDateTo] = useState('');
@@ -151,6 +153,14 @@ function AddNewView({ onCancel, onSuccess }) {
 			post_status: form.post_status,
 			comment_status: 'closed',
 		};
+
+		if (generateImage) {
+			const selectedSources = [];
+			if (imageSources.picsum) selectedSources.push('picsum');
+			if (imageSources.placehold) selectedSources.push('placehold');
+			payload.generate_image = true;
+			payload.image_sources = selectedSources.length > 0 ? selectedSources : ['picsum'];
+		}
 
 		if (randomizeDates && dateFrom && dateTo) {
 			payload.date_from = dateFrom;
@@ -397,6 +407,48 @@ function AddNewView({ onCancel, onSuccess }) {
 							)}
 						</div>
 					)}
+
+					<div className="cforge-border cforge-border-gray-200 cforge-rounded-lg cforge-p-4 cforge-bg-gray-50">
+						<ToggleControl
+							label={__('Generate Featured Image', 'content-forge')}
+							checked={generateImage}
+							onChange={setGenerateImage}
+						/>
+						{generateImage && (
+							<div className="cforge-ml-6 cforge-space-y-2 cforge-mt-3 cforge-pt-3 cforge-border-t cforge-border-gray-200">
+								<p className="cforge-text-sm cforge-text-gray-600 cforge-mb-2">{__('Image Sources:', 'content-forge')}</p>
+								<div className="cforge-flex cforge-items-center">
+									<input
+										type="checkbox"
+										id="cforge-cpt-source-picsum"
+										className="cforge-h-4 cforge-w-4 cforge-text-primary cforge-border-gray-300 cforge-rounded focus:cforge-ring-primary"
+										checked={imageSources.picsum}
+										onChange={(e) => setImageSources({ ...imageSources, picsum: e.target.checked })}
+									/>
+									<label htmlFor="cforge-cpt-source-picsum" className="cforge-ml-2 cforge-block cforge-text-sm cforge-text-gray-700">
+										{__('Picsum Photos', 'content-forge')} <span className="cforge-text-gray-500">({__('Real photos', 'content-forge')})</span>
+									</label>
+								</div>
+								<div className="cforge-flex cforge-items-center">
+									<input
+										type="checkbox"
+										id="cforge-cpt-source-placehold"
+										className="cforge-h-4 cforge-w-4 cforge-text-primary cforge-border-gray-300 cforge-rounded focus:cforge-ring-primary"
+										checked={imageSources.placehold}
+										onChange={(e) => setImageSources({ ...imageSources, placehold: e.target.checked })}
+									/>
+									<label htmlFor="cforge-cpt-source-placehold" className="cforge-ml-2 cforge-block cforge-text-sm cforge-text-gray-700">
+										{__('Placehold.co', 'content-forge')} <span className="cforge-text-gray-500">({__('Simple placeholders', 'content-forge')})</span>
+									</label>
+								</div>
+								{!imageSources.picsum && !imageSources.placehold && (
+									<p className="cforge-text-xs cforge-text-yellow-600 cforge-mt-1">
+										{__('⚠ No source selected. Will default to Picsum.', 'content-forge')}
+									</p>
+								)}
+							</div>
+						)}
+					</div>
 
 					<div className="cforge-border cforge-border-gray-200 cforge-rounded-lg cforge-p-4 cforge-bg-gray-50">
 						<ToggleControl
