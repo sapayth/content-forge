@@ -1,0 +1,39 @@
+# DESCRIPTION: Code quality checks for Content Forge.
+# Runs PHPCS (WordPress Coding Standards + PHPCompatibility) on pushes to main and on PRs.
+
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  phpcs:
+    name: PHPCS
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+      # composer.lock dev dependencies need PHP 8.4; PHPCompatibility still checks against 7.4.
+      - name: Set up PHP
+        uses: shivammathur/setup-php@44454db4f0199b8b9685a5d763dc37cbf79108e1 # 2.36.0
+        with:
+          php-version: '8.4'
+          coverage: none
+          tools: composer
+
+      - name: Install composer dependencies
+        run: composer install --no-interaction --no-progress
+
+      - name: Run PHPCS
+        run: composer phpcs
