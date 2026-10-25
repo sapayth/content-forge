@@ -71,6 +71,16 @@
         <exclude name="Squiz.Commenting.FunctionComment.ParamCommentFullStop"/>
     </rule>
 
+    <!-- Files open with a two-line "// DESCRIPTION:" header instead of a file docblock -->
+    <rule ref="Squiz.Commenting.FileComment.WrongStyle">
+        <severity>0</severity>
+    </rule>
+
+    <!-- Test method names describe the test; docblocks on them are noise -->
+    <rule ref="Squiz.Commenting.FunctionComment.Missing">
+        <exclude-pattern>/tests/*</exclude-pattern>
+    </rule>
+
     <!-- Extra Rules -->
     <rule ref="WordPress-Extra">
         <!-- Allow modern PHP features -->
