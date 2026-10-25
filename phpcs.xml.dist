@@ -10,6 +10,10 @@
     <exclude-pattern>/dist/*</exclude-pattern>
     <exclude-pattern>/release/*</exclude-pattern>
     <exclude-pattern>*.asset.php</exclude-pattern>
+    <!-- Bundled third-party library (Action Scheduler) -->
+    <exclude-pattern>/Lib/*</exclude-pattern>
+    <!-- Throwaway scripts for manual checks, not shipped -->
+    <exclude-pattern>/tests/manual/*</exclude-pattern>
 
     <!-- How to scan -->
     <arg name="extensions" value="php"/>
