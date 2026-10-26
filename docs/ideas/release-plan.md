@@ -31,6 +31,7 @@ fallback that also serves developers and demo sites. Roadmap items are weighed a
 - **SEO meta for Autopilot posts** — populate Yoast / Rank Math title and description fields.
 - **Autopilot for other post types** — pages, CPTs, products.
 - **Internal linking** — cross-link Autopilot posts to existing site content.
+- **Multilingual generation** — posts and terms per language, linked as WPML / Polylang translations. Spec: [`docs/planning/multilingual-plan.md`](../planning/multilingual-plan.md)
 - **Advanced filtering & search** in the generated-content list views.
 - **Multisite support** (network-wide generation).
 - **Performance stress-test mode** (10k+ items).
