@@ -71,7 +71,9 @@ No. Content Forge has two independent modes. The traditional generator creates d
 
 = Is the generated content safe for production sites? =
 
-Content Forge is designed for development and testing purposes only. While the generated content is safe, it's recommended to use this plugin only on development, staging, or testing environments.
+It depends on the mode. Run the traditional generator, with its bulk dummy posts, pages, users, comments and taxonomies, on development, staging or demo sites only, never on a live site. Use the bulk deletion options to remove it all when you're done testing.
+
+Autopilot and AI generation can run on a live site. Autopilot saves every post as a draft by default, and comes with daily post caps, auto-pause on failure and a duplicate guard, so nothing goes live unless you opt in.
 
 = Can I customize the type of content generated? =
 
@@ -125,6 +127,9 @@ Yes. Run one per category, niche, or author — they operate independently.
 
 == Changelog ==
 
+= Unreleased =
+* Fix - The FAQ no longer says the whole plugin is for testing only: dummy-data generation belongs on dev, staging or demo sites, while Autopilot can run on a live site
+
 = 1.7.0 17-08-2026 =
 * New - Taxonomy assignment — generated posts, pages, CPTs and products can finally land in real categories and tags, so your archive templates have something to render
 * New - AI featured images — Autopilot posts can now generate their own artwork from the post title, so a scheduled post arrives ready to publish
@@ -177,6 +182,11 @@ New - Autopilot — set it once, and your posts generate themselves on schedule
 * New - Added featured image generation with placeholder support
 * New - Added post excerpt generation
 * Enhancement – Content formatting for both Block and Classic editors
+
+== Upgrade Notice ==
+
+= 1.7.0 =
+Adds taxonomy assignment for generated content, AI featured images for Autopilot, a Dashboard page, and Edit and View links on every generated item.
 
 == Privacy Policy ==
 
