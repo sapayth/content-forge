@@ -183,6 +183,11 @@ New - Autopilot — set it once, and your posts generate themselves on schedule
 * New - Added post excerpt generation
 * Enhancement – Content formatting for both Block and Classic editors
 
+== Upgrade Notice ==
+
+= 1.7.0 =
+Adds taxonomy assignment for generated content, AI featured images for Autopilot, a Dashboard page, and Edit and View links on every generated item.
+
 == Privacy Policy ==
 
 Content Forge uses Feedio to collect some telemetry data upon user’s confirmation. This helps us to troubleshoot problems faster & make product improvements.
