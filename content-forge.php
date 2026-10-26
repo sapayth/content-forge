@@ -44,6 +44,24 @@ final class ContentForge {
         add_action( 'init', [ $loader, 'load' ] );
         // load the general functions
         require_once CFORGE_INCLUDES_PATH . 'functions/general.php';
+
+        if ( defined( 'WP_CLI' ) && WP_CLI ) {
+            $this->register_cli_commands();
+        }
+    }
+
+    /**
+     * Register the `wp cforge` commands, with `wp content-forge` as an alias.
+     *
+     * @since 1.8.0
+     *
+     * @return void
+     */
+    private function register_cli_commands() {
+        foreach ( [ 'cforge', 'content-forge' ] as $name ) {
+            \WP_CLI::add_command( $name, 'ContentForge\\CLI\\Command' );
+            \WP_CLI::add_command( $name . ' generate', 'ContentForge\\CLI\\Generate_Command' );
+        }
     }
 
     /**
