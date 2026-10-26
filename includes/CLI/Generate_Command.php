@@ -50,10 +50,13 @@ class Generate_Command {
 	 * ---
 	 *
 	 * [--status=<status>]
-	 * : Post status: publish, draft, pending, private or future.
+	 * : Post status: publish, draft, pending, private or future (needs --date).
 	 * ---
 	 * default: publish
 	 * ---
+	 *
+	 * [--date=<datetime>]
+	 * : Publish date for --status=future, in site time, e.g. "2026-12-01 09:00".
 	 *
 	 * [--comment_status=<status>]
 	 * : Whether the posts accept comments.
@@ -131,9 +134,15 @@ class Generate_Command {
 			WP_CLI::error( __( '--from and --to must be used together.', 'content-forge' ) );
 		}
 
+		$status = Utils\get_flag_value( $assoc_args, 'status', 'publish' );
+		$date   = Utils\get_flag_value( $assoc_args, 'date', '' );
+		if ( 'future' === $status && ! $date ) {
+			WP_CLI::error( __( '--status=future needs --date.', 'content-forge' ) );
+		}
+
 		$params = [
 			'post_type'        => $post_type,
-			'post_status'      => Utils\get_flag_value( $assoc_args, 'status', 'publish' ),
+			'post_status'      => $status,
 			'comment_status'   => Utils\get_flag_value( $assoc_args, 'comment_status', 'closed' ),
 			'post_parent'      => (int) Utils\get_flag_value( $assoc_args, 'parent', 0 ),
 			'author_mode'      => $authors['mode'],
@@ -141,6 +150,9 @@ class Generate_Command {
 			'generate_excerpt' => (bool) Utils\get_flag_value( $assoc_args, 'excerpt', true ),
 			'editor_type'      => Utils\get_flag_value( $assoc_args, 'editor', 'block' ),
 		];
+		if ( $date ) {
+			$params['post_date'] = $date;
+		}
 		if ( $from ) {
 			$params['date_from'] = $from;
 			$params['date_to']   = $to;
@@ -412,6 +424,20 @@ class Generate_Command {
 				$message = $data->get_error_message();
 				if ( 'comments' === $label ) {
 					$message .= ' ' . __( 'Comments only go on published posts with comments open. Generated posts have them closed by default: run `wp cforge generate posts --comment_status=open` first.', 'content-forge' );
+				}
+
+				// Report what an earlier batch already created, so a partial run can be cleaned up.
+				if ( $progress ) {
+					$progress->finish();
+				}
+				if ( $created ) {
+					/* translators: 1: created count, 2: requested count, 3: content kind */
+					WP_CLI::warning( sprintf( __( 'Created %1$d of %2$d %3$s before the error.', 'content-forge' ), count( $created ), $total, $label ) );
+					if ( $porcelain ) {
+						foreach ( $created as $id ) {
+							WP_CLI::line( (string) $id );
+						}
+					}
 				}
 				WP_CLI::error( $message );
 			}
