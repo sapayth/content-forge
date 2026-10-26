@@ -203,8 +203,8 @@ class Command {
 				$assoc_args
 			);
 			$data = self::dispatch( 'DELETE', $routes['bulk'] );
-			/* translators: 1: number deleted, 2: content kind */
-			WP_CLI::success( sprintf( __( 'Deleted %1$d %2$s.', 'content-forge' ), (int) $data['deleted'], $type ) );
+			/* translators: 1: content kind, 2: number deleted */
+			WP_CLI::success( sprintf( __( 'Deleted %1$s: %2$d.', 'content-forge' ), $type, (int) $data['deleted'] ) );
 			return;
 		}
 
@@ -251,8 +251,8 @@ class Command {
 			return;
 		}
 
-		/* translators: 1: number deleted, 2: content kind */
-		WP_CLI::success( sprintf( __( 'Deleted %1$d %2$s.', 'content-forge' ), $deleted, $type ) );
+		/* translators: 1: content kind, 2: number deleted */
+		WP_CLI::success( sprintf( __( 'Deleted %1$s: %2$d.', 'content-forge' ), $type, $deleted ) );
 	}
 
 	/**
@@ -339,8 +339,8 @@ class Command {
 		if ( $items ) {
 			Utils\format_items( 'table', $items, self::TYPES[ $type ]['fields'] );
 		}
-		/* translators: 1: number of items, 2: content kind */
-		WP_CLI::success( sprintf( __( 'Dry run: would delete %1$d %2$s.', 'content-forge' ), count( $items ), $type ) );
+		/* translators: 1: content kind, 2: number of items */
+		WP_CLI::success( sprintf( __( 'Dry run: would delete %1$s: %2$d.', 'content-forge' ), $type, count( $items ) ) );
 	}
 
 	/**

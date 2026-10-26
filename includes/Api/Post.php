@@ -904,7 +904,7 @@ class Post extends CForge_REST_Controller {
                 'title'     => html_entity_decode( $raw_title, ENT_QUOTES | ENT_HTML5, 'UTF-8' ),
                 'author'    => sanitize_text_field( get_the_author_meta( 'user_nicename', $post->post_author ) ),
                 'type'      => sanitize_key( $post->post_type ),
-                'date'      => sanitize_text_field( get_date_from_gmt( $post->post_date_gmt, 'Y/m/d H:i A' ) ),
+                'date'      => sanitize_text_field( get_date_from_gmt( $post->post_date_gmt, 'Y/m/d g:i A' ) ),
                 'edit_link' => $edit_link ? esc_url_raw( $edit_link ) : '',
                 'permalink' => esc_url_raw( (string) get_permalink( $post->ID ) ),
             ];

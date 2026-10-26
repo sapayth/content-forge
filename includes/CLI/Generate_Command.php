@@ -487,7 +487,7 @@ class Generate_Command {
 			return;
 		}
 
-		/* translators: 1: created count, 2: content kind */
-		WP_CLI::success( sprintf( __( 'Created %1$d %2$s.', 'content-forge' ), count( $created ), $label ) );
+		/* translators: 1: content kind, 2: created count */
+		WP_CLI::success( sprintf( __( 'Created %1$s: %2$d.', 'content-forge' ), $label, count( $created ) ) );
 	}
 }
