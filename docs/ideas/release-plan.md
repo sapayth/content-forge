@@ -4,10 +4,12 @@ Release schedule for Content Forge, at a cadence of roughly one release per mont
 
 **Core Requirement:** All content generation features must support both **Block Editor** and **Classic Editor** environments.
 
-**Positioning note:** Content Forge started as a dummy-data generator and now leads with
-AI publishing. Autopilot is the headline feature; traditional generation is the no-API-key
-fallback that also serves developers and demo sites. Roadmap items are weighed against
-"does this make Autopilot output publishable without a human touching it?"
+**Positioning note:** Content Forge is a fake content generator. It fills WordPress sites
+with realistic posts, pages, users, terms, comments and products, so builders can develop,
+test and demo themes and plugins. AI generation and Autopilot are optional extras on top of
+that core, not where the product is heading. Roadmap items are weighed against "does this
+help a builder fill and test a site faster?" SEO and live-publishing features (SEO meta,
+internal linking, content refresh) come last.
 
 ---
 
@@ -28,13 +30,13 @@ fallback that also serves developers and demo sites. Roadmap items are weighed a
 ## Next
 
 ### Candidates for v1.8.0+
-- **SEO meta for Autopilot posts** — populate Yoast / Rank Math title and description fields.
 - **Autopilot for other post types** — pages, CPTs, products.
-- **Internal linking** — cross-link Autopilot posts to existing site content.
 - **Advanced filtering & search** in the generated-content list views.
 - **Multisite support** (network-wide generation).
 - **Performance stress-test mode** (10k+ items).
 - **Advanced analytics**, **GDPR tooling**, **video tutorials & in-app help**.
+- **Internal linking** — cross-link Autopilot posts to existing site content. *(Blocked: SEO-driven, comes last.)*
+- **SEO meta for Autopilot posts** — populate Yoast / Rank Math title and description fields. *(Blocked: the very last feature.)*
 
 Longer, unfiltered idea list: `docs/ideas/feature-ideas.md`.
 
