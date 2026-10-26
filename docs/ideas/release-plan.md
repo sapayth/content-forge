@@ -31,6 +31,7 @@ internal linking, content refresh) come last.
 
 ### Candidates for v1.8.0+
 - **Autopilot for other post types** — pages, CPTs, products.
+- **Multilingual generation** — posts and terms per language, linked as WPML / Polylang translations. Spec: [`docs/planning/multilingual-plan.md`](../planning/multilingual-plan.md)
 - **Advanced filtering & search** in the generated-content list views.
 - **Multisite support** (network-wide generation).
 - **Performance stress-test mode** (10k+ items).
