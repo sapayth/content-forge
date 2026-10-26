@@ -1,6 +1,6 @@
 {
   "name": "content-forge",
-  "version": "1.7.0",
+  "version": "1.8.0",
   "description": "Generate fake/dummy posts, pages, users, comments for development/testing in WordPress.",
   "main": "src/pages-posts-app.jsx",
   "scripts": {

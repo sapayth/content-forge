@@ -4,7 +4,7 @@ Tags: ai content generator, autopilot, scheduled posts, dummy content, testing
 Requires at least: 5.6
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.7.0
+Stable tag: 1.8.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -127,8 +127,18 @@ Yes. Run one per category, niche, or author — they operate independently.
 
 == Changelog ==
 
-= Unreleased =
-* Fix - The FAQ no longer says the whole plugin is for testing only: dummy-data generation belongs on dev, staging or demo sites, while Autopilot can run on a live site
+= 1.8.0 27-10-2026 =
+* New - WP-CLI commands to generate, list and delete content
+* New - Featured images for generated products
+* Fix - Deleting generated posts now also deletes their featured images
+* Fix - Product sale prices no longer skipped when ranges overlap
+* Fix - Autopilot tone and length settings now apply
+* Fix - Autopilot theme topics stay on theme
+* Fix - Autopilot "Run now" works on draft and paused Autopilots
+* Fix - Google AI works with new API keys
+* Fix - AI models with a dot in the name can be saved
+* Fix - List dates show the correct 12-hour time
+* Enhancement - Tested up to WordPress 7.1
 
 = 1.7.0 17-08-2026 =
 * New - Taxonomy assignment — generated posts, pages, CPTs and products can finally land in real categories and tags, so your archive templates have something to render
@@ -184,6 +194,9 @@ New - Autopilot — set it once, and your posts generate themselves on schedule
 * Enhancement – Content formatting for both Block and Classic editors
 
 == Upgrade Notice ==
+
+= 1.8.0 =
+Adds WP-CLI commands and product featured images, and fixes several Autopilot and Google AI issues.
 
 = 1.7.0 =
 Adds taxonomy assignment for generated content, AI featured images for Autopilot, a Dashboard page, and Edit and View links on every generated item.

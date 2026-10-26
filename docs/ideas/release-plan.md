@@ -24,12 +24,13 @@ internal linking, content refresh) come last.
 | v1.5.0 | 2026-05-14 | **Autopilot** — scheduled AI post generation |
 | v1.6.0 | 2026-06-14 | Author modes (fixed or random pool), DeepSeek + Mistral providers, review notice |
 | v1.7.0 | 2026-08-17 | Taxonomy assignment, AI featured images for Autopilot, Dashboard page, edit/view row links, orphaned tracking-row cleanup |
+| v1.8.0 | 2026-10-27 | WP-CLI commands (generate, list, delete, status), featured images for generated products, Autopilot tone/length/theme fixes, current Google Gemini models |
 
 ---
 
 ## Next
 
-### Candidates for v1.8.0+
+### Candidates for v1.9.0+
 - **Autopilot for other post types** — pages, CPTs, products.
 - **Multilingual generation** — posts and terms per language, linked as WPML / Polylang translations. Spec: [`docs/planning/multilingual-plan.md`](../planning/multilingual-plan.md)
 - **Advanced filtering & search** in the generated-content list views.
