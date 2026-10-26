@@ -1,4 +1,6 @@
 <?php
+// DESCRIPTION: Runs cleanup when Content Forge is deactivated.
+// Stops Autopilot's recurring actions and pings telemetry; keeps all data.
 
 namespace ContentForge;
 
@@ -41,11 +43,14 @@ class Deactivator {
         ];
 
         // Send a non-blocking request to the telemetry server
-        wp_remote_post( $endpoint, [
-            'timeout'   => 2,
-            'blocking'  => false,
-            'sslverify' => false,
-            'body'      => $body,
-        ] );
+        wp_remote_post(
+            $endpoint,
+            [
+                'timeout'   => 2,
+                'blocking'  => false,
+                'sslverify' => false,
+                'body'      => $body,
+            ]
+        );
     }
 }

@@ -206,7 +206,7 @@ class Admin {
      */
     public static function enqueue_assets( $hook ) {
         $page_configs = [
-            'toplevel_page_cforge'                 => [
+            'toplevel_page_cforge'                  => [
                 'script_handle' => 'cforge-dashboard-app',
                 'script_file'   => 'dashboard.js',
                 'style_handle'  => 'cforge-dashboard-style',
@@ -248,7 +248,7 @@ class Admin {
                     'authors'           => self::get_authors_for_select(),
                 ],
             ],
-            'content-forge_page_cforge-comments'   => [
+            'content-forge_page_cforge-comments'    => [
                 'script_handle' => 'cforge-comments-app',
                 'script_file'   => 'comments.js',
                 'style_handle'  => 'cforge-comments-style',
@@ -264,7 +264,7 @@ class Admin {
                     'featureRequestUrl' => CFORGE_FEATURE_REQUEST_URL,
                 ],
             ],
-            'content-forge_page_cforge-users'      => [
+            'content-forge_page_cforge-users'       => [
                 'script_handle' => 'cforge-users-app',
                 'script_file'   => 'users.js',
                 'style_handle'  => 'cforge-users-style',
@@ -280,7 +280,7 @@ class Admin {
                     'featureRequestUrl' => CFORGE_FEATURE_REQUEST_URL,
                 ],
             ],
-            'content-forge_page_cforge-taxonomies' => [
+            'content-forge_page_cforge-taxonomies'  => [
                 'script_handle' => 'cforge-taxonomies-app',
                 'script_file'   => 'taxonomy.js',
                 'style_handle'  => 'cforge-taxonomies-style',
@@ -303,7 +303,7 @@ class Admin {
                     ),
                 ],
             ],
-            'content-forge_page_cforge-cpt'        => [
+            'content-forge_page_cforge-cpt'         => [
                 'script_handle' => 'cforge-cpt-app',
                 'script_file'   => 'cpt.js',
                 'style_handle'  => 'cforge-cpt-style',
@@ -322,7 +322,7 @@ class Admin {
                     'authors'            => self::get_authors_for_select(),
                 ],
             ],
-            'content-forge_page_cforge-settings'   => [
+            'content-forge_page_cforge-settings'    => [
                 'script_handle' => 'cforge-settings-app',
                 'script_file'   => 'settings.js',
                 'style_handle'  => 'cforge-settings-style',
@@ -337,7 +337,7 @@ class Admin {
                     'featureRequestUrl' => CFORGE_FEATURE_REQUEST_URL,
                 ],
             ],
-            'content-forge_page_cforge-autopilot'  => [
+            'content-forge_page_cforge-autopilot'   => [
                 'script_handle' => 'cforge-autopilot-app',
                 'script_file'   => 'autopilot.js',
                 'style_handle'  => 'cforge-autopilot-style',
@@ -384,7 +384,7 @@ class Admin {
             ],
             'objects'
         );
-        $list = [];
+        $list       = [];
         foreach ( $post_types as $name => $obj ) {
             // post and page have their own dedicated pages
             if ( in_array( $name, [ 'post', 'page' ], true ) ) {

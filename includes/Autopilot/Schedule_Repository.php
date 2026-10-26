@@ -28,7 +28,7 @@ class Schedule_Repository {
 	 */
 	public function find( $id ) {
 		$post = get_post( (int) $id );
-		if ( ! $post || $post->post_type !== Schedule::POST_TYPE ) {
+		if ( ! $post || Schedule::POST_TYPE !== $post->post_type ) {
 			return null;
 		}
 		return $this->hydrate( $post );
@@ -125,7 +125,7 @@ class Schedule_Repository {
 			return new \WP_Error( 'cforge_autopilot_not_found', __( 'Schedule not found', 'content-forge' ), [ 'status' => 404 ] );
 		}
 
-		if ( $name !== null ) {
+		if ( null !== $name ) {
 			wp_update_post(
 				[
 					'ID'         => $id,
@@ -149,7 +149,7 @@ class Schedule_Repository {
 	 * @return void
 	 */
 	public function update_next_run( $id, $next_utc ) {
-		if ( $next_utc === '' ) {
+		if ( '' === $next_utc ) {
 			delete_post_meta( $id, Schedule::META_NEXT_RUN_AT );
 			return;
 		}
@@ -313,7 +313,7 @@ class Schedule_Repository {
 			return new \WP_Error( 'cforge_autopilot_not_found', __( 'Schedule not found', 'content-forge' ), [ 'status' => 404 ] );
 		}
 
-		$config         = $source->config();
+		$config                          = $source->config();
 		$config['topic']['list_cursor']  = 0;
 		$config['topic']['queue_cursor'] = 0;
 
@@ -334,7 +334,7 @@ class Schedule_Repository {
 	 * @return void
 	 */
 	public function set_runs_cap( $id, $cap ) {
-		if ( $cap === null ) {
+		if ( null === $cap ) {
 			delete_post_meta( $id, Schedule::META_RUNS_CAP );
 			return;
 		}
@@ -351,7 +351,7 @@ class Schedule_Repository {
 	 * @return void
 	 */
 	public function set_stop_at( $id, $stop_at ) {
-		if ( $stop_at === '' ) {
+		if ( '' === $stop_at ) {
 			delete_post_meta( $id, Schedule::META_STOP_AT );
 			return;
 		}
@@ -368,7 +368,7 @@ class Schedule_Repository {
 	 */
 	protected function hydrate( WP_Post $post ) {
 		$raw_config = get_post_meta( $post->ID, Schedule::META_CONFIG, true );
-		$config     = is_string( $raw_config ) && $raw_config !== '' ? json_decode( $raw_config, true ) : [];
+		$config     = is_string( $raw_config ) && '' !== $raw_config ? json_decode( $raw_config, true ) : [];
 		if ( ! is_array( $config ) ) {
 			$config = [];
 		}

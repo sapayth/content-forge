@@ -28,25 +28,53 @@ class Schedule_Runner {
 
 	const HOOK = 'cforge_autopilot_run_schedule';
 
-	/** @var Schedule_Repository */
+	/**
+	 * Schedule storage.
+	 *
+	 * @var Schedule_Repository
+	 */
 	protected $schedules;
 
-	/** @var Run_Repository */
+	/**
+	 * Run history storage.
+	 *
+	 * @var Run_Repository
+	 */
 	protected $runs;
 
-	/** @var Topic_Resolver */
+	/**
+	 * Picks the topic for each run.
+	 *
+	 * @var Topic_Resolver
+	 */
 	protected $topic_resolver;
 
-	/** @var Post_Builder */
+	/**
+	 * Creates the posts.
+	 *
+	 * @var Post_Builder
+	 */
 	protected $post_builder;
 
-	/** @var Duplicate_Guard */
+	/**
+	 * Skips titles too close to recent posts.
+	 *
+	 * @var Duplicate_Guard
+	 */
 	protected $duplicate_guard;
 
-	/** @var Admin_Notices */
+	/**
+	 * Raises an admin notice when a schedule is auto-paused.
+	 *
+	 * @var Admin_Notices
+	 */
 	protected $admin_notices;
 
-	/** @var Email_Notifier */
+	/**
+	 * Sends run notification emails.
+	 *
+	 * @var Email_Notifier
+	 */
 	protected $email_notifier;
 
 	/**
@@ -84,7 +112,7 @@ class Schedule_Runner {
 	 * @return void
 	 */
 	public function register() {
-		add_action( self::HOOK, [ $this, 'handle' ], 10, 2 );
+		add_action( self::HOOK, [ $this, 'handle' ], 10, 3 );
 	}
 
 	/**
@@ -92,11 +120,14 @@ class Schedule_Runner {
 	 *
 	 * @since 1.5.0
 	 *
-	 * @param int $schedule_id Schedule ID.
-	 * @param int $run_id      Run row ID.
+	 * @since 1.7.1 Added $manual.
+	 *
+	 * @param int  $schedule_id Schedule ID.
+	 * @param int  $run_id      Run row ID.
+	 * @param bool $manual      True for Run now and Retry, which also run a draft or paused schedule.
 	 * @return void
 	 */
-	public function handle( $schedule_id, $run_id ) {
+	public function handle( $schedule_id, $run_id, $manual = false ) {
 		$schedule = $this->schedules->find( (int) $schedule_id );
 		if ( ! $schedule ) {
 			$this->runs->update(
@@ -110,7 +141,9 @@ class Schedule_Runner {
 			return;
 		}
 
-		if ( $schedule->status() !== 'active' ) {
+		// A scheduled run needs an active schedule; Run now and Retry also work while it's a draft or paused.
+		$runnable = $manual ? [ 'active', 'draft', 'paused', 'auto_paused' ] : [ 'active' ];
+		if ( ! in_array( $schedule->status(), $runnable, true ) ) {
 			$this->runs->update(
 				(int) $run_id,
 				[
@@ -131,7 +164,7 @@ class Schedule_Runner {
 		// Preflight: target category exists when post_type=post.
 		$category_id = (int) $schedule->config_get( 'targeting.category_id', 0 );
 		$post_type   = (string) $schedule->config_get( 'targeting.post_type', 'post' );
-		if ( $post_type === 'post' && $category_id > 0 && ! get_term( $category_id, 'category' ) ) {
+		if ( 'post' === $post_type && $category_id > 0 && ! get_term( $category_id, 'category' ) ) {
 			$this->fail_and_auto_pause( $schedule, $run_id, 'category_missing', __( 'Target category no longer exists', 'content-forge' ) );
 			return;
 		}
@@ -181,8 +214,8 @@ class Schedule_Runner {
 		$ai_provider      = AI_Settings_Manager::get_active_provider();
 		$ai_model         = AI_Settings_Manager::get_active_model();
 
-		$avoid_dupes  = (bool) $schedule->config_get( 'avoid_recent_duplicates', true );
-		$category_id  = (int) $schedule->config_get( 'targeting.category_id', 0 );
+		$avoid_dupes = (bool) $schedule->config_get( 'avoid_recent_duplicates', true );
+		$category_id = (int) $schedule->config_get( 'targeting.category_id', 0 );
 
 		for ( $i = 0; $i < $posts_per_run; $i++ ) {
 			// Refresh the schedule between iterations so cursor mutations from the
@@ -194,11 +227,11 @@ class Schedule_Runner {
 			}
 
 			$topic = $this->topic_resolver->resolve( $current_schedule );
-			if ( $topic === '' ) {
+			if ( '' === $topic ) {
 				$errors[] = 'No topic available';
 				break;
 			}
-			if ( $topic_used === '' ) {
+			if ( '' === $topic_used ) {
 				$topic_used = $topic;
 			}
 
@@ -213,11 +246,11 @@ class Schedule_Runner {
 				// category, regenerate once. If still duplicate, skip this post (not a failure).
 				if ( $avoid_dupes && $category_id > 0 ) {
 					$proposed_title = isset( $ai_result['title'] ) ? (string) $ai_result['title'] : '';
-					if ( $proposed_title !== '' && $this->duplicate_guard->is_duplicate( $proposed_title, $category_id ) ) {
+					if ( '' !== $proposed_title && $this->duplicate_guard->is_duplicate( $proposed_title, $category_id ) ) {
 						$retry = $this->generate_ai_content( $current_schedule, $topic, $ai_provider, $ai_model );
 						if ( ! is_wp_error( $retry ) ) {
 							$retry_title = isset( $retry['title'] ) ? (string) $retry['title'] : '';
-							if ( $retry_title !== '' && ! $this->duplicate_guard->is_duplicate( $retry_title, $category_id ) ) {
+							if ( '' !== $retry_title && ! $this->duplicate_guard->is_duplicate( $retry_title, $category_id ) ) {
 								$ai_result = $retry;
 							} else {
 								$errors[] = 'Skipped: duplicate topic';
@@ -274,7 +307,7 @@ class Schedule_Runner {
 			]
 		);
 
-		$is_failure = ( $status === Run::STATUS_FAILED );
+		$is_failure = ( Run::STATUS_FAILED === $status );
 
 		$this->schedules->record_run(
 			$schedule->id(),
@@ -287,7 +320,8 @@ class Schedule_Runner {
 		$threshold = (int) $schedule->config_get( 'safety.auto_pause_after_failures', 3 );
 		if ( $threshold > 0 ) {
 			$current = $this->schedules->find( $schedule->id() );
-			if ( $current && $current->failure_streak() >= $threshold ) {
+			// Only an active schedule is paused; a failed test run leaves a draft or paused one as it was.
+			if ( $current && $current->status() === 'active' && $current->failure_streak() >= $threshold ) {
 				$this->schedules->auto_pause( $schedule->id(), 'consecutive_failures' );
 
 				$this->record_auto_pause_notification( $current, 'consecutive_failures' );
@@ -406,10 +440,11 @@ class Schedule_Runner {
 		$editor_type = function_exists( 'cforge_detect_editor_type' ) ? cforge_detect_editor_type( $post_type ) : 'block';
 
 		$custom_prompt = trim( (string) $schedule->config_get( 'ai.custom_prompt', '' ) );
-		$prompt        = trim( $topic . ( $custom_prompt !== '' ? "\n\n" . $custom_prompt : '' ) );
 
 		$generator = new AI_Content_Generator( $provider, $model, $api_key, $editor_type );
-		return $generator->generate( 'general', $prompt );
+		$generator->set_style( (string) $schedule->config_get( 'ai.tone', '' ), (string) $schedule->config_get( 'ai.length', '' ) );
+		$generator->set_topic( (string) $topic );
+		return $generator->generate( 'general', $custom_prompt );
 	}
 
 	/**
@@ -476,7 +511,13 @@ class Schedule_Runner {
 			// No image model on this provider, or the call failed: fall back to a
 			// placeholder rather than leaving the post bare.
 			if ( is_wp_error( $attachment_id ) ) {
-				$fallback = $image->generate( 1, [ 'title' => $title, 'sources' => [ 'picsum' ] ] );
+				$fallback = $image->generate(
+					1,
+					[
+						'title'   => $title,
+						'sources' => [ 'picsum' ],
+					]
+				);
 
 				if ( empty( $fallback ) ) {
 					return $attachment_id;
@@ -511,7 +552,13 @@ class Schedule_Runner {
 		}
 
 		// Placeholder source.
-		$ids = $image->generate( 1, [ 'title' => $title, 'sources' => [ 'picsum', 'placehold' ] ] );
+		$ids = $image->generate(
+			1,
+			[
+				'title'   => $title,
+				'sources' => [ 'picsum', 'placehold' ],
+			]
+		);
 
 		if ( empty( $ids ) ) {
 			return new WP_Error( 'cforge_image_failed', __( 'Could not generate a placeholder featured image.', 'content-forge' ) );
@@ -533,10 +580,10 @@ class Schedule_Runner {
 	 * @return string
 	 */
 	protected function compute_run_status( $created, $errors, $requested ) {
-		if ( $created === 0 && $errors === 0 ) {
+		if ( 0 === $created && 0 === $errors ) {
 			return Run::STATUS_SKIPPED;
 		}
-		if ( $created === 0 ) {
+		if ( 0 === $created ) {
 			return Run::STATUS_FAILED;
 		}
 		if ( $created < $requested || $errors > 0 ) {
@@ -565,6 +612,10 @@ class Schedule_Runner {
 				'error_message' => $message,
 			]
 		);
+		// A test run on a draft or paused schedule only fails; there's nothing running to pause.
+		if ( $schedule->status() !== 'active' ) {
+			return;
+		}
 		$this->schedules->auto_pause( $schedule->id(), $reason );
 		$this->record_auto_pause_notification( $schedule, $reason );
 		do_action( 'cforge_autopilot_schedule_auto_paused', $schedule, $reason );

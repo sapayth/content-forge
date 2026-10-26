@@ -65,7 +65,7 @@ class AI extends CForge_REST_Controller {
 						],
 						'model'    => [
 							'required'          => true,
-							'sanitize_callback' => 'sanitize_key',
+							'sanitize_callback' => 'sanitize_text_field',
 						],
 						'api_key'  => [
 							'required'          => false,
@@ -111,7 +111,7 @@ class AI extends CForge_REST_Controller {
 						],
 						'model'    => [
 							'required'          => true,
-							'sanitize_callback' => 'sanitize_key',
+							'sanitize_callback' => 'sanitize_text_field',
 						],
 						'api_key'  => [
 							'required'          => false,
@@ -215,11 +215,11 @@ class AI extends CForge_REST_Controller {
 
 		return new \WP_REST_Response(
 			[
-				'provider'      => $provider,
-				'model'         => AI_Settings_Manager::get_active_model(),
-				'is_configured' => AI_Settings_Manager::is_configured(),
-				'providers'     => AI_Settings_Manager::get_providers(),
-				'models'        => AI_Settings_Manager::get_models( $provider ),
+				'provider'        => $provider,
+				'model'           => AI_Settings_Manager::get_active_model(),
+				'is_configured'   => AI_Settings_Manager::is_configured(),
+				'providers'       => AI_Settings_Manager::get_providers(),
+				'models'          => AI_Settings_Manager::get_models( $provider ),
 				// Slugs of providers that expose an image model, so the UI does not
 				// have to hardcode the list.
 				'image_providers' => AI_Settings_Manager::get_image_providers(),
@@ -241,7 +241,7 @@ class AI extends CForge_REST_Controller {
 
 		$settings = [
 			'provider' => isset( $params['provider'] ) ? sanitize_key( $params['provider'] ) : '',
-			'model'    => isset( $params['model'] ) ? sanitize_key( $params['model'] ) : '',
+			'model'    => isset( $params['model'] ) ? sanitize_text_field( $params['model'] ) : '',
 			'api_key'  => isset( $params['api_key'] ) ? sanitize_text_field( $params['api_key'] ) : '',
 		];
 
@@ -298,7 +298,7 @@ class AI extends CForge_REST_Controller {
 		$params = $request->get_json_params();
 
 		$provider = isset( $params['provider'] ) ? sanitize_key( $params['provider'] ) : '';
-		$model    = isset( $params['model'] ) ? sanitize_key( $params['model'] ) : '';
+		$model    = isset( $params['model'] ) ? sanitize_text_field( $params['model'] ) : '';
 		$api_key  = isset( $params['api_key'] ) ? sanitize_text_field( $params['api_key'] ) : '';
 
 		// If API key is not provided, try to get it from settings

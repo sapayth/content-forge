@@ -17,7 +17,11 @@ class Maintenance {
 
 	const HOOK = 'cforge_autopilot_maintenance';
 
-	/** @var Run_Repository */
+	/**
+	 * Run history storage.
+	 *
+	 * @var Run_Repository
+	 */
 	protected $runs;
 
 	/**

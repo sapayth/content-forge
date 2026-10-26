@@ -44,7 +44,7 @@ class Duplicate_Guard {
 	public function is_duplicate( $title, $category_id ) {
 		$title       = trim( (string) $title );
 		$category_id = (int) $category_id;
-		if ( $title === '' || $category_id <= 0 ) {
+		if ( '' === $title || $category_id <= 0 ) {
 			return false;
 		}
 
@@ -94,7 +94,7 @@ class Duplicate_Guard {
 		// Replace any non-letter/digit/space with a space, then collapse runs.
 		$title = preg_replace( '/[^\p{L}\p{N}]+/u', ' ', $title );
 		$title = trim( preg_replace( '/\s+/u', ' ', (string) $title ) );
-		if ( $title === '' ) {
+		if ( '' === $title ) {
 			return [];
 		}
 
@@ -122,7 +122,7 @@ class Duplicate_Guard {
 		}
 		$intersection = count( array_intersect( $a, $b ) );
 		$union        = count( array_unique( array_merge( $a, $b ) ) );
-		if ( $union === 0 ) {
+		if ( 0 === $union ) {
 			return 0.0;
 		}
 		return (float) ( $intersection / $union );

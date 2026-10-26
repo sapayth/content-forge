@@ -37,7 +37,7 @@ class TEC_Event {
 		$tz        = function_exists( 'wp_timezone' ) ? wp_timezone() : new \DateTimeZone( $tz_string );
 		$utc       = new \DateTimeZone( 'UTC' );
 
-		$days_ahead = isset( $event_options['start_offset_days'] ) ? (int) $event_options['start_offset_days'] : wp_rand( 0, 180 );
+		$days_ahead     = isset( $event_options['start_offset_days'] ) ? (int) $event_options['start_offset_days'] : wp_rand( 0, 180 );
 		$duration_hours = isset( $event_options['duration_hours'] ) ? (float) $event_options['duration_hours'] : ( 1 + wp_rand( 0, 200 ) / 100 );
 
 		$start = new \DateTime( 'today', $tz );

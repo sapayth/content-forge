@@ -21,6 +21,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Post_Builder {
 
 	/**
+	 * Decides the post status for generated posts.
+	 *
 	 * @var Status_Resolver
 	 */
 	protected $status_resolver;
@@ -65,11 +67,11 @@ class Post_Builder {
 			$this->status_resolver->resolve( $schedule )
 		);
 
-		if ( $category_id > 0 && $post_type === 'post' ) {
+		if ( $category_id > 0 && 'post' === $post_type ) {
 			$args['post_category'] = [ $category_id ];
 		}
 
-		if ( ! empty( $tag_ids ) && $post_type === 'post' ) {
+		if ( ! empty( $tag_ids ) && 'post' === $post_type ) {
 			$args['tags_input'] = $tag_ids;
 		}
 

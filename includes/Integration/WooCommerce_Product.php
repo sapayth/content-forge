@@ -42,14 +42,14 @@ class WooCommerce_Product {
 		if ( $price_max < $price_min ) {
 			$price_max = $price_min;
 		}
-		$regular_price = (string) ( $price_min + ( ( $price_max - $price_min ) * wp_rand( 0, 100 ) / 100 ) );
-		$product->set_regular_price( $regular_price );
+		$regular_price = round( $price_min + ( ( $price_max - $price_min ) * wp_rand( 0, 100 ) / 100 ), 2 );
+		$product->set_regular_price( (string) $regular_price );
 
 		$sale_price_min = isset( $product_options['sale_price_min'] ) ? floatval( $product_options['sale_price_min'] ) : null;
 		$sale_price_max = isset( $product_options['sale_price_max'] ) ? floatval( $product_options['sale_price_max'] ) : null;
-		if ( null !== $sale_price_min && null !== $sale_price_max && $sale_price_max >= $sale_price_min && $sale_price_max < (float) $regular_price ) {
-			$sale_price = (string) ( $sale_price_min + ( ( $sale_price_max - $sale_price_min ) * wp_rand( 0, 100 ) / 100 ) );
-			$product->set_sale_price( $sale_price );
+		$sale_price     = self::sale_price( $regular_price, $sale_price_min, $sale_price_max, wp_rand( 0, 100 ) );
+		if ( null !== $sale_price ) {
+			$product->set_sale_price( (string) $sale_price );
 		}
 
 		if ( ! empty( $product_options['generate_sku'] ) ) {
@@ -76,5 +76,26 @@ class WooCommerce_Product {
 
 		$product->save();
 		return true;
+	}
+
+	/**
+	 * Pick a sale price inside the sale range, kept below this product's regular price.
+	 *
+	 * @param float      $regular_price  The product's regular price.
+	 * @param float|null $sale_price_min Sale range minimum, or null when no sale was asked for.
+	 * @param float|null $sale_price_max Sale range maximum, or null when no sale was asked for.
+	 * @param int        $percent        Where in the range to land, 0-100.
+	 * @return float|null The sale price, or null when the whole range is at or above the regular price.
+	 */
+	public static function sale_price( $regular_price, $sale_price_min, $sale_price_max, $percent ) {
+		if ( null === $sale_price_min || null === $sale_price_max || $sale_price_max < $sale_price_min ) {
+			return null;
+		}
+		// Cap the range just under the regular price, so a range that overlaps it still gives a sale.
+		$sale_price_max = min( $sale_price_max, $regular_price - 0.01 );
+		if ( $sale_price_min > $sale_price_max ) {
+			return null;
+		}
+		return round( $sale_price_min + ( ( $sale_price_max - $sale_price_min ) * $percent / 100 ), 2 );
 	}
 }

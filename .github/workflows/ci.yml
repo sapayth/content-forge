@@ -1,0 +1,175 @@
+# DESCRIPTION: Code quality and security checks for Content Forge.
+# Runs on pushes to main and on PRs; deploy.yml also calls it so a release only ships when it passes.
+
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_call:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  phpcs:
+    name: PHPCS
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
+        with:
+          php-version: '7.4'
+          coverage: none
+          tools: composer
+
+      - name: Install composer dependencies
+        run: composer install --no-interaction --no-progress
+
+      - name: Run PHPCS
+        run: composer phpcs
+
+  php-tests:
+    name: PHP ${{ matrix.php }} lint and unit tests
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # Lowest supported and newest.
+        php: [ '7.4', '8.4' ]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+          tools: composer
+
+      - name: Lint PHP syntax
+        run: |
+          ! find . -name '*.php' -not -path './vendor/*' -not -path './node_modules/*' -print0 \
+            | xargs -0 -n1 -P4 php -l -n 2>&1 \
+            | grep -v '^No syntax errors detected'
+
+      - name: Install composer dependencies
+        run: composer install --no-interaction --no-progress
+
+      - name: Run unit tests
+        run: composer test
+
+  js:
+    name: JS build and tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Set up Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Build assets
+        run: npm run build
+
+      - name: Check color contrast
+        run: node tests/js/contrast.test.js
+
+  plugin-check:
+    name: Plugin Check
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # Lets the action post its results as a PR comment.
+      pull-requests: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Set up Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
+        with:
+          php-version: '7.4'
+          coverage: none
+          tools: composer
+
+      - name: Build assets
+        run: |
+          npm ci
+          npm run build
+
+      # Mirror what deploy.yml ships: the repo minus .distignore, with production vendor/.
+      - name: Assemble the plugin as deployed
+        run: |
+          mkdir -p "$RUNNER_TEMP/content-forge"
+          rsync -a --exclude-from=.distignore --exclude=vendor ./ "$RUNNER_TEMP/content-forge/"
+          composer install --no-dev --optimize-autoloader --no-interaction --no-progress --working-dir="$RUNNER_TEMP/content-forge"
+
+      - name: Run Plugin Check
+        uses: wordpress/plugin-check-action@10857da14b6c2246d15402b3e69f777edcf8c12e # v1.1.9
+        with:
+          build-dir: ${{ runner.temp }}/content-forge
+          # Lib/ is the bundled Action Scheduler library.
+          exclude-directories: Lib
+          # "Tested up to" is bumped by hand at release time, after testing on the new WordPress.
+          ignore-codes: outdated_tested_upto_header
+
+  audit:
+    name: Dependency audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
+        with:
+          php-version: '7.4'
+          coverage: none
+          tools: composer
+
+      - name: Set up Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 20
+
+      - name: Audit composer dependencies
+        run: composer audit --locked
+
+      - name: Audit production npm dependencies
+        run: npm audit --omit=dev --audit-level=high
+
+  dependency-review:
+    name: Dependency review
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Review dependency changes
+        uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
+        with:
+          fail-on-severity: high

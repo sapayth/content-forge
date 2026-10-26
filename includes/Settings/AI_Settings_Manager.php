@@ -33,7 +33,7 @@ class AI_Settings_Manager {
 	const DEFAULT_PROVIDER        = 'openai';
 	const DEFAULT_MODEL_OPENAI    = 'gpt-4';
 	const DEFAULT_MODEL_ANTHROPIC = 'claude-3-opus-20240229';
-	const DEFAULT_MODEL_GOOGLE    = 'gemini-2.5-flash';
+	const DEFAULT_MODEL_GOOGLE    = 'gemini-3.6-flash';
 	const DEFAULT_MODEL_MISTRAL   = 'mistral-small-latest';
 	const DEFAULT_MODEL_DEEPSEEK  = 'deepseek-v4-flash';
 
@@ -132,7 +132,13 @@ class AI_Settings_Manager {
 
 			case self::PROVIDER_GOOGLE:
 				$models = [
-					// Gemini 3 models (latest)
+					// Current models. Checked 2026-10-24: a newly created API key gets 404 for every older model below.
+					'gemini-3.6-flash'                    => 'Gemini 3.6 Flash',
+					'gemini-3.5-flash'                    => 'Gemini 3.5 Flash',
+					'gemini-3.5-flash-lite'               => 'Gemini 3.5 Flash-Lite',
+					'gemini-3.1-flash-lite'               => 'Gemini 3.1 Flash-Lite',
+
+					// Gemini 3 models
 					'gemini-3-pro-preview'                => 'Gemini 3 Pro Preview',
 					'gemini-3-flash-preview'              => 'Gemini 3 Flash Preview',
 
@@ -258,10 +264,8 @@ class AI_Settings_Manager {
 				// Fix missing '2.0' prefix for Gemini 2.0 models
 				if ( strpos( $model, 'gemini-20-' ) === 0 ) {
 					$fixed_model = str_replace( 'gemini-20-', 'gemini-2.0-', $model );
-				}
-				
-				// Fix other common typos if needed
-				elseif ( strpos( $model, 'gemini-25-' ) === 0 ) {
+				} elseif ( strpos( $model, 'gemini-25-' ) === 0 ) {
+					// Fix other common typos if needed
 					$fixed_model = str_replace( 'gemini-25-', 'gemini-2.5-', $model );
 				}
 
@@ -273,12 +277,38 @@ class AI_Settings_Manager {
 				}
 			}
 
+			// Before 1.7.1 the settings REST routes ran the model through sanitize_key(), which drops dots
+			// ("gemini-3.5-flash" was saved as "gemini-35-flash"); map such a stored value back to the real model.
+			$undotted = self::match_undotted_model( $model, $models );
+			if ( '' !== $undotted ) {
+				update_option( $option_name, $undotted );
+				return $undotted;
+			}
+
 			// Return first model as fallback.
 			$model_keys = array_keys( $models );
 			return $model_keys[0] ?? '';
 		}
 
 		return $model;
+	}
+
+	/**
+	 * Find the model whose slug, with its dots removed, is $model.
+	 *
+	 * @since 1.7.1
+	 *
+	 * @param string $model  Stored model slug, possibly missing its dots.
+	 * @param array  $models Model slugs => labels.
+	 * @return string The matching model slug, or '' when none matches.
+	 */
+	public static function match_undotted_model( string $model, array $models ) {
+		foreach ( array_keys( $models ) as $slug ) {
+			if ( str_replace( '.', '', $slug ) === $model ) {
+				return $slug;
+			}
+		}
+		return '';
 	}
 
 	/**
@@ -372,7 +402,7 @@ class AI_Settings_Manager {
 	 */
 	public static function save_settings( array $settings ) {
 		$provider = isset( $settings['provider'] ) ? sanitize_key( $settings['provider'] ) : '';
-		$model    = isset( $settings['model'] ) ? sanitize_key( $settings['model'] ) : '';
+		$model    = isset( $settings['model'] ) ? sanitize_text_field( $settings['model'] ) : '';
 		$api_key  = isset( $settings['api_key'] ) ? sanitize_text_field( $settings['api_key'] ) : '';
 
 		// Validate provider.

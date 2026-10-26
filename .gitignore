@@ -42,3 +42,6 @@ release/
 # Composer
 vendor/
 composer.lock
+
+# How-to video footage (tests/howto)
+/artifacts/

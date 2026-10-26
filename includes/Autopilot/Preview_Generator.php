@@ -41,7 +41,7 @@ class Preview_Generator {
 		}
 
 		$topic = $this->pick_topic_for_preview( $config );
-		if ( $topic === '' ) {
+		if ( '' === $topic ) {
 			return new WP_Error(
 				'cforge_autopilot_no_topic',
 				__( 'No topic available for preview. Provide at least one topic or a theme.', 'content-forge' ),
@@ -64,10 +64,11 @@ class Preview_Generator {
 		$editor_type = function_exists( 'cforge_detect_editor_type' ) ? cforge_detect_editor_type( $post_type ) : 'block';
 
 		$custom_prompt = isset( $config['ai']['custom_prompt'] ) ? trim( (string) $config['ai']['custom_prompt'] ) : '';
-		$prompt        = trim( $topic . ( $custom_prompt !== '' ? "\n\n" . $custom_prompt : '' ) );
 
 		$generator = new AI_Content_Generator( $provider, $model, $api_key, $editor_type );
-		$result    = $generator->generate( 'general', $prompt );
+		$generator->set_style( (string) ( $config['ai']['tone'] ?? '' ), (string) ( $config['ai']['length'] ?? '' ) );
+		$generator->set_topic( $topic );
+		$result = $generator->generate( 'general', $custom_prompt );
 
 		if ( is_wp_error( $result ) ) {
 			return $result;
@@ -131,20 +132,13 @@ class Preview_Generator {
 	 */
 	protected function resolve_ai_theme_topic( array $config ) {
 		$theme = isset( $config['topic']['theme'] ) ? trim( (string) $config['topic']['theme'] ) : '';
-		if ( $theme === '' ) {
+		if ( '' === $theme ) {
 			return '';
 		}
 
-		// Build a minimal in-memory Schedule wrapper. We can't construct a real
-		// Schedule without a WP_Post, so we replicate AI_Theme inline here.
+		// We can't construct a real Schedule without a WP_Post, so gather the recent
+		// titles here and let AI_Theme propose the topic.
 		$category_id = isset( $config['targeting']['category_id'] ) ? (int) $config['targeting']['category_id'] : 0;
-
-		$provider = AI_Settings_Manager::get_active_provider();
-		$model    = AI_Settings_Manager::get_active_model();
-		$api_key  = AI_Settings_Manager::get_api_key( $provider );
-		if ( empty( $api_key ) ) {
-			return '';
-		}
 
 		$recent_titles = [];
 		if ( $category_id > 0 ) {
@@ -169,28 +163,7 @@ class Preview_Generator {
 			}
 		}
 
-		$avoid = '';
-		if ( ! empty( $recent_titles ) ) {
-			$avoid = "\n\nAvoid duplicating these recent topics:\n- " . implode( "\n- ", $recent_titles );
-		}
-
-		$prompt = sprintf(
-			"Propose ONE fresh, SEO-friendly blog post topic on the theme: \"%s\".%s\n\n" .
-			"Reply with the topic only — a single short title under 60 characters. No quotes, no numbering, no commentary.",
-			$theme,
-			$avoid
-		);
-
-		$generator = new AI_Content_Generator( $provider, $model, $api_key, 'classic' );
-		$result    = $generator->generate( 'general', $prompt );
-
-		if ( is_wp_error( $result ) || empty( $result['title'] ) ) {
-			return '';
-		}
-
-		$topic = trim( wp_strip_all_tags( (string) $result['title'] ) );
-		$topic = preg_replace( '/^[\-\*\d\.\)\s]+/u', '', $topic );
-		return trim( $topic, " \t\n\r\0\x0B\"'`" );
+		return ( new AI_Theme() )->propose( $theme, $recent_titles );
 	}
 
 	/**

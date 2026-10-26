@@ -37,24 +37,24 @@ class WPUF_Subscription {
 			return false;
 		}
 
-		$is_free   = (bool) ( wp_rand( 0, 2 ) === 0 );
+		$is_free      = (bool) ( wp_rand( 0, 2 ) === 0 );
 		$is_recurring = (bool) ( wp_rand( 0, 1 ) && ! $is_free );
 
-		$billing_amount = $is_free ? 0 : ( wp_rand( 5, 99 ) );
+		$billing_amount    = $is_free ? 0 : ( wp_rand( 5, 99 ) );
 		$expiration_number = $is_free ? 0 : ( $is_recurring ? wp_rand( 1, 12 ) : wp_rand( 1, 24 ) );
 		$expiration_period = self::$expiration_periods[ array_rand( self::$expiration_periods ) ];
 		if ( $expiration_number > 0 && in_array( $expiration_period, [ 'week', 'month', 'year' ], true ) ) {
-			if ( $expiration_period === 'year' && $expiration_number > 5 ) {
+			if ( 'year' === $expiration_period && $expiration_number > 5 ) {
 				$expiration_number = 5;
 			}
-			if ( $expiration_period === 'month' && $expiration_number > 24 ) {
+			if ( 'month' === $expiration_period && $expiration_number > 24 ) {
 				$expiration_number = 24;
 			}
 		}
 
-		$recurring_pay = $is_recurring ? 'yes' : 'no';
+		$recurring_pay        = $is_recurring ? 'yes' : 'no';
 		$billing_cycle_number = $is_recurring ? wp_rand( 1, 12 ) : 1;
-		$cycle_period = $is_recurring ? ( wp_rand( 0, 1 ) ? 'month' : 'year' ) : $expiration_period;
+		$cycle_period         = $is_recurring ? ( wp_rand( 0, 1 ) ? 'month' : 'year' ) : $expiration_period;
 
 		$post_limits = [ 'post' => (string) ( $is_free ? wp_rand( 3, 10 ) : wp_rand( 5, 50 ) ) ];
 		if ( wp_rand( 0, 2 ) === 0 ) {

@@ -18,16 +18,30 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Weekly implements Frequency {
 
-	/** @var string HH:MM */
+	/**
+	 * Time of day to fire.
+	 *
+	 * @var string HH:MM
+	 */
 	protected $time;
 
-	/** @var int[] ISO weekdays 1..7 */
+	/**
+	 * Weekdays to fire on.
+	 *
+	 * @var int[] ISO weekdays 1..7
+	 */
 	protected $weekdays;
 
-	/** @var DateTimeZone */
+	/**
+	 * Timezone the schedule is defined in.
+	 *
+	 * @var DateTimeZone
+	 */
 	protected $site_timezone;
 
 	/**
+	 * Build a weekly frequency.
+	 *
 	 * @param string            $time          HH:MM in site timezone.
 	 * @param array             $weekdays      ISO weekdays (1=Mon..7=Sun). Empty falls back to Monday.
 	 * @param DateTimeZone|null $site_timezone Site tz; defaults to wp_timezone().
@@ -35,14 +49,18 @@ class Weekly implements Frequency {
 	public function __construct( $time, array $weekdays, ?DateTimeZone $site_timezone = null ) {
 		$this->time          = $this->normalize_time( $time );
 		$this->weekdays      = $this->normalize_weekdays( $weekdays );
-		$this->site_timezone = $site_timezone ?: $this->resolve_site_timezone();
+		$this->site_timezone = $site_timezone ?? $this->resolve_site_timezone();
 	}
 
 	/**
-	 * @inheritDoc
+	 * Compute the next fire time strictly after $reference, returned in UTC.
+	 *
+	 * @param DateTimeImmutable $reference Reference instant (typically "now") in any timezone.
+	 *
+	 * @return DateTimeImmutable Next fire time, expressed in UTC.
 	 */
 	public function next_after( DateTimeImmutable $reference ) {
-		$local = $reference->setTimezone( $this->site_timezone );
+		$local                 = $reference->setTimezone( $this->site_timezone );
 		list( $hour, $minute ) = array_map( 'intval', explode( ':', $this->time ) );
 
 		// Try up to 8 future days; one of them must match.
@@ -57,7 +75,7 @@ class Weekly implements Frequency {
 		// Defensive fallback: same time next week, first selected weekday.
 		$first = $this->weekdays[0];
 		$days  = ( 7 + $first - (int) $local->format( 'N' ) ) % 7;
-		$days  = $days === 0 ? 7 : $days;
+		$days  = 0 === $days ? 7 : $days;
 		$next  = $local->modify( '+' . $days . ' day' )->setTime( $hour, $minute, 0 );
 		return $next->setTimezone( new DateTimeZone( 'UTC' ) );
 	}
@@ -98,6 +116,8 @@ class Weekly implements Frequency {
 	}
 
 	/**
+	 * Resolve the site's timezone.
+	 *
 	 * @return DateTimeZone
 	 */
 	protected function resolve_site_timezone() {

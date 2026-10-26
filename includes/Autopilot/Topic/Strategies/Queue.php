@@ -18,10 +18,16 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Queue {
 
-	/** @var Schedule_Repository */
+	/**
+	 * Schedule storage, used to persist the queue and pause when it runs out.
+	 *
+	 * @var Schedule_Repository
+	 */
 	protected $repository;
 
 	/**
+	 * Build the queue strategy.
+	 *
 	 * @param Schedule_Repository $repository Repository.
 	 */
 	public function __construct( Schedule_Repository $repository ) {

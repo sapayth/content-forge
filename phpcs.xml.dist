@@ -10,6 +10,10 @@
     <exclude-pattern>/dist/*</exclude-pattern>
     <exclude-pattern>/release/*</exclude-pattern>
     <exclude-pattern>*.asset.php</exclude-pattern>
+    <!-- Bundled third-party library (Action Scheduler) -->
+    <exclude-pattern>/Lib/*</exclude-pattern>
+    <!-- Throwaway scripts for manual checks, not shipped -->
+    <exclude-pattern>/tests/manual/*</exclude-pattern>
 
     <!-- How to scan -->
     <arg name="extensions" value="php"/>
@@ -65,6 +69,16 @@
         <exclude name="WordPress.DB.SlowDBQuery.slow_db_query_meta_key"/>
         <!-- Allow Parameter comment end without a full stop -->
         <exclude name="Squiz.Commenting.FunctionComment.ParamCommentFullStop"/>
+    </rule>
+
+    <!-- Files open with a two-line "// DESCRIPTION:" header instead of a file docblock -->
+    <rule ref="Squiz.Commenting.FileComment.WrongStyle">
+        <severity>0</severity>
+    </rule>
+
+    <!-- Test method names describe the test; docblocks on them are noise -->
+    <rule ref="Squiz.Commenting.FunctionComment.Missing">
+        <exclude-pattern>/tests/*</exclude-pattern>
     </rule>
 
     <!-- Extra Rules -->

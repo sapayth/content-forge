@@ -18,7 +18,11 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class List_Cycle {
 
-	/** @var Schedule_Repository */
+	/**
+	 * Schedule storage, used to persist the cycle position.
+	 *
+	 * @var Schedule_Repository
+	 */
 	protected $repository;
 
 	/**
@@ -51,8 +55,8 @@ class List_Cycle {
 
 		$topic = (string) $list[ $cursor ];
 
-		$config                          = $schedule->config();
-		$config['topic']['list_cursor']  = ( $cursor + 1 ) % count( $list );
+		$config                         = $schedule->config();
+		$config['topic']['list_cursor'] = ( $cursor + 1 ) % count( $list );
 
 		$this->repository->update( $schedule->id(), $config, null );
 

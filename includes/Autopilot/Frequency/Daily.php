@@ -45,11 +45,15 @@ class Daily implements Frequency {
 	 */
 	public function __construct( $time, ?DateTimeZone $site_timezone = null ) {
 		$this->time          = $this->normalize_time( $time );
-		$this->site_timezone = $site_timezone ?: $this->resolve_site_timezone();
+		$this->site_timezone = $site_timezone ?? $this->resolve_site_timezone();
 	}
 
 	/**
-	 * @inheritDoc
+	 * Compute the next fire time strictly after $reference, returned in UTC.
+	 *
+	 * @param DateTimeImmutable $reference Reference instant (typically "now") in any timezone.
+	 *
+	 * @return DateTimeImmutable Next fire time, expressed in UTC.
 	 */
 	public function next_after( DateTimeImmutable $reference ) {
 		$local_reference = $reference->setTimezone( $this->site_timezone );

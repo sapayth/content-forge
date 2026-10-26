@@ -161,7 +161,7 @@ class AI_Provider_OpenAI extends AI_Provider_Base {
 	/**
 	 * Generate an image via the images endpoint.
 	 *
-	 * gpt-image-1 always returns base64 data, never a URL.
+	 * The gpt-image-1 model always returns base64 data, never a URL.
 	 *
 	 * @since 1.8.0
 	 *

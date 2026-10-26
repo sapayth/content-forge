@@ -50,10 +50,10 @@ class Dashboard_Widget {
 	 * @return void
 	 */
 	public function render() {
-		$enabled    = Plugin::is_enabled();
-		$heartbeat  = (int) get_option( Dispatcher::HEARTBEAT_OPTION, 0 );
-		$now        = time();
-		$stale      = $heartbeat > 0 && ( $now - $heartbeat ) > self::STALE_SECONDS;
+		$enabled   = Plugin::is_enabled();
+		$heartbeat = (int) get_option( Dispatcher::HEARTBEAT_OPTION, 0 );
+		$now       = time();
+		$stale     = $heartbeat > 0 && ( $now - $heartbeat ) > self::STALE_SECONDS;
 
 		$active_count = $this->count_schedules( 'publish' );
 		$paused_count = $this->count_schedules( 'private' );
@@ -68,7 +68,7 @@ class Dashboard_Widget {
 				esc_url( admin_url( 'admin.php?page=cforge-settings' ) ),
 				esc_html__( 'Settings page', 'content-forge' )
 			);
-		} elseif ( $heartbeat === 0 ) {
+		} elseif ( 0 === $heartbeat ) {
 			printf(
 				'<p style="color:#b26200;">%s</p>',
 				esc_html__( 'Dispatcher has not run yet. Waiting for the first WP-Cron tick…', 'content-forge' )
@@ -80,7 +80,7 @@ class Dashboard_Widget {
 				sprintf(
 					/* translators: %d: number of minutes */
 					esc_html( _n( 'Dispatcher last ran %d minute ago.', 'Dispatcher last ran %d minutes ago.', $mins, 'content-forge' ) ),
-					$mins
+					esc_html( $mins )
 				),
 				esc_html__( 'This usually means WP-Cron is not firing. Check that your site is being visited regularly or that a system cron is hitting wp-cron.php.', 'content-forge' )
 			);

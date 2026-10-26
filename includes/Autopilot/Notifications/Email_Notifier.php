@@ -37,14 +37,14 @@ class Email_Notifier {
 	 */
 	public function notify_run_completed( Schedule $schedule, $run, $status ) {
 		$mode = (string) $schedule->config_get( 'notifications.email_mode', 'none' );
-		if ( $mode === 'none' ) {
+		if ( 'none' === $mode ) {
 			return false;
 		}
 
-		$is_failure = ( $status === Run::STATUS_FAILED || $status === Run::STATUS_PARTIAL );
+		$is_failure = ( Run::STATUS_FAILED === $status || Run::STATUS_PARTIAL === $status );
 
 		// 'failure' opt-in only sends for failures/partials.
-		if ( $mode === 'failure' && ! $is_failure ) {
+		if ( 'failure' === $mode && ! $is_failure ) {
 			return false;
 		}
 
@@ -66,7 +66,7 @@ class Email_Notifier {
 	 */
 	public function notify_auto_paused( Schedule $schedule, $reason ) {
 		$mode = (string) $schedule->config_get( 'notifications.email_mode', 'none' );
-		if ( $mode === 'none' ) {
+		if ( 'none' === $mode ) {
 			return false;
 		}
 
@@ -91,7 +91,7 @@ class Email_Notifier {
 	protected function send( Schedule $schedule, $event, $subject, $body, $run ) {
 		$configured = trim( (string) $schedule->config_get( 'notifications.email_to', '' ) );
 
-		$default_to = $configured !== '' && is_email( $configured )
+		$default_to = '' !== $configured && is_email( $configured )
 			? $configured
 			: $this->fallback_recipient( $schedule );
 
@@ -195,11 +195,14 @@ class Email_Notifier {
 	 */
 	protected function build_body( Schedule $schedule, $run, $event, $status ) {
 		$lines = [];
+		/* translators: %s: autopilot schedule name */
 		$lines[] = sprintf( __( 'Autopilot: %s', 'content-forge' ), $schedule->name() );
+		/* translators: %s: run status */
 		$lines[] = sprintf( __( 'Status: %s', 'content-forge' ), $status );
 
 		if ( $run instanceof Run ) {
 			if ( $run->topic_used ) {
+				/* translators: %s: topic the run generated content for */
 				$lines[] = sprintf( __( 'Topic: %s', 'content-forge' ), $run->topic_used );
 			}
 			if ( is_array( $run->posts_created ) && ! empty( $run->posts_created ) ) {
@@ -210,6 +213,7 @@ class Email_Notifier {
 				);
 			}
 			if ( $run->error_message ) {
+				/* translators: %s: error message */
 				$lines[] = sprintf( __( 'Error: %s', 'content-forge' ), $this->summarize_error( $run->error_message ) );
 			}
 		}
@@ -235,7 +239,9 @@ class Email_Notifier {
 		$reason_label = $this->human_reason( $reason );
 
 		$lines = [
+			/* translators: %s: autopilot schedule name */
 			sprintf( __( 'Autopilot: %s', 'content-forge' ), $schedule->name() ),
+			/* translators: %s: reason the schedule was paused */
 			sprintf( __( 'Reason: %s', 'content-forge' ), $reason_label ),
 			'',
 			__( 'No further runs will fire until you resume the autopilot.', 'content-forge' ),

@@ -21,13 +21,23 @@ class Interval implements Frequency {
 
 	const SECONDS_PER_HOUR = 3600;
 
-	/** @var int Hours between fires, >= 1 */
+	/**
+	 * Interval length.
+	 *
+	 * @var int Hours between fires, >= 1
+	 */
 	protected $hours;
 
-	/** @var DateTimeImmutable|null Start instant in UTC; null = anchored to "now" on first call */
+	/**
+	 * Instant the interval counts from.
+	 *
+	 * @var DateTimeImmutable|null Start instant in UTC; null = anchored to "now" on first call
+	 */
 	protected $start_at_utc;
 
 	/**
+	 * Build an every-N-hours frequency.
+	 *
 	 * @param int    $hours    Interval in hours.
 	 * @param string $start_at ISO datetime in UTC (e.g. "2026-05-15T09:00:00Z"). Empty allowed.
 	 */
@@ -35,7 +45,7 @@ class Interval implements Frequency {
 		$this->hours = max( 1, (int) $hours );
 
 		$this->start_at_utc = null;
-		if ( is_string( $start_at ) && $start_at !== '' ) {
+		if ( is_string( $start_at ) && '' !== $start_at ) {
 			try {
 				$this->start_at_utc = ( new DateTimeImmutable( $start_at ) )->setTimezone( new DateTimeZone( 'UTC' ) );
 			} catch ( Exception $e ) {
@@ -45,12 +55,16 @@ class Interval implements Frequency {
 	}
 
 	/**
-	 * @inheritDoc
+	 * Compute the next fire time strictly after $reference, returned in UTC.
+	 *
+	 * @param DateTimeImmutable $reference Reference instant (typically "now") in any timezone.
+	 *
+	 * @return DateTimeImmutable Next fire time, expressed in UTC.
 	 */
 	public function next_after( DateTimeImmutable $reference ) {
 		$ref_utc = $reference->setTimezone( new DateTimeZone( 'UTC' ) );
 
-		if ( $this->start_at_utc === null ) {
+		if ( null === $this->start_at_utc ) {
 			return $ref_utc->modify( '+' . $this->hours . ' hour' );
 		}
 

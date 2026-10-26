@@ -30,3 +30,8 @@ tests
 tools
 webpack.config.js
 *.zip
+artifacts
+.wp-env.json
+playwright.howto.config.js
+.distignore
+playwright.config.js

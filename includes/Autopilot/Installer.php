@@ -44,7 +44,7 @@ class Installer {
 	public static function maybe_install() {
 		$installed = get_option( self::VERSION_OPTION, '' );
 
-		if ( $installed === self::VERSION ) {
+		if ( self::VERSION === $installed ) {
 			return;
 		}
 

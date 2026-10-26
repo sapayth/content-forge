@@ -1,5 +1,5 @@
 # DESCRIPTION: Deploy Content Forge to the WordPress.org SVN repository.
-# Triggered on push of a version tag (e.g. v1.6.0).
+# Triggered on push of a version tag (e.g. v1.6.0) that is on main. Deploys only after CI passes.
 
 name: Deploy to WordPress.org
 
@@ -8,22 +8,47 @@ on:
     tags:
       - 'v*'
 
+permissions:
+  contents: read
+
 jobs:
+  ci:
+    name: CI
+    uses: ./.github/workflows/ci.yml
+    permissions:
+      contents: read
+      # Plugin Check's job requests it; on a tag push there is no PR to comment on.
+      pull-requests: write
+
   deploy:
     name: Build and deploy
+    needs: ci
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          # Full history, so the check below can see whether the tag is on main.
+          fetch-depth: 0
+
+      # main only takes reviewed, CI-passing PRs. A tag on any other commit could ship
+      # code that never went through that, so refuse it before anything from the repo runs.
+      - name: Verify the tag points at a commit on main
+        run: |
+          git fetch --no-tags origin main
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" FETCH_HEAD; then
+            echo "::error::Tag $GITHUB_REF_NAME points at $GITHUB_SHA, which is not on main. Refusing to deploy."
+            exit 1
+          fi
 
       - name: Set up Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 20
           cache: npm
 
       - name: Set up PHP
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
         with:
           php-version: '7.4'
           coverage: none
@@ -53,7 +78,7 @@ jobs:
         run: composer install --no-dev --optimize-autoloader
 
       - name: WordPress Plugin Deploy
-        uses: 10up/action-wordpress-plugin-deploy@stable
+        uses: 10up/action-wordpress-plugin-deploy@54bd289b8525fd23a5c365ec369185f2966529c2 # 2.3.0 (stable)
         env:
           SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
           SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}

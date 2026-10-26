@@ -81,6 +81,27 @@ abstract class Generator {
     }
 
     /**
+     * Whether Content Forge generated (and still tracks) this object.
+     *
+     * @since 1.7.1
+     *
+     * @param int    $object_id The object ID.
+     * @param string $data_type The data type.
+     *
+     * @return bool
+     */
+    protected function is_tracked( $object_id, $data_type ) {
+        global $wpdb;
+        $table_name = $wpdb->prefix . CFORGE_DBNAME;
+        // phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+        $found = $wpdb->get_var(
+            $wpdb->prepare( "SELECT 1 FROM {$table_name} WHERE object_id = %d AND data_type = %s LIMIT 1", $object_id, $data_type )
+        );
+        // phpcs:enable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+        return (bool) $found;
+    }
+
+    /**
      * Remove tracking info for a deleted object.
      *
      * @param int    $object_id The object ID to untrack.

@@ -76,7 +76,7 @@ class Run_Repository {
 			[ 'id' => (int) $id ]
 		);
 
-		return $result !== false;
+		return false !== $result;
 	}
 
 	/**
@@ -92,6 +92,7 @@ class Run_Repository {
 
 		$table = Installer::runs_table();
 		$row   = $wpdb->get_row(
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name is safe.
 			$wpdb->prepare( "SELECT * FROM {$table} WHERE id = %d", (int) $id ),
 			ARRAY_A
 		);
@@ -114,6 +115,7 @@ class Run_Repository {
 		$table = Installer::runs_table();
 		$rows  = $wpdb->get_results(
 			$wpdb->prepare(
+				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name is safe.
 				"SELECT * FROM {$table} WHERE schedule_id = %d ORDER BY id DESC LIMIT %d",
 				(int) $schedule_id,
 				(int) $limit
@@ -145,6 +147,7 @@ class Run_Repository {
 		$table = Installer::runs_table();
 		$rows  = $wpdb->get_col(
 			$wpdb->prepare(
+				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name is safe.
 				"SELECT posts_created FROM {$table} WHERE schedule_id = %d AND started_at >= %s",
 				(int) $schedule_id,
 				$since_utc
@@ -177,11 +180,13 @@ class Run_Repository {
 		$table = Installer::runs_table();
 		$total = 0;
 
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name is safe.
 		$schedule_ids = $wpdb->get_col( "SELECT DISTINCT schedule_id FROM {$table}" );
 
 		foreach ( (array) $schedule_ids as $schedule_id ) {
 			$threshold_id = $wpdb->get_var(
 				$wpdb->prepare(
+					// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name is safe.
 					"SELECT id FROM {$table} WHERE schedule_id = %d ORDER BY id DESC LIMIT 1 OFFSET %d",
 					(int) $schedule_id,
 					(int) $keep_per_schedule
@@ -194,6 +199,7 @@ class Run_Repository {
 
 			$deleted = $wpdb->query(
 				$wpdb->prepare(
+					// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name is safe.
 					"DELETE FROM {$table} WHERE schedule_id = %d AND id <= %d",
 					(int) $schedule_id,
 					(int) $threshold_id
@@ -219,12 +225,13 @@ class Run_Repository {
 	public function mark_stuck_failed( $stuck_seconds = 1800 ) {
 		global $wpdb;
 
-		$table       = Installer::runs_table();
-		$threshold   = gmdate( 'Y-m-d H:i:s', time() - (int) $stuck_seconds );
-		$now         = gmdate( 'Y-m-d H:i:s' );
+		$table     = Installer::runs_table();
+		$threshold = gmdate( 'Y-m-d H:i:s', time() - (int) $stuck_seconds );
+		$now       = gmdate( 'Y-m-d H:i:s' );
 
 		$updated = $wpdb->query(
 			$wpdb->prepare(
+				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name is safe.
 				"UPDATE {$table}
 				 SET status = %s, finished_at = %s, error_message = %s
 				 WHERE status = %s AND started_at < %s",

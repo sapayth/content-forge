@@ -19,15 +19,23 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Dispatcher {
 
-	const HOOK            = 'cforge_autopilot_dispatch';
-	const RUN_HOOK        = 'cforge_autopilot_run_schedule';
-	const LOCK_TRANSIENT  = 'cforge_autopilot_dispatch_lock';
+	const HOOK             = 'cforge_autopilot_dispatch';
+	const RUN_HOOK         = 'cforge_autopilot_run_schedule';
+	const LOCK_TRANSIENT   = 'cforge_autopilot_dispatch_lock';
 	const HEARTBEAT_OPTION = 'cforge_autopilot_last_dispatch';
 
-	/** @var Schedule_Repository */
+	/**
+	 * Schedule storage.
+	 *
+	 * @var Schedule_Repository
+	 */
 	protected $schedules;
 
-	/** @var Run_Repository */
+	/**
+	 * Run history storage.
+	 *
+	 * @var Run_Repository
+	 */
 	protected $runs;
 
 	/**
@@ -144,12 +152,12 @@ class Dispatcher {
 	 */
 	protected function stop_condition_reached( Schedule $schedule, DateTimeImmutable $now ) {
 		$cap = $schedule->runs_cap();
-		if ( $cap !== null && $schedule->runs_completed() >= $cap ) {
+		if ( null !== $cap && $schedule->runs_completed() >= $cap ) {
 			return true;
 		}
 
 		$stop_at = $schedule->stop_at();
-		if ( $stop_at !== '' ) {
+		if ( '' !== $stop_at ) {
 			try {
 				$stop = new DateTimeImmutable( $stop_at, new DateTimeZone( 'UTC' ) );
 				if ( $now >= $stop ) {
