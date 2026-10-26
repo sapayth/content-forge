@@ -6,8 +6,6 @@ assets/
 release/
 
 # Environment and credentials
-.env
-.env.*
 
 # Editor and system files
 .DS_Store
@@ -45,3 +43,4 @@ composer.lock
 
 # How-to video footage (tests/howto)
 /artifacts/
+config.bat
