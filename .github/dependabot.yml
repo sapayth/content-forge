@@ -20,6 +20,11 @@ updates:
         dependency-type: production
       npm-development:
         dependency-type: development
+    # Majors (e.g. Tailwind 4, Babel 8, new Node requirements) are migrations, done as planned work.
+    # This only affects version updates; security updates still arrive.
+    ignore:
+      - dependency-name: '*'
+        update-types: [ 'version-update:semver-major' ]
 
   - package-ecosystem: github-actions
     directory: /
