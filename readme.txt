@@ -119,11 +119,13 @@ Yes. Run one per category, niche, or author — they operate independently.
 
 == Screenshots ==
 
-1. Main dashboard showing generation options
-2. Post generation interface with customization options
-3. Optional AI-powered content generation using OpenAI, Anthropic, and Google
-4. User generation settings
-5. Bulk content management tools
+1. Dashboard: what you have generated, and one-click cleanup
+2. Every generated post in one list, with edit and view links
+3. Generate posts and pages, with or without AI
+4. Generate WooCommerce products and other custom post types
+5. Generate users with any role
+6. Generate comments and reply threads
+7. Autopilot: schedule AI posts
 
 == Changelog ==
 

@@ -12,7 +12,8 @@
     "zip": "scripts/package.sh",
     "howto": "wp-scripts test-playwright --config playwright.howto.config.js",
     "wp-env": "wp-env",
-    "test:e2e": "wp-scripts test-playwright"
+    "test:e2e": "wp-scripts test-playwright",
+    "screenshots": "wp-scripts test-playwright --config playwright.screenshots.config.js"
   },
   "dependencies": {
     "@wordpress/api-fetch": "^7.24.0",

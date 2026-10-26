@@ -35,3 +35,5 @@ artifacts
 playwright.howto.config.js
 .distignore
 playwright.config.js
+.wordpress-org
+playwright.screenshots.config.js
