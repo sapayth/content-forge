@@ -15,10 +15,10 @@
     "test:e2e": "wp-scripts test-playwright"
   },
   "dependencies": {
-    "@wordpress/api-fetch": "^7.24.0",
-    "@wordpress/components": "^29.10.0",
+    "@wordpress/api-fetch": "^7.57.0",
+    "@wordpress/components": "^29.12.0",
     "@wordpress/element": "^6.24.0",
-    "@wordpress/i18n": "^5.24.0"
+    "@wordpress/i18n": "^5.26.0"
   },
   "devDependencies": {
     "@babel/core": "^7.29.7",
