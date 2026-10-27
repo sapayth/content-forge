@@ -32,6 +32,7 @@ internal linking, content refresh) come last.
 
 ### Candidates for v1.9.0+
 - **Autopilot for other post types** — pages, CPTs, products.
+- **OpenAI-compatible AI provider** — OpenRouter, Ollama / LM Studio and custom endpoints with a free-text model. Spec: [`docs/planning/openai-compatible-provider-plan.md`](../planning/openai-compatible-provider-plan.md)
 - **Multilingual generation** — posts and terms per language, linked as WPML / Polylang translations. Spec: [`docs/planning/multilingual-plan.md`](../planning/multilingual-plan.md)
 - **Advanced filtering & search** in the generated-content list views.
 - **Multisite support** (network-wide generation).
