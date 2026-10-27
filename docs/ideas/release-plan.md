@@ -33,6 +33,7 @@ internal linking, content refresh) come last.
 ### Candidates for v1.9.0+
 - **Autopilot for other post types** — pages, CPTs, products.
 - **Multilingual generation** — posts and terms per language, linked as WPML / Polylang translations. Spec: [`docs/planning/multilingual-plan.md`](../planning/multilingual-plan.md)
+- **Brand voice profile for AI generation** — audience, persona and phrases to avoid, set once and applied to every AI post. Spec: [`docs/planning/brand-voice-plan.md`](../planning/brand-voice-plan.md)
 - **Advanced filtering & search** in the generated-content list views.
 - **Multisite support** (network-wide generation).
 - **Performance stress-test mode** (10k+ items).
