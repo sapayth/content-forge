@@ -18,7 +18,15 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  guard:
+    name: Push guard
+    uses: ./.github/workflows/push-guard.yml
+    permissions:
+      contents: read
+      issues: write
+
   phpcs:
+    needs: guard
     name: PHPCS
     runs-on: ubuntu-latest
     steps:
@@ -39,6 +47,7 @@ jobs:
         run: composer phpcs
 
   php-tests:
+    needs: guard
     name: PHP ${{ matrix.php }} lint and unit tests
     runs-on: ubuntu-latest
     strategy:
@@ -70,6 +79,7 @@ jobs:
         run: composer test
 
   js:
+    needs: guard
     name: JS build and tests
     runs-on: ubuntu-latest
     steps:
@@ -92,6 +102,7 @@ jobs:
         run: node tests/js/contrast.test.js
 
   plugin-check:
+    needs: guard
     name: Plugin Check
     runs-on: ubuntu-latest
     permissions:
@@ -137,6 +148,7 @@ jobs:
           ignore-codes: outdated_tested_upto_header
 
   audit:
+    needs: guard
     name: Dependency audit
     runs-on: ubuntu-latest
     steps:
@@ -162,6 +174,7 @@ jobs:
         run: npm audit --omit=dev --audit-level=high
 
   dependency-review:
+    needs: guard
     name: Dependency review
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest

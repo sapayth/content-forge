@@ -19,6 +19,8 @@ jobs:
       contents: read
       # Plugin Check's job requests it; on a tag push there is no PR to comment on.
       pull-requests: write
+      # The push guard that ci.yml calls first may open an issue.
+      issues: write
 
   deploy:
     name: Build and deploy
