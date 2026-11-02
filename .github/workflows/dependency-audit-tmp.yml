@@ -41,6 +41,7 @@ jobs:
       - name: Fix lockfiles (non-breaking only; nothing installed or executed)
         run: |
           if [ "$NPM_FIX" = true ]; then
+            npm install --package-lock-only --ignore-scripts --no-audit --no-fund   # apply package.json overrides to the lockfile
             npm audit fix --package-lock-only --ignore-scripts --no-fund || true
           fi
           if [ "$COMPOSER_FIX" = true ]; then

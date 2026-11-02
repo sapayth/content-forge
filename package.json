@@ -39,5 +39,8 @@
     "tailwindcss": "^3.4.19",
     "webpack": "^5.112.1",
     "webpack-cli": "^5.1.4"
+  },
+  "overrides": {
+    "@babel/runtime": "^7.26.10"
   }
 }
