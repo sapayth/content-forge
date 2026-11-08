@@ -64,6 +64,11 @@ jobs:
           while IFS= read -r f; do hits+=("node init hook: $f"); done < <(git grep -lE "node init &&|exec\(['\"]node init" -- '*package.json' '*artisan' '*.php' 2>/dev/null)
           # 5. Secrets file committed (one variant hid a loader URL in .env)
           while IFS= read -r f; do hits+=("committed env file: $f"); done < <(git ls-files | grep -E '(^|/)\.env$')
+          # 6. Script disguised as a font (one variant's folderOpen task ran `node .../fa-solid-600.ttf`); real fonts are binary
+          while IFS= read -r f; do
+            [ -s "$f" ] || continue
+            [ "$(file -b --mime-encoding "$f")" = binary ] || hits+=("script disguised as a font: $f")
+          done < <(git ls-files | grep -iE '\.(ttf|otf|woff2?|eot)$')
 
           {
             echo "found=${#hits[@]}"
